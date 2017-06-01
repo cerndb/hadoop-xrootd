@@ -70,40 +70,23 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
     }
 
     public int read(byte[] b, int off, int len) throws IOException {
-	if (pos < 0) {
-	    if (EOS_debug) System.out.println("EOSInputStream.read() pos: " + pos);
-
-	    if (pos == -1) throw new EOFException();
-	    return (int) pos;
-            
-	    // throw new IOException("Stream closed");
-	}
-
-       	long rd = file.Read(pos, b, off, len);
-	if (EOS_debug) System.out.println("EOSInputStream.read() bytes: " + rd);
-	if (rd >= 0) {
-	    pos += rd;
-	    if (rd > 0) return (int) rd;
-	    pos = -1;
-	    return -1;
-	}
-
-	pos = -2;
-	throw new IOException("read returned " + rd);
+        return read(pos, b, off, len);
     }
 
     public int read(long pos, byte[] b, int off, int len) throws IOException {
-        if (pos < 0) {
-            if (EOS_debug) System.out.println("EOSInputStream.read() pos: " + pos);
+        this.pos = pos;
 
-            if (pos == -1) throw new EOFException();
-            return (int) pos;
+        if (this.pos < 0) {
+            if (EOS_debug) System.out.println("EOSInputStream.read() pos: " + this.pos);
+
+            if (this.pos == -1) throw new EOFException();
+            return (int) this.pos;
         }
 
-        long rd = file.Read(pos, b, off, len);
+        long rd = file.Read(this.pos, b, off, len);
         if (EOS_debug) System.out.println("EOSInputStream.read() bytes: " + rd);
         if (rd >= 0) {
-            this.pos = pos += rd;
+            this.pos += rd;
             if (rd > 0) return (int) rd;
             this.pos = -1;
             return -1;
@@ -111,10 +94,6 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
 
         this.pos = -2;
         throw new IOException("read returned " + rd);
-
-        
-
-//	throw new IllegalArgumentException("read(pos, b, off, len) not implemented");
     }
 
     public void readFully(long pos, byte[] b) throws IOException {
