@@ -22,7 +22,7 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
     private static final Log LOG = LogFactory.getLog(EOSInputStream.class);
     private XrdClFile file;
 //    private boolean EOS_debug = false;
-    private boolean EOS_debug = true;
+    private boolean EOS_debug = false;
 
     private long pos;
 
