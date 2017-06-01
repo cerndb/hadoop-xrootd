@@ -41,20 +41,11 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
     }
 
     public int read() throws IOException{
-
-
-        if (pos < 0) {
-            if (EOS_debug) System.out.println("EOSInputStream.read() pos: " + pos);
-
-            if (pos == -1) throw new EOFException();
-            return (int) pos;
-
-        }
 //Reads the next byte of data from the input stream.
-       byte[] b= new byte[1];
-       long rd = file.Read(pos, b, 0, 1);
+       byte[] b = new byte[1];
+
+       long rd = read(pos, b, 0, 1);
        if (rd >= 0) {
-            pos += rd;
             if (rd > 0) return b[0] & 0xFF ;
             pos = -1;
             return -1;
@@ -62,11 +53,6 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
 
         pos = -2;
         throw new IOException("read returned " + rd);
-         
-       
-       
-//	throw new IllegalArgumentException("read() not implemented");
-		
     }
 
     public int read(byte[] b, int off, int len) throws IOException {
