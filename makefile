@@ -11,7 +11,7 @@ INCLjava=/etc/alternatives/java_sdk/include
 
 CXXFLAGS=-I$(INCLxrootd) -I$(INCLjava) -I$(INCLjava)/linux -fPIC
 
-CLASSES = ch/cern/eos/XrdClFile.java ch/cern/eos/Krb5TokenIdentifier.java ch/cern/eos/EOSFileSystem.java ch/cern/eos/EOSInputStream.java ch/cern/eos/EOSOutputStream.java
+CLASSES = ch/cern/eos/XrdClFile.java ch/cern/eos/Krb5TokenIdentifier.java ch/cern/eos/EOSFileSystem.java ch/cern/eos/EOSInputStream.java ch/cern/eos/EOSOutputStream.java ch/cern/eos/EOSKrb5.java
 
 all: libjXrdCl.so EOSfs.jar
 
