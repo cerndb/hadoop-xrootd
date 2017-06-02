@@ -157,7 +157,7 @@ public class EOSFileSystem extends FileSystem {
 	String jlp = System.getProperty("java.library.path");
 	if (!jlp.contains("/usr/lib/hadoop/lib/native")) {
 	    System.setProperty("java.library.path", "/usr/lib/hadoop/lib/native:" + jlp);
-	    System.out.println("EOSfs.initlib: using java.library.path: " + System.getProperty("java.library.path"));
+	    if(EOS_debug) System.out.println("EOSfs.initlib: using java.library.path: " + System.getProperty("java.library.path"));
 	    //found by googling... not that I understood it...
 	    //set sys_paths to null so that java.library.path will be reevaluated next time it is needed
 	    try {
@@ -210,9 +210,48 @@ public class EOSFileSystem extends FileSystem {
 	nHandle = initFileSystem(uri.getScheme() + "://" + uri.getAuthority());
 	if (EOS_debug) System.out.println("initFileSystem(" + fsStr + ") = " + nHandle);
 
+        String ccname =  System.getenv("KRB5CCNAME");
+
+        //check if there is a valid TGT
+	 validateKrbTGT();
+	
+
 	if (hasKrbToken < 0 && hasKrbTGT < 0) setKrb();
     }
+   
 
+
+    private void validateKrbTGT()
+    {
+       //checking if there is valid TGT under KRB5CCNAME
+	String ccname =  System.getenv("KRB5CCNAME");
+//        CredentialsCache ncc;
+//	sun.security.krb5.Credentials crn;
+
+        if (ccname == null ) return;
+	if (ccname.length() > 5 && ccname.regionMatches(true, 0,  "FILE:", 0, 5))
+	{
+               ccname = ccname.substring(5);
+	}
+	else return;
+
+
+        try
+	{
+//		crn = sun.security.krb5.Credentials.acquireDefaultCreds().renew();		
+//	        ncc = CredentialsCache.create(crn.getClient(), ccname);
+	}
+	catch (Exception e)
+	{
+	    return;
+	}
+        if (hasKrbTGT!=1)
+            setcc("KRB5CCNAME=FILE:" + ccname);
+        hasKrbTGT=1;
+        
+
+    }
+   
 
     public static void setKrb() {
 	try {
@@ -361,7 +400,13 @@ public class EOSFileSystem extends FileSystem {
 	// System.out.println("EOS initialize: EOS_debug " + EOS_debug + " uri scheme " + uri.getScheme() + " authority " + uri.getAuthority() + " path " + uri.getPath() + " query " + uri.getQuery());
 
 	this.uri = uri;
-	setKrb();
+
+        initLib();
+
+        validateKrbTGT();
+        
+        if (hasKrbToken < 0 && hasKrbTGT < 0) 
+	   setKrb();
     }
 
     public String getScheme() {
