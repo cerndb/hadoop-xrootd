@@ -45,8 +45,10 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
         byte[] b = new byte[1];
 
         long rd = read(pos, b, 0, 1);
-        if (rd > 0) (rd > 0) return b[0] & 0xFF;
+        if (rd > 0) return b[0] & 0xFF;
         if (rd == -1) return -1;
+        
+        throw new IOException("read returned " + rd);
     }
 
     public int read(byte[] b, int off, int len) throws IOException {
