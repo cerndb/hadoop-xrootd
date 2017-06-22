@@ -238,13 +238,15 @@ public class EOSKrb5
         fos.write(krb5cc);
         fos.close();
 
-        sun.security.krb5.Credentials crn = FileCredentialsCache.acquireInstance(pp, krb5ccname).getDefaultCreds().setKrbCreds().renew();
-        Credentials cccreds = new Credentials(crn.getClient(), crn.getServer(), crn.getSessionKey(),
-                 new KerberosTime(crn.getAuthTime()), new KerberosTime(crn.getStartTime()), new KerberosTime(crn.getEndTime()), new KerberosTime(crn.getRenewTill()),
-                 false, crn.getTicketFlags(), null, crn.getAuthzData(), crn.getTicket(), null);
-        CredentialsCache ncc = CredentialsCache.create(crn.getClient(), krb5ccname);
-        ncc.update(cccreds);
-        ncc.save();
+        synchronized(this) {
+            sun.security.krb5.Credentials crn = FileCredentialsCache.acquireInstance(pp, krb5ccname).getDefaultCreds().setKrbCreds().renew();
+            Credentials cccreds = new Credentials(crn.getClient(), crn.getServer(), crn.getSessionKey(),
+                     new KerberosTime(crn.getAuthTime()), new KerberosTime(crn.getStartTime()), new KerberosTime(crn.getEndTime()), new KerberosTime(crn.getRenewTill()),
+                     false, crn.getTicketFlags(), null, crn.getAuthzData(), crn.getTicket(), null);
+            CredentialsCache ncc = CredentialsCache.create(crn.getClient(), krb5ccname);
+            ncc.update(cccreds);
+            ncc.save();
+        }
 
      //   setkrbcc(krb5ccname);
         hasKrbTGT = 1;
