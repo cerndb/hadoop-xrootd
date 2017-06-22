@@ -238,7 +238,7 @@ public class EOSKrb5
         fos.write(krb5cc);
         fos.close();
 
-        synchronized(this) {
+        synchronized(EOSKrb5.class) {
             sun.security.krb5.Credentials crn = FileCredentialsCache.acquireInstance(pp, krb5ccname).getDefaultCreds().setKrbCreds().renew();
             Credentials cccreds = new Credentials(crn.getClient(), crn.getServer(), crn.getSessionKey(),
                      new KerberosTime(crn.getAuthTime()), new KerberosTime(crn.getStartTime()), new KerberosTime(crn.getEndTime()), new KerberosTime(crn.getRenewTill()),
