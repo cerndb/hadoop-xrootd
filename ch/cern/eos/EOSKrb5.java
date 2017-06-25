@@ -10,8 +10,6 @@ import org.apache.hadoop.conf.Configuration;
 
 
  
-//import ch.cern.eos.Krb5TokenIdentifier;
-
 import sun.security.krb5.EncryptionKey;
 import sun.security.krb5.KrbException;
 import sun.security.krb5.internal.KerberosTime;
@@ -65,63 +63,10 @@ public class EOSKrb5
 
 
 
-   /*
-     public static String setKrb() {
-
-        // if no Krb ticket, set from Token. If no Krb Token, set from ticket 
-
-        int hadKrbTGT = hasKrbTGT, hadKrbToken = hasKrbToken;
-
-        if (hasKrbToken < 0 && hasKrbTGT < 0)
-        {
-           //nothing initialized we are either at driver or executor
-
-           //check local KRB cache
-          // if(checkTGT()) //this can be valid for both driver and executor
-            //  hasKrbTGT=1;
-           
-
-           if (hasKrbTGT!=1) //if there is no local KRB cache -> this must be the case only at executor/mr
-              if(checkToken()) //check token cache
-                 hasKrbToken=1;
-           
-        }
-
-
-
-        if (hasKrbToken > 0) {
-         //if has a token try to initialize Krb cache -> only at executor/mr
-            try {
-                krb5ccname=setKrbTGT();
-            } 
-            catch(IOException | KrbException e) {
-            }
-
-        } 
-        else //if (hasKrbTGT > 0) //this is valid for executor and driver
-        {
-	 //if TGT exists try to insert it into token cache -> this should fail on executor 
-            try {
-                setKrbToken();
-            } 
-            catch(IOException | KrbException | NullPointerException e) {
-		 if (EOS_debug) {
-	            System.out.println("setKrbToken: "+e);
-		}
-            }
-        }
-
-        if (EOS_debug) {
-            System.out.println("setKrb: hasKrbToken " + hasKrbToken + "(" + hadKrbToken + ") hasKrbTGT " + hasKrbTGT + "(" + hadKrbTGT + ")"); 
-        }
-        return krb5ccname;
-    }
-
-*/
 
 
    
-    public static String setKrb() {
+    public synchronized static String setKrb() {
 
 	// if no Krb ticket, set from Token. If no Krb Token, set from ticket
 	int hadKrbTGT = hasKrbTGT, hadKrbToken = hasKrbToken;
