@@ -253,36 +253,34 @@ JNIEXPORT jobjectArray JNICALL Java_ch_cern_eos_EOSFileSystem_listFileStatusS
 
 };
 
+
 /*
  * Class:     ch_cern_eos_EOSFileSystem
  * Method:    setcc
  * Signature: (Ljava/lang/String;)V
  */
-JNIEXPORT void JNICALL Java_ch_cern_eos_EOSFileSystem_setcc (JNIEnv *env, jclass This, jstring ccn_p) {
+JNIEXPORT void JNICALL Java_ch_cern_eos_EOSFileSystem_setenv (JNIEnv *env, jclass This, jstring ccn_p, jstring ccv_p) {
+	const char *ccn = env->GetStringUTFChars(ccn_p, 0);
+	const char *ccv = env->GetStringUTFChars(ccv_p, 0);
+
+	int code = setenv((char *) ccn, ccv, 1);
+    
+	env->ReleaseStringUTFChars(ccn_p, ccn);
+	env->ReleaseStringUTFChars(ccv_p, ccv);
+};
+
+/*
+ * Class:     ch_cern_eos_EOSFileSystem
+ * Method:    getcc
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_ch_cern_eos_EOSFileSystem_getenv (JNIEnv *env, jclass This, jstring ccn_p) {
 	const char *ccn = env->GetStringUTFChars(ccn_p, 0);
 
-	int code = putenv((char *) ccn);
-    
-#if 0
-	std::cout << "putenv " << ccn << " code=" << code << "\n";
+	jstring str = env->NewStringUTF(getenv(ccn));
+	env->ReleaseStringUTFChars(ccn_p, ccn);
 
-	/*env->ReleaseStringUTFChars(ccn_p, ccn);*/
-
-	system("/usr/bin/env");
-	system("/usr/bin/klist");
-
-	FILE *resp = popen("/usr/bin/klist 2>&1", "r");
-	char buf[4096];
-	while (1) {
-	    int sz = fread(buf, 1, 4095, resp);
-	    std::cout << "popen(klist) read sz=" << sz << "\n";
-	    if (sz <= 0) break;
-	    buf[sz] = '\0';
-	    printf("%s", buf);
-	}
-	pclose(resp);
-#endif
-
+	return str;
 };
 
 /*
@@ -298,6 +296,40 @@ JNIEXPORT jstring JNICALL Java_ch_cern_eos_EOSFileSystem_getErrText (JNIEnv *env
   jstring msg = env->NewStringUTF(status.ToString().c_str());
   return msg;
 };
+
+/*
+ * Class: ch_cern_eos_EOSFileSystem
+ * Method: Prepare
+ * Signature: (J[Ljava/lang/String;I)J
+ */ 
+JNIEXPORT jlong JNICALL Java_ch_cern_eos_EOSFileSystem_Prepare (JNIEnv *env, jobject This, jlong handle, jobjectArray uris, jint jFlags) {
+    XrdCl::FileSystem *fs = (XrdCl::FileSystem *) handle;
+    XrdCl::PrepareFlags::Flags pFlags = static_cast<XrdCl::PrepareFlags::Flags>(jFlags);
+    int numUris = env->GetArrayLength(uris);
+    std::vector<std::string> fileList;
+    int i;
+    for (i = 0; i < numUris; i++) {
+	jstring s = (jstring) env->GetObjectArrayElement(uris, i);
+	const char *cs = env->GetStringUTFChars(s, 0);
+	fileList.push_back(cs);
+	env->ReleaseStringUTFChars(s, cs);
+	env->DeleteLocalRef(s);
+    }
+    uint16_t timeout = 0;
+    XrdCl::Buffer *buf = NULL;
+    XrdCl::XRootDStatus status = fs->Prepare(fileList, pFlags, 0, buf, timeout);
+    if (EOS_debug || !status.IsOK()) {
+	std::cout << "Prepare fs handle " << handle << " flags " << pFlags << " resp " << buf << "\n";
+	printf("Prepare '%s'... (%d) status = %s\n", fileList.at(0).c_str(), fileList.size(), status.ToStr().c_str());
+    }
+    // The following should not be needed because "std::vector" takes care of it
+    // for (i = 0; i < numUris; i++) delete fileList[i];
+    // delete fileList;
+    if (status.IsOK()) delete buf;
+    return *(jlong*) &status;
+};
+
+
 #ifdef __cplusplus
 }
 #endif

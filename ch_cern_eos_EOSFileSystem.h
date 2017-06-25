@@ -67,10 +67,26 @@ JNIEXPORT jlong JNICALL Java_ch_cern_eos_EOSFileSystem_RmDir
 
 /*
  * Class:     ch_cern_eos_EOSFileSystem
- * Method:    setcc
- * Signature: (Ljava/lang/String;)V
+ * Method:    Prepare
+ * Signature: (J[Ljava/lang/String;I)J
  */
-JNIEXPORT void JNICALL Java_ch_cern_eos_EOSFileSystem_setcc
+JNIEXPORT jlong JNICALL Java_ch_cern_eos_EOSFileSystem_Prepare
+  (JNIEnv *, jobject, jlong, jobjectArray, jint);
+
+/*
+ * Class:     ch_cern_eos_EOSFileSystem
+ * Method:    setenv
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_ch_cern_eos_EOSFileSystem_setenv
+  (JNIEnv *, jclass, jstring, jstring);
+
+/*
+ * Class:     ch_cern_eos_EOSFileSystem
+ * Method:    getenv
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_ch_cern_eos_EOSFileSystem_getenv
   (JNIEnv *, jclass, jstring);
 
 /*

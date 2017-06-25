@@ -7,16 +7,16 @@ JC = javac
 	$(JC) $(JFLAGS) $*.java
 
 INCLxrootd=/usr/include/xrootd
-INCLjava=/etc/alternatives/java_sdk/include
+INCLjava=$(shell dirname $(shell which javac))/../include
 
 CXXFLAGS=-I$(INCLxrootd) -I$(INCLjava) -I$(INCLjava)/linux -fPIC
 
-CLASSES = ch/cern/eos/XrdClFile.java ch/cern/eos/Krb5TokenIdentifier.java ch/cern/eos/EOSFileSystem.java ch/cern/eos/EOSInputStream.java ch/cern/eos/EOSOutputStream.java ch/cern/eos/EOSKrb5.java
+CLASSES = ch/cern/eos/XrdClFile.java ch/cern/eos/Krb5TokenIdentifier.java ch/cern/eos/EOSFileSystem.java ch/cern/eos/EOSInputStream.java ch/cern/eos/EOSOutputStream.java ch/cern/eos/EOSKrb5.java ch/cern/eos/Krb5TokenRenewer.java
 
 all: libjXrdCl.so EOSfs.jar
 
 clean:
-	-rm ch_cern_eos_*.o ch_cern_eos_*.h ch/cern/eos/*.class
+	-rm ch_cern_eos_*.o ch_cern_eos_*.h ch/cern/eos/*.class libjXrdCl.so
 
 classes: $(CLASSES:.java=.class)
 

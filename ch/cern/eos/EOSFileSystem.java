@@ -54,14 +54,18 @@ public class EOSFileSystem extends FileSystem {
     private native long Rm(long nHandle, String fn);
     private native long MkDir(long nHandle, String fn, short mode);
     private native long  RmDir(long nHandle, String fn);
-    private native static void setcc(String ccname);
+    private native long Prepare(long nHandle, String[] uris, int pFlags);
+    public static native void setenv(String envname, String envvalue);
+    public static native String getenv(String envname);
+
+//    private native static void setcc(String ccname);
     public native String getErrText(long errcode);
 
     private static final Log LOG = LogFactory.getLog(EOSFileSystem.class);
     private URI uri;
 
     public static boolean EOS_debug = false;
-    public static int buffer_size = 10*1024*1024;
+    public static int buffer_size = 32*1024*1024;
 
     public boolean kerberos = true;
 
@@ -82,22 +86,28 @@ public class EOSFileSystem extends FileSystem {
 	}
     }
 
-    public int FileStatus(long length, boolean isdir, int block_replication,
-	                         long blocksize, long modification_time, Path path) { int xx=42; return xx;}
+     public String toFilePath(Path p) throws IOException {
+	URI u = p.toUri();
+	String s = u.getPath();
+
+	if (u.getQuery() != null)  s += "?" + u.getQuery();
+	return s;
+    }
+
+
+//    public int FileStatus(long length, boolean isdir, int block_replication,
+//	                         long blocksize, long modification_time, Path path) { int xx=42; return xx;}
 
     public FSDataOutputStream append(Path f, int bufferSize, Progressable progress) {
 	throw new IllegalArgumentException("append");
     }
 
-    public FSDataOutputStream create(Path f, FsPermission permission, boolean overwrite, int bufferSize, short replication, long blockSize, Progressable progress) throws IOException {
+    public FSDataOutputStream create(Path p, FsPermission permission, boolean overwrite, int bufferSize, short replication, long blockSize, Progressable progress) throws IOException {
 	if (nHandle == 0) initHandle();
-	URI u = toUri(f);
-	String filespec = uri.getScheme() + "://" +  uri.getAuthority() + "/" + u.getPath();
-	// String filespec = u.getPath();
-	if (u.getQuery() != null) filespec += "?" + u.getQuery();
+	String filespec = uri.getScheme() + "://" +  uri.getAuthority() + "/" + toFilePath(p);
 
 	if (EOS_debug) {
-	    System.out.println("EOSfs create " + u.getScheme() + "://" + u.getAuthority() + u.getPath() + " --> " + filespec);
+		System.out.println("EOSfs create " + filespec);
 	}
 	return new FSDataOutputStream(new EOSOutputStream(filespec, permission, overwrite), null);
     }
@@ -172,17 +182,26 @@ public class EOSFileSystem extends FileSystem {
 
     private void initHandle() throws IOException {
 	if (nHandle != 0) return;
-	initLib();
+	initLib(); 
 
 	String fsStr = uri.getScheme() + "://" + uri.getAuthority();
 	nHandle = initFileSystem(uri.getScheme() + "://" + uri.getAuthority());
 	if (EOS_debug) System.out.println("initFileSystem(" + fsStr + ") = " + nHandle);
 
         if(kerberos)
- 	   EOSKrb5.setKrb();
+ 	   setkrbcc(EOSKrb5.setKrb()); //probably not needed here
     }
    
 
+
+    /* This sets (setenv()) KRB5CCNAME in the current (!) environment, which is NOT the one java currently sees, nor the one a java sub-process is going to see spawned
+     * using execve() - for the latter one would have to modify java's copy of the environment which is doable.
+     * jython or scala may yet play different games
+     */
+    public static void setkrbcc(String ccname) throws IOException {
+	initLib();
+	setenv("KRB5CCNAME", "FILE:" + ccname);
+    }
 
 
     public void initialize(URI uri, Configuration conf) throws IOException {
@@ -195,7 +214,7 @@ public class EOSFileSystem extends FileSystem {
         initLib();
 
         if(kerberos)
-	    setcc(EOSKrb5.setKrb());
+	    setkrbcc(EOSKrb5.setKrb());
     }
 
     public String getScheme() {
@@ -233,20 +252,13 @@ public class EOSFileSystem extends FileSystem {
 
     public FileStatus[] listStatus(Path p) throws IOException {
 	if (nHandle == 0) initHandle();
-	URI u = toUri(p);
-	// String filespec = uri.getScheme() + "://" +  uri.getAuthority() + "/" + u.getPath();
-	String filespec = u.getPath();
-	if (u.getQuery() != null) filespec += "?" + u.getQuery();
-	return listFileStatusS(nHandle, filespec, p);
+
+	return listFileStatusS(nHandle, toFilePath(p), p);
     }
 
     public boolean mkdirs(Path p, FsPermission permission) throws IOException {
 	if (nHandle == 0) initHandle();
-	URI u = toUri(p);
-	// String filespec = uri.getScheme() + "://" +  uri.getAuthority() + "/" + u.getPath();
-	String filespec = u.getPath();
-	if (u.getQuery() != null) 
-	    filespec += "?" + u.getQuery();
+	String filespec = toFilePath(p);
 	long st = MkDir(nHandle, filespec, permission.toShort());
 	return st == 0;
     }
@@ -262,6 +274,26 @@ public class EOSFileSystem extends FileSystem {
     public void setWorkingDirectory(Path f) {
 	throw new IllegalArgumentException("setWorkingDirectory");
     }
+
+    public boolean prepare(String[] uris, int pFlags) throws IOException {
+	initHandle();
+	long st = Prepare(nHandle, uris, pFlags);
+	if (st != 0 && EOS_debug) System.out.println("prepare failed on " + uris[0] + "... (" + uris.length + " elements) st = " + st);
+	return st == 0;
+    }
+
+    public boolean prepare(Path pp[], int pFlags) throws IOException {
+	String[] uris = new String[pp.length];
+
+	URI u;
+
+	for (int i = 0; i < pp.length; i++) {
+	    uris[i] = toFilePath(pp[i]);
+	}
+
+	return prepare(uris, pFlags);
+    }
+
 
     public boolean rename(Path src, Path dst) throws IOException {
 	if (nHandle == 0) initHandle();
