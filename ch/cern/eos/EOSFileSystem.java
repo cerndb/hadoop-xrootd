@@ -192,7 +192,12 @@ public class EOSFileSystem extends FileSystem {
  	   setkrbcc(EOSKrb5.setKrb()); //probably not needed here
     }
    
-
+    /*setting token cache from TGT (on Spark or MR drivers) or init local krb cache from token (if mapper or executor) */
+    public static void setKrb()
+    {
+        if(kerberos)
+            EOSKrb5.setKrb();
+    }
 
     /* This sets (setenv()) KRB5CCNAME in the current (!) environment, which is NOT the one java currently sees, nor the one a java sub-process is going to see spawned
      * using execve() - for the latter one would have to modify java's copy of the environment which is doable.
