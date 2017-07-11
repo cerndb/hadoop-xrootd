@@ -195,7 +195,6 @@ public class EOSFileSystem extends FileSystem {
     /*setting token cache from TGT (on Spark or MR drivers) or init local krb cache from token (if mapper or executor) */
     public static void setKrb()
     {
-        if(kerberos)
             EOSKrb5.setKrb();
     }
 
