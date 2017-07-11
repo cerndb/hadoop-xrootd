@@ -238,7 +238,8 @@ public class EOSKrb5
 	Token<? extends TokenIdentifier> t = new Token<Krb5TokenIdentifier>(bos.toByteArray(), krb5cc, new Text("krb5"), new Text("Cerberus service"));
 	if (EOS_debug) try { 
 	    t.renew(new Configuration());
-	} catch (IOException|InterruptedException e) {
+	//} catch (IOException|InterruptedException e) {
+	} catch (Exception e) {
 	    System.out.println("setKrbToken failed to renew " + t.toString() + ": " + e);
 	}
 
