@@ -61,6 +61,8 @@ public class EOSKrb5
 
       private static String tokenKind = "krb5";
 
+      private static int executor = 0;
+
 
 
 
@@ -72,7 +74,7 @@ public class EOSKrb5
 	int hadKrbTGT = hasKrbTGT, hadKrbToken = hasKrbToken;
 	if (hasKrbToken < 0 && hasKrbTGT < 0) checkToken();	    // check for token if still initial state
 
-	if (hasKrbToken > 0) {			// we're most likely a M/R task or Spark executor
+	if (hasKrbToken > 0 && executor==1) {			// we're most likely a M/R task or Spark executor
 	    if (hasKrbTGT > -10) {
 		try {
 		    krb5ccname = setKrbTGT();
@@ -82,13 +84,24 @@ public class EOSKrb5
 		    hasKrbTGT -= 1;
 		}
 	    }
-	} else if (hasKrbTGT != 0) {		// we either have a Krb TGT or don't know yet
+	} else if (hasKrbTGT != 0 && executor==0) {		// we either have a Krb TGT or don't know yet
 	    try {
 		setKrbToken();
 	    } catch(IOException | KrbException e) {
 		System.out.println("setKrbToken: " + e.getMessage());
 		e.printStackTrace();
 	    }
+	}
+	else if (executor==1)
+	{
+		 try {
+                    krb5ccname = setKrbTGT();
+                } catch(IOException | KrbException e) {
+                    System.out.println("setKrbTGT: " + e.getMessage());
+                    e.printStackTrace();
+		 hasKrbTGT -= 1;
+		}
+
 	}
 
 	if (EOS_debug) {
@@ -147,13 +160,27 @@ public class EOSKrb5
         }
 	boolean found = false;
 
+	int i=0;
+
 	for (Token<? extends TokenIdentifier> t : ugi.getTokens()) {
 	    if (EOS_debug) System.out.println("checkToken: found token " + t.getKind().toString());
-	    found = t.getKind().toString().equals(tokenKind);
-	    if (found) break;
+	    if (t.getKind().toString().equals(tokenKind))
+		found=true;
+	    if (t.getKind().toString().equals("HDFS_DELEGATION_TOKEN"))
+		executor=1;
+	    i++;
+	   
+//	    if (found) break;
 	}
+	 if (EOS_debug) System.out.println("Total tokens found: " + i);
+
 
 	if (found) hasKrbToken = 1;
+
+	if (EOS_debug) System.out.println("Executor: " + executor);
+
+	
+
 	/* ?? else hasKrbToken = -1;	/* force re-check later */
 
 	/* either no Krb token, or called too early? Leave it at current (limbo) state */
