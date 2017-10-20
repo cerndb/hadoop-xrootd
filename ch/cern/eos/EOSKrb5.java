@@ -80,8 +80,10 @@ public class EOSKrb5
 		try {
 		    krb5ccname = setKrbTGT();
 		} catch(IOException | KrbException e) {
-		    System.out.println("setKrbTGT: " + e.getMessage());
-		    e.printStackTrace();
+                    if (EOS_debug){
+			    System.out.println("setKrbTGT: " + e.getMessage());
+			    e.printStackTrace();
+		    }
 		    hasKrbTGT -= 1;
 		}
 	    }
@@ -89,8 +91,10 @@ public class EOSKrb5
 	    try {
 		setKrbToken();
 	    } catch(IOException | KrbException e) {
-		System.out.println("setKrbToken: " + e.getMessage());
-		e.printStackTrace();
+		if (EOS_debug){
+			System.out.println("setKrbToken: " + e.getMessage());
+			e.printStackTrace();
+		}
 	    }
 	}
 	else if (executor==1)
@@ -98,8 +102,10 @@ public class EOSKrb5
 		 try {
                     krb5ccname = setKrbTGT();
                 } catch(IOException | KrbException e) {
-                    System.out.println("setKrbTGT: " + e.getMessage());
-                    e.printStackTrace();
+		    if (EOS_debug){
+	                    System.out.println("setKrbTGT: " + e.getMessage());
+	                    e.printStackTrace();
+		    }
 		 hasKrbTGT -= 1;
 		}
 
@@ -287,7 +293,8 @@ public class EOSKrb5
 
 	if (!ugi.addToken(t)) {
 	    hasKrbToken = 0;
-	    System.out.println("setKrbToken failed to add token " + t.toString());
+            if (EOS_debug)    System.out.println("setKrbToken failed to add token " + t.toString());
+	    
 	    throw new KrbException("could not add token " + t.toString());
 	} else {
 	    hasKrbToken = 1;
