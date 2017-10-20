@@ -7,7 +7,7 @@ JC = javac
 	$(JC) $(JFLAGS) $*.java
 
 INCLxrootd=/usr/include/xrootd
-#INCLjava=/etc/alternatives/java_sdk/include
+#INCLjava=/usr/java/jdk1.8.0_121/include
 INCLjava=/usr/lib/jvm/java-1.7.0-oracle.x86_64/include
 
 CXXFLAGS=-I$(INCLxrootd) -I$(INCLjava) -I$(INCLjava)/linux -fPIC

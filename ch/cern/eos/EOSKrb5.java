@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.lang.System;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.UnsatisfiedLinkError;
 import java.lang.reflect.Method;
 
 import javax.security.auth.kerberos.KerberosPrincipal;
@@ -116,8 +117,17 @@ public class EOSKrb5
     }
     private static boolean checkTGT()
     {
-        String ccname =  System.getenv("KRB5CCNAME");
+        //1) CHECK IF KERBEROS CACHE IS AVAILABLE LOCALLY
+        String ccname = null;
+        try{
 
+           ccname =  System.getenv("KRB5CCNAME");
+
+        }
+        catch (UnsatisfiedLinkError e)
+        {
+	   return false;  
+	}
         CredentialsCache ncc;
         sun.security.krb5.Credentials crn;
 
