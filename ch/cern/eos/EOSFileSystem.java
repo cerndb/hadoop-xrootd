@@ -150,6 +150,7 @@ public class EOSFileSystem extends FileSystem {
     public static void initLib() throws IOException {
 	if (System.getenv("EOS_debug") != null) {
 	    EOS_debug = true;
+	    EOSKrb5.setDebug(EOS_debug);
 	}
 	if (libLoaded) return;
 
