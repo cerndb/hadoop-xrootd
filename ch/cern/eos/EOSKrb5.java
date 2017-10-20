@@ -55,7 +55,7 @@ public class EOSKrb5
       public static String krb5ccname="";
       public static int hasKrbToken = -1;
       public static int hasKrbTGT = -1;
-      public static boolean EOS_debug=true;
+      public static boolean EOS_debug=false;
 
       private static UserGroupInformation ugi;
 
@@ -110,7 +110,10 @@ public class EOSKrb5
 	return krb5ccname;
     }
 
-    
+    public static void setDebug(boolean debug)
+    {
+        EOS_debug = debug;
+    }
     private static boolean checkTGT()
     {
         String ccname =  System.getenv("KRB5CCNAME");
