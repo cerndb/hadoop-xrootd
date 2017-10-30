@@ -41,233 +41,270 @@ import org.apache.hadoop.io.Text;
 
 import org.apache.hadoop.util.Progressable;
 
-
-//import ch.cern.eos.EOSInputStream;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class EOSFileSystem extends FileSystem {
-    private long nHandle = 0;
-    private static boolean libLoaded = false;
-    private native long initFileSystem(String url);
-    private native FileStatus getFileStatusS(long nHandle, String fn, Path p);
-    private native FileStatus[] listFileStatusS(long nHandle, String fn, Path p);
-    private native long Mv(long nHandle, String src, String dest);
-    private native long Rm(long nHandle, String fn);
-    private native long MkDir(long nHandle, String fn, short mode);
-    private native long  RmDir(long nHandle, String fn);
-    private native static void setcc(String ccname);
-    public native String getErrText(long errcode);
+	private long nHandle = 0;
+	private static boolean libLoaded = false;
 
-    private static final Log LOG = LogFactory.getLog(EOSFileSystem.class);
-    private URI uri;
+	private native long initFileSystem(String url);
 
-    public static boolean EOS_debug = false;
-    public static int buffer_size = 10*1024*1024;
+	private native FileStatus getFileStatusS(long nHandle, String fn, Path p);
 
-    public boolean kerberos = true;
+	private native FileStatus[] listFileStatusS(long nHandle, String fn, Path p);
 
+	private native long Mv(long nHandle, String src, String dest);
 
-    public EOSFileSystem() {
-    }
+	private native long Rm(long nHandle, String fn);
 
-    public URI toUri(Path p) throws IOException {
-	try {
-	    if (p.getName().indexOf('?') < 0)
-		return p.toUri();
-	    URI u = new URI(p.toString());	    // need to re-parse otherwise '?query' becomes part of filename
-	    if (EOS_debug) System.out.println("EOSFileSystem.toUri (Scheme,Authority,Path,Query): " + u.getScheme() + "," + u.getAuthority() + "," + u.getPath() + "," + u.getQuery());
-	    return u;
-	} catch (URISyntaxException e) {
-	    if (EOS_debug) e.printStackTrace();
-	    throw new IOException("Invalid URI Syntax");
-	}
-    }
+	private native long MkDir(long nHandle, String fn, short mode);
 
-    public int FileStatus(long length, boolean isdir, int block_replication,
-	                         long blocksize, long modification_time, Path path) { int xx=42; return xx;}
+	private native long RmDir(long nHandle, String fn);
 
-    public FSDataOutputStream append(Path f, int bufferSize, Progressable progress) {
-	throw new IllegalArgumentException("append");
-    }
+	private native static void setcc(String ccname);
 
-    public FSDataOutputStream create(Path f, FsPermission permission, boolean overwrite, int bufferSize, short replication, long blockSize, Progressable progress) throws IOException {
-	if (nHandle == 0) initHandle();
-	URI u = toUri(f);
-	String filespec = uri.getScheme() + "://" +  uri.getAuthority() + "/" + u.getPath();
-	// String filespec = u.getPath();
-	if (u.getQuery() != null) filespec += "?" + u.getQuery();
+	public native String getErrText(long errcode);
 
-	if (EOS_debug) {
-	    System.out.println("EOSfs create " + u.getScheme() + "://" + u.getAuthority() + u.getPath() + " --> " + filespec);
-	}
-	return new FSDataOutputStream(new EOSOutputStream(filespec, permission, overwrite), null);
-    }
+	private static final Log LOG = LogFactory.getLog(EOSFileSystem.class);
+	private URI uri;
 
-    public boolean delete(Path p, boolean recursive) throws IOException {
-	if (nHandle == 0) initHandle();
+	public static int buffer_size = 10 * 1024 * 1024;
+	private static final String JAVA_LIB_PATH = "java.library.path";
+	private static final String HADOOP_NATIVE_PATH = "/usr/lib/hadoop/lib/native";
+
+	public boolean kerberos = true;
+	private static EOSDebugLogger eosDebugLogger;
 	
-	long status = 0;
-	String filespec = toUri(p).getPath();
+	public EOSFileSystem() {	
+	}
 
-	FileStatus std = getFileStatusS(nHandle, filespec, p);
-
-	if (std.isDirectory()) {
-	    if (recursive) {
-		if (EOS_debug) System.out.println("EOSFileSystem.delete recursive " + filespec);
-		FileStatus st[] = listStatus(p);
-		for (FileStatus s: st) {
-		    if (s.isDirectory()) {
-			if (!delete(s.getPath(), recursive)) break;
-		    } else { 
-			status = Rm(nHandle, s.getPath().toUri().getPath());
-			if (EOS_debug) System.out.println("EOSFileSystem.delete " + s.getPath().toString() + " status = " + status);
-			if (status != 0) break;
-		    }
+	public URI toUri(Path p) throws IOException {
+		try {
+			// if it doesn't have any parameters, return as is
+			if (p.getName().indexOf('?') < 0) {
+				return p.toUri();
+			}
+			
+			// need to re-parse otherwise '?query' becomes part of filename
+			URI u = new URI(p.toString()); 
+			eosDebugLogger.print("EOSFileSystem.toUri (Scheme,Authority,Path,Query): " + u.getScheme() + ","
+						+ u.getAuthority() + "," + u.getPath() + "," + u.getQuery());
+			return u;
+		} catch (URISyntaxException e) {
+			eosDebugLogger.printStackTrace(e);
+			throw new IOException("Invalid URI Syntax");
 		}
-	    }
-	    if (status == 0) {
-		status = RmDir(nHandle, filespec);
-		if (EOS_debug) System.out.println("EOSFileSystem.delete RmDir " + filespec + " status = " + status);
-	    }
-	} else {
-	    status = Rm(nHandle, filespec);
-	    if (EOS_debug) System.out.println("EOSFileSystem.delete " + filespec + " status = " + status);
-	}
-	if (status != 0) throw new IOException("Cannot delete " + p.toString() + ", status = " + status);
-
-	return status == 0;
-    }
-
-    public static void initLib() throws IOException {
-	if (System.getenv("EOS_debug") != null) {
-	    EOS_debug = true;
-	}
-	if (libLoaded) return;
-
-	String jlp = System.getProperty("java.library.path");
-	if (!jlp.contains("/usr/lib/hadoop/lib/native")) {
-	    System.setProperty("java.library.path", "/usr/lib/hadoop/lib/native:" + jlp);
-	    if(EOS_debug) System.out.println("EOSfs.initlib: using java.library.path: " + System.getProperty("java.library.path"));
-	    //found by googling... not that I understood it...
-	    //set sys_paths to null so that java.library.path will be reevaluated next time it is needed
-	    try {
-		final Field sysPathsField = ClassLoader.class.getDeclaredField("sys_paths");
-		sysPathsField.setAccessible(true);
-		sysPathsField.set(null, null);
-	    } catch (Exception e) {
-		System.out.println("Could not reset java.library.path: " + e.getMessage());
-		e.printStackTrace();
-	    }
 	}
 
-	try {
-	    System.loadLibrary("jXrdCl");
-	} catch (UnsatisfiedLinkError e) {
-	    e.printStackTrace();
-	    System.out.println("failed to load jXrdCl, java.library.path=" + jlp + ", 'root' scheme disabled");		/* very likely only says "/usr/lib/hadoop/lib/native" */
-	    throw new IOException();
+	private String convertURIToString(URI u) {
+		String filespec = u.getPath();
+		if (u.getQuery() != null) {
+			filespec += "?" + u.getQuery();
+		}
+		return filespec;
 	}
 
-    }
-
-
-    private void initHandle() throws IOException {
-	if (nHandle != 0) return;
-	initLib();
-
-	String fsStr = uri.getScheme() + "://" + uri.getAuthority();
-	nHandle = initFileSystem(uri.getScheme() + "://" + uri.getAuthority());
-	if (EOS_debug) System.out.println("initFileSystem(" + fsStr + ") = " + nHandle);
-
-        if(kerberos)
- 	   EOSKrb5.setKrb();
-    }
-   
-
-
-
-    public void initialize(URI uri, Configuration conf) throws IOException {
-	setConf(conf);
-
-	// System.out.println("EOS initialize: EOS_debug " + EOS_debug + " uri scheme " + uri.getScheme() + " authority " + uri.getAuthority() + " path " + uri.getPath() + " query " + uri.getQuery());
-
-	this.uri = uri;
-
-        initLib();
-
-        if(kerberos)
-	    setcc(EOSKrb5.setKrb());
-    }
-
-    public String getScheme() {
-	return "root";
-    }
-
-    public static URI getDefaultURI(Configuration conf) {
-	return URI.create("root://");
-    }
-
-    public FSDataInputStream open(Path path, int bufSize) throws IOException {
-	if (nHandle == 0) initHandle();
-	URI u = toUri(path);
-	String filespec = uri.getScheme() + "://" +  uri.getAuthority() + "/" + u.getPath();
-	// String filespec = u.getPath();
-	if (EOS_debug) {
-	    System.out.println("EOSfs open " + u.getScheme() + "://" + u.getAuthority() + u.getPath() + " --> " + filespec);
-	}
-	return new FSDataInputStream(new BufferedFSInputStream (new EOSInputStream(filespec),buffer_size));
-    }
-
-
-    public FileStatus getFileStatus(Path p) throws IOException {
-	if (nHandle == 0) initHandle();
-
-	FileStatus st = getFileStatusS(nHandle, toUri(p).getPath(), p);
-	if (st == null) {
-	    throw new FileNotFoundException("File not found");
+	public int FileStatus(long length, boolean isdir, int block_replication, long blocksize, long modification_time,
+			Path path) {
+		return 42;
 	}
 
-	if (EOS_debug) System.out.println(st.toString());
+	public FSDataOutputStream append(Path f, int bufferSize, Progressable progress) {
+		throw new NotImplementedException("append");
+	}
 
-	return st;
-    }
+	public FSDataOutputStream create(Path f, FsPermission permission, boolean overwrite, int bufferSize,
+			short replication, long blockSize, Progressable progress) throws IOException {
+		initHandle();
 
-    public FileStatus[] listStatus(Path p) throws IOException {
-	if (nHandle == 0) initHandle();
-	URI u = toUri(p);
-	// String filespec = uri.getScheme() + "://" +  uri.getAuthority() + "/" + u.getPath();
-	String filespec = u.getPath();
-	if (u.getQuery() != null) filespec += "?" + u.getQuery();
-	return listFileStatusS(nHandle, filespec, p);
-    }
+		URI u = toUri(f);
+		String filespec = u.getScheme() + "://" + u.getAuthority() + "/" + u.getPath();
+		if (u.getQuery() != null) {
+			filespec += "?" + u.getQuery();
+		}
+		
+		eosDebugLogger.print("EOSfs create " + u.getScheme() + "://" + u.getAuthority() + u.getPath() + " --> " + filespec);
+		
+		return new FSDataOutputStream(new EOSOutputStream(filespec, permission, overwrite), null);
+	}
 
-    public boolean mkdirs(Path p, FsPermission permission) throws IOException {
-	if (nHandle == 0) initHandle();
-	URI u = toUri(p);
-	// String filespec = uri.getScheme() + "://" +  uri.getAuthority() + "/" + u.getPath();
-	String filespec = u.getPath();
-	if (u.getQuery() != null) 
-	    filespec += "?" + u.getQuery();
-	long st = MkDir(nHandle, filespec, permission.toShort());
-	return st == 0;
-    }
+	public boolean delete(Path p, boolean recursive) throws IOException {
+		initHandle();
 
-    public URI getUri() {
-	return uri;
-    }
+		long status = 0;
+		String filespec = toUri(p).getPath();
 
-    public Path getWorkingDirectory() {
-	return new Path(uri);
-    }
+		FileStatus std = getFileStatusS(nHandle, filespec, p);
 
-    public void setWorkingDirectory(Path f) {
-	throw new IllegalArgumentException("setWorkingDirectory");
-    }
+		if (std.isDirectory()) {
+			if (recursive) {
+				status = this.deleteRecursiveDirectory(p, status);
+			}
 
-    public boolean rename(Path src, Path dst) throws IOException {
-	if (nHandle == 0) initHandle();
-	long st = Mv(nHandle, toUri(src).getPath(), toUri(dst).getPath());
-	return st == 0;
-    };
+			if (status == 0) {
+				status = RmDir(nHandle, filespec);
+				eosDebugLogger.print("EOSFileSystem.delete RmDir " + filespec + " status = " + status);
+			}
+		} else {
+			status = Rm(nHandle, filespec);
+			eosDebugLogger.print("EOSFileSystem.delete " + filespec + " status = " + status);
+		}
+		if (status != 0) {
+			throw new IOException("Cannot delete " + p.toString() + ", status = " + status);
+		}
 
+		return status == 0;
+	}
+
+	private long deleteRecursiveDirectory(Path p, long status) {
+		eosDebugLogger.print("EOSFileSystem.delete recursive " + filespec);
+		FileStatus st[] = listStatus(p);
+
+		for (FileStatus s : st) {
+			if (s.isDirectory()) {
+				if (!delete(s.getPath(), /*recursive*/true)) {
+					break;
+				}
+			} 
+			else {
+				status = Rm(nHandle, s.getPath().toUri().getPath());
+				eosDebugLogger.print("EOSFileSystem.delete " + s.getPath().toString() + " status = " + status);
+				if (status != 0) {
+					break;
+				}
+			}
+		}
+		return status;
+	}
+
+	public static void initLib() throws IOException {
+		if (libLoaded) {
+			// lib is already loaded
+			return;
+		}
+
+		eosDebugLogger = new EOSDebugLogger(System.getenv("EOS_debug") != null);	
+		initHadoopNative();
+		initJXrdCl();
+	}
+
+	private static void initJXrdCl() {
+		try {
+			System.loadLibrary("jXrdCl");
+		} catch (UnsatisfiedLinkError e) {
+			e.printStackTrace();
+			System.out.println("failed to load jXrdCl, java.library.path=" + jlp
+					+ ", 'root' scheme disabled"); /* very likely only says "/usr/lib/hadoop/lib/native" */
+			throw new IOException();
+		}
+	}
+
+	private static void initHadoopNative() {
+		String jlp = System.getProperty(JAVA_LIB_PATH);
+		if (!jlp.contains(HADOOP_NATIVE_PATH)) {
+			System.setProperty(JAVA_LIB_PATH, HADOOP_NATIVE_PATH + ":" + jlp);
+			eosDebugLogger.println("EOSfs.initlib: using java.library.path: " + System.getProperty("java.library.path"));
+
+			// Setting sys_paths to null so that java.library.path will be reevaluated next time it is needed
+			try {
+				final Field sysPathsField = ClassLoader.class.getDeclaredField("sys_paths");
+				sysPathsField.setAccessible(true);
+				sysPathsField.set(null, null);
+			} catch (Exception e) {
+				System.out.println("Could not reset java.library.path: " + e.getMessage());
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private void initHandle() throws IOException {
+		if (nHandle != 0) {
+			// log error, this part should never be reached
+			return;
+		}
+
+		initLib();
+
+		String fileSystemURI = this.uri.getScheme() + "://" + this.uri.getAuthority();
+		this.nHandle = initFileSystem(fileSystemURI);
+		eosDebugLogger.print("initFileSystem(" + fileSystemURI + ") = " + nHandle);
+
+		if (kerberos)
+			EOSKrb5.setKrb();
+	}
+
+	public void initialize(URI uri, Configuration conf) throws IOException {
+		setConf(conf);
+		// System.out.println("EOS initialize: EOS_debug " + EOS_debug + " uri scheme " + uri.getScheme() + " authority " + uri.getAuthority() + " path " + uri.getPath() + " query " + uri.getQuery());
+
+		this.uri = uri;
+		initLib();
+
+		if (kerberos)
+			setcc(EOSKrb5.setKrb());
+	}
+
+	public String getScheme() {
+		return "root";
+	}
+
+	public static URI getDefaultURI(Configuration conf) {
+		return URI.create("root://");
+	}
+
+	public FSDataInputStream open(Path path, int bufSize) throws IOException {
+		initHandle();
+		URI u = toUri(path);
+		String filespec = u.getScheme() + "://" + u.getAuthority() + "/" + u.getPath();
+
+		eosDebugLogger.print("EOSfs open " + fileSpec + " --> " + filespec);
+		return new FSDataInputStream(new BufferedFSInputStream(new EOSInputStream(filespec), buffer_size));
+	}
+
+	public FileStatus getFileStatus(Path p) throws IOException {
+		initHandle();
+
+		FileStatus st = getFileStatusS(nHandle, toUri(p).getPath(), p);
+		if (st == null) {
+			throw new FileNotFoundException("File not found");
+		}
+		else {
+			eosDebugLogger.print(st.toString());
+		}
+
+		return st;
+	}
+
+	public FileStatus[] listStatus(Path p) throws IOException {
+		initHandle();
+		String fileSpec = convertURIToString(toUri(p));
+		return listFileStatusS(nHandle, filespec, p);
+	}
+
+	public boolean mkdirs(Path p, FsPermission permission) throws IOException {
+		initHandle();
+
+		String fileSpec = convertURIToString(toUri(p));
+		long status = MkDir(nHandle, filespec, permission.toShort());
+		return status == 0;
+	}
+
+	public URI getUri() {
+		return uri;
+	}
+
+	public Path getWorkingDirectory() {
+		return new Path(this.uri);
+	}
+
+	public void setWorkingDirectory(Path f) {
+		throw new NotImplementedException("setWorkingDirectory");
+	}
+
+	public boolean rename(Path src, Path dst) throws IOException {
+		initHandle();
+
+		long status = Mv(nHandle, toUri(src).getPath(), toUri(dst).getPath());
+		return status == 0;
+	};
 };
-

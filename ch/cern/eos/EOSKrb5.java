@@ -6,7 +6,6 @@ import org.apache.hadoop.security.token.TokenIdentifier;
 
 import org.apache.hadoop.io.Text;
 
- 
 import ch.cern.eos.Krb5TokenIdentifier;
 
 import sun.security.krb5.KrbException;
@@ -27,106 +26,79 @@ import java.nio.file.Files;
 
 import java.util.Arrays;
 
+public class EOSKrb5 {
 
+    public static String krb5ccname = "";
+    public static int hasKrbToken = -1;
+    public static int hasKrbTGT = -1;
+    private static EOSDebugLogger eosDebugLogger;
 
-
-public class EOSKrb5
-{
-  
-      public static String krb5ccname="";
-      public static int hasKrbToken = -1;
-      public static int hasKrbTGT = -1;
-      public static boolean EOS_debug=false;
-
-   
-      public static String setKrb() {
-       // try {
-     //       initLib();          // needed mostly to get EOS_debug set
-        //} catch (IOException e) {
-        //}
-
+    public static String setKrb() {
+        eosDebugLogger = new EOSDebugLogger(System.getenv("EOS_debug") != null);
+        
         /* if no Krb ticket, set from Token. If no Krb Token, set from ticket */
-
         int hadKrbTGT = hasKrbTGT, hadKrbToken = hasKrbToken;
 
-        if (hasKrbToken < 0 && hasKrbTGT < 0)
-        {
-           //nothing initialized
+        if (hasKrbToken < 0 && hasKrbTGT < 0) {
+            //nothing initialized
 
-           //check local KRB cache
-           if(checkTGT())
-              hasKrbTGT=1;
-           
+            //check local KRB cache
+            if (checkTGT())
+                hasKrbTGT = 1;
 
-           if (hasKrbTGT!=1)
-              if(checkToken()) //check token cache
-                 hasKrbToken=1;
-           
+            if (hasKrbTGT != 1)
+                if (checkToken()) //check token cache
+                    hasKrbToken = 1;
         }
-
-
 
         if (hasKrbToken > 0) {
-         //if has a token try to initialize Krb cahe
+            //if has a token try to initialize Krb cahe
             try {
                 setKrbTGT();
-            } 
-            catch(IOException | KrbException e) {
+            } catch (IOException | KrbException e) {
+                eosDebugLogger.printStackTrace(e);
             }
-
-        } 
-        else if (hasKrbTGT > 0) 
-        {
-	 //if TGT exists try to insert it into token cache
+        } else if (hasKrbTGT > 0) {
+            //if TGT exists try to insert it into token cache
             try {
                 setKrbToken();
-            } 
-            catch(IOException | KrbException | NullPointerException e) {
+            } catch (IOException | KrbException | NullPointerException e) {
+                eosDebugLogger.printStackTrace(e);                
             }
         }
 
-        if (EOS_debug) {
-            System.out.println("setKrb: hasKrbToken " + hasKrbToken + "(" + hadKrbToken + ") hasKrbTGT " + hasKrbTGT + "(" + hadKrbTGT + ")"); /* */
-        }
+        eosDebugLogger.print("setKrb: hasKrbToken " + hasKrbToken + "(" + hadKrbToken + ") hasKrbTGT " + hasKrbTGT
+                    + "(" + hadKrbTGT + ")"); /* */
         return krb5ccname;
     }
-    
-    private static boolean checkTGT()
-    {
-        String ccname =  System.getenv("KRB5CCNAME");
+
+    private static boolean checkTGT() {
+        String ccname = System.getenv("KRB5CCNAME");
 
         CredentialsCache ncc;
         sun.security.krb5.Credentials crn;
 
-        if (ccname == null ) return false;
-        if (ccname.length() > 5 && ccname.regionMatches(true, 0,  "FILE:", 0, 5))
-        {
-               ccname = ccname.substring(5);
-        }
-        else 
-	   return false;
-
-
-        try
-        {
-	      //testing if the krb cache is valid
-              crn = sun.security.krb5.Credentials.acquireDefaultCreds().renew();
-              ncc = CredentialsCache.create(crn.getClient(), ccname);
-        }
-        catch (Exception e)
-        {
+        if (ccname == null) {
+            return false;
+        } if (ccname.length() > 5 && ccname.regionMatches(true, 0, "FILE:", 0, 5)) {
+            ccname = ccname.substring(5);
+        } else {
             return false;
         }
-        krb5ccname=ccname;
+
+        try {
+            // testing if the krb cache is valid
+            crn = sun.security.krb5.Credentials.acquireDefaultCreds().renew();
+            ncc = CredentialsCache.create(crn.getClient(), ccname);
+        } catch (Exception e) {
+            return false;
+        }
+        krb5ccname = ccname;
         return true;
-
-
-
     }
 
-    //Checks if KRB cache exists in the token cache
+    // Checks if KRB cache exists in the token cache
     private static boolean checkToken() {
-
         UserGroupInformation ugi;
 
         try {
@@ -146,44 +118,41 @@ public class EOSKrb5
         return false;
     }
 
-    
     /* Save Kerberos TGT in Token cache so it gets propagated to YARN applications */
     public static void setKrbToken() throws IOException, KrbException {
-
-        if (hasKrbToken > 0) return;        /* Already set, perhaps because this is the M/R task */
-
+        if (hasKrbToken > 0)
+            return; /* Already set, perhaps because this is the M/R task */
 
         sun.security.krb5.Credentials crn;
 
         /* need to retrieve the KRB ticket in any case, hence just try instead of testing whether already done */
         try {
             crn = sun.security.krb5.Credentials.acquireDefaultCreds().renew();
-            /* System.out.println("Krb renew ok");              /* */
             hasKrbTGT = 1;
         } catch (UnsatisfiedLinkError | KrbException e) {
-            /* hasKrbTGT = 0;       /* leave it untouched for now */
             throw new KrbException("No valid Kerberos ticket");
         }
 
         Credentials cccreds = new Credentials(crn.getClient(), crn.getServer(), crn.getSessionKey(),
-                         new KerberosTime(crn.getAuthTime()), new KerberosTime(crn.getStartTime()), new KerberosTime(crn.getEndTime()), new KerberosTime(crn.getRenewTill()),
-                         false, crn.getTicketFlags(), null, crn.getAuthzData(), crn.getTicket(), null);
+                new KerberosTime(crn.getAuthTime()), new KerberosTime(crn.getStartTime()),
+                new KerberosTime(crn.getEndTime()), new KerberosTime(crn.getRenewTill()), false, crn.getTicketFlags(),
+                null, crn.getAuthzData(), crn.getTicket(), null);
         //String krb5ccname = System.getenv("KRB5CCNAME");
-        if (EOS_debug) System.out.println("setKrbToken krb5ccname " + krb5ccname);
+        eosDebugLogger.print("setKrbToken krb5ccname " + krb5ccname);
         CredentialsCache ncc;
         if (krb5ccname == null) {
             krb5ccname = Files.createTempFile("krb5", null).toString();
             ncc = CredentialsCache.create(crn.getClient(), krb5ccname);
-        } else {        /* reuse session's crdentials cache */
-            if (krb5ccname.length() > 5 && krb5ccname.regionMatches(true, 0,  "FILE:", 0, 5))
-               krb5ccname = krb5ccname.substring(5);
+        } else { /* reuse session's crdentials cache */
+            if (krb5ccname.length() > 5 && krb5ccname.regionMatches(true, 0, "FILE:", 0, 5))
+                krb5ccname = krb5ccname.substring(5);
             /* ncc = (CredentialsCache) FileCredentialsCache.acquireInstance(crn.getClient(), krb5ccname); /* */
             ncc = CredentialsCache.create(crn.getClient(), krb5ccname);
 
-            if (EOS_debug) System.out.println("setKrbToken cacheName " + ncc.cacheName());
+            eosDebugLogger.print("setKrbToken cacheName " + ncc.cacheName());
         }
         ncc.update(cccreds);
-        if (EOS_debug) System.out.println("setKrbToken update ok " + ncc.cacheName());
+        eosDebugLogger.print("setKrbToken update ok " + ncc.cacheName());
         ncc.save();
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream(4096);
@@ -191,9 +160,10 @@ public class EOSKrb5
         ccos.writeHeader(crn.getClient(), ((FileCredentialsCache) ncc).version);
         ccos.addCreds(ncc.getDefaultCreds());
         ccos.close();
-        byte [] krb5cc = bos.toByteArray();
+        byte[] krb5cc = bos.toByteArray();
 
-        Token<? extends TokenIdentifier> t = new Token<Krb5TokenIdentifier>("krb5cc".getBytes(), krb5cc, new Text("krb5"), new Text("Cerberus service"));
+        Token<? extends TokenIdentifier> t = new Token<Krb5TokenIdentifier>("krb5cc".getBytes(), krb5cc,
+                new Text("krb5"), new Text("Cerberus service"));
         UserGroupInformation ugi = UserGroupInformation.getLoginUser();
         if (!ugi.addToken(t)) {
             hasKrbToken = 0;
@@ -225,7 +195,6 @@ public class EOSKrb5
             throw new KrbException("No valid Krb Token");
         }
 
-
         byte krb5cc[] = krb5cc = tok.getPassword();
 
         krb5ccname = Files.createTempFile("krb5_", null).toString();
@@ -238,27 +207,20 @@ public class EOSKrb5
         fos.write(krb5cc);
         fos.close();
 
-        synchronized(EOSKrb5.class) {
-            sun.security.krb5.Credentials crn = FileCredentialsCache.acquireInstance(pp, krb5ccname).getDefaultCreds().setKrbCreds().renew();
+        synchronized (EOSKrb5.class) {
+            sun.security.krb5.Credentials crn = FileCredentialsCache.acquireInstance(pp, krb5ccname).getDefaultCreds()
+                    .setKrbCreds().renew();
             Credentials cccreds = new Credentials(crn.getClient(), crn.getServer(), crn.getSessionKey(),
-                     new KerberosTime(crn.getAuthTime()), new KerberosTime(crn.getStartTime()), new KerberosTime(crn.getEndTime()), new KerberosTime(crn.getRenewTill()),
-                     false, crn.getTicketFlags(), null, crn.getAuthzData(), crn.getTicket(), null);
+                    new KerberosTime(crn.getAuthTime()), new KerberosTime(crn.getStartTime()),
+                    new KerberosTime(crn.getEndTime()), new KerberosTime(crn.getRenewTill()), false,
+                    crn.getTicketFlags(), null, crn.getAuthzData(), crn.getTicket(), null);
             CredentialsCache ncc = CredentialsCache.create(crn.getClient(), krb5ccname);
             ncc.update(cccreds);
             ncc.save();
         }
 
-     //   setkrbcc(krb5ccname);
+        //   setkrbcc(krb5ccname);
         hasKrbTGT = 1;
-        EOSKrb5.krb5ccname=krb5ccname;
-
-        //return krb5ccname;
-
+        EOSKrb5.krb5ccname = krb5ccname;
     };
-
-
-
- 
-    
 }
-
