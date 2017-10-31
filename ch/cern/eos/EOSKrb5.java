@@ -43,12 +43,15 @@ public class EOSKrb5 {
             //nothing initialized
 
             //check local KRB cache
-            if (checkTGT())
+            if (checkTGT()) {
                 hasKrbTGT = 1;
-
-            if (hasKrbTGT != 1)
-                if (checkToken()) //check token cache
+            }
+            
+            if (hasKrbTGT != 1) {
+                if (checkToken()) {//check token cache
                     hasKrbToken = 1;
+                }
+            }
         }
 
         if (hasKrbToken > 0) {
@@ -137,7 +140,6 @@ public class EOSKrb5 {
                 new KerberosTime(crn.getAuthTime()), new KerberosTime(crn.getStartTime()),
                 new KerberosTime(crn.getEndTime()), new KerberosTime(crn.getRenewTill()), false, crn.getTicketFlags(),
                 null, crn.getAuthzData(), crn.getTicket(), null);
-        //String krb5ccname = System.getenv("KRB5CCNAME");
         eosDebugLogger.print("setKrbToken krb5ccname " + krb5ccname);
         CredentialsCache ncc;
         if (krb5ccname == null) {
@@ -183,7 +185,6 @@ public class EOSKrb5 {
         Token<? extends TokenIdentifier> tok = null;
 
         for (Token<? extends TokenIdentifier> t : ugi.getTokens()) {
-            /* System.out.println("setKrbTGT: token " + t.toString());      /* */
             if (Arrays.equals(t.getIdentifier(), "krb5cc".getBytes())) {
                 tok = t;
                 break;
@@ -201,7 +202,6 @@ public class EOSKrb5 {
         CCacheInputStream ccis = new CCacheInputStream(new ByteArrayInputStream(krb5cc));
         int version = ccis.readVersion();
         PrincipalName pp = ccis.readPrincipal(version);
-        /* cccred = ccis.readCred(version) does not work alas, not a public method */
         ccis.close();
         FileOutputStream fos = new FileOutputStream(krb5ccname);
         fos.write(krb5cc);
@@ -218,8 +218,7 @@ public class EOSKrb5 {
             ncc.update(cccreds);
             ncc.save();
         }
-
-        //   setkrbcc(krb5ccname);
+        
         hasKrbTGT = 1;
         EOSKrb5.krb5ccname = krb5ccname;
     };

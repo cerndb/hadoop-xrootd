@@ -17,7 +17,7 @@ import ch.cern.eos.XrdClFile;
 class EOSOutputStream extends OutputStream {
 
 	private static final Log LOG = LogFactory.getLog(EOSOutputStream.class);
-	private EosDebugLogger eosDebugLogger;
+	private EOSDebugLogger eosDebugLogger;
 	private XrdClFile file;
 
 	private long pos;
@@ -34,11 +34,8 @@ class EOSOutputStream extends OutputStream {
 		 *  kXR_open_wrto=32768
 		 *  */
 
-		/*url = "root://eosuser//eos/user/t/tobbicke/TeSt";*/
-
 		int oflags = overwrite ? 2 : 8;
 
-		/*  System.out.println("EOSOutputStream constructor url = " + url);*/
 		this.eosDebugLogger = new EOSDebugLogger(System.getenv("EOS_debug") != null);
 
 		this.file = new XrdClFile();
@@ -54,9 +51,9 @@ class EOSOutputStream extends OutputStream {
 
 	public void flush() throws IOException {
 		long st = this.file.Sync();
-		if (st != 0)
+		if (st != 0) {
 			throw new IOException("flush() failed: " + st);
-
+		}
 	}
 
 	public void write(int b) throws IOException {

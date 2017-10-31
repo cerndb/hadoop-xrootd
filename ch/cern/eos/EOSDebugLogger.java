@@ -1,6 +1,6 @@
 package ch.cern.eos;
 
-class EOSDebugLogger {
+public class EOSDebugLogger {
 
     private boolean debugEnabled;
 
@@ -8,13 +8,13 @@ class EOSDebugLogger {
         this.debugEnabled = debugEnabled;
     }
 
-    public print(String e) {
+    public void print(String e) {
         if (this.debugEnabled) {
             System.out.println(e);
         }
     }
 
-    public printStackTrace(Exception e) {
+    public void printStackTrace(Exception e) {
         if (this.debugEnabled) {
             e.printStackTrace();
         }

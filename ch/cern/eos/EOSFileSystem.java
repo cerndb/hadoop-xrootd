@@ -17,8 +17,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 
-/*from java.io import ByteArrayInputStream, ByteArrayOutputStream, FileOutputStream, ObjectInputStream, ObjectOutputStream*/
-
 import java.util.Arrays;
 
 import java.lang.UnsatisfiedLinkError;
@@ -40,8 +38,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 
 import org.apache.hadoop.util.Progressable;
-
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class EOSFileSystem extends FileSystem {
 	private long nHandle = 0;
@@ -110,7 +106,7 @@ public class EOSFileSystem extends FileSystem {
 	}
 
 	public FSDataOutputStream append(Path f, int bufferSize, Progressable progress) {
-		throw new NotImplementedException("append");
+		throw new UnsupportedOperationException("append");
 	}
 
 	public FSDataOutputStream create(Path f, FsPermission permission, boolean overwrite, int bufferSize,
@@ -138,6 +134,7 @@ public class EOSFileSystem extends FileSystem {
 
 		if (std.isDirectory()) {
 			if (recursive) {
+				eosDebugLogger.print("EOSFileSystem.delete recursive " + filespec);
 				status = this.deleteRecursiveDirectory(p, status);
 			}
 
@@ -157,7 +154,6 @@ public class EOSFileSystem extends FileSystem {
 	}
 
 	private long deleteRecursiveDirectory(Path p, long status) {
-		eosDebugLogger.print("EOSFileSystem.delete recursive " + filespec);
 		FileStatus st[] = listStatus(p);
 
 		for (FileStatus s : st) {
@@ -193,8 +189,7 @@ public class EOSFileSystem extends FileSystem {
 			System.loadLibrary("jXrdCl");
 		} catch (UnsatisfiedLinkError e) {
 			e.printStackTrace();
-			System.out.println("failed to load jXrdCl, java.library.path=" + jlp
-					+ ", 'root' scheme disabled"); /* very likely only says "/usr/lib/hadoop/lib/native" */
+			System.out.println("failed to load jXrdCl");
 			throw new IOException();
 		}
 	}
@@ -203,7 +198,7 @@ public class EOSFileSystem extends FileSystem {
 		String jlp = System.getProperty(JAVA_LIB_PATH);
 		if (!jlp.contains(HADOOP_NATIVE_PATH)) {
 			System.setProperty(JAVA_LIB_PATH, HADOOP_NATIVE_PATH + ":" + jlp);
-			eosDebugLogger.println("EOSfs.initlib: using java.library.path: " + System.getProperty("java.library.path"));
+			eosDebugLogger.print("EOSfs.initlib: using java.library.path: " + System.getProperty("java.library.path"));
 
 			// Setting sys_paths to null so that java.library.path will be reevaluated next time it is needed
 			try {
@@ -219,7 +214,6 @@ public class EOSFileSystem extends FileSystem {
 
 	private void initHandle() throws IOException {
 		if (nHandle != 0) {
-			// log error, this part should never be reached
 			return;
 		}
 
@@ -229,19 +223,20 @@ public class EOSFileSystem extends FileSystem {
 		this.nHandle = initFileSystem(fileSystemURI);
 		eosDebugLogger.print("initFileSystem(" + fileSystemURI + ") = " + nHandle);
 
-		if (kerberos)
+		if (kerberos) {
 			EOSKrb5.setKrb();
+		}
 	}
 
 	public void initialize(URI uri, Configuration conf) throws IOException {
 		setConf(conf);
-		// System.out.println("EOS initialize: EOS_debug " + EOS_debug + " uri scheme " + uri.getScheme() + " authority " + uri.getAuthority() + " path " + uri.getPath() + " query " + uri.getQuery());
 
 		this.uri = uri;
 		initLib();
 
-		if (kerberos)
+		if (kerberos) {
 			setcc(EOSKrb5.setKrb());
+		}
 	}
 
 	public String getScheme() {
@@ -257,7 +252,7 @@ public class EOSFileSystem extends FileSystem {
 		URI u = toUri(path);
 		String filespec = u.getScheme() + "://" + u.getAuthority() + "/" + u.getPath();
 
-		eosDebugLogger.print("EOSfs open " + fileSpec + " --> " + filespec);
+		eosDebugLogger.print("EOSfs open " + filespec + " --> " + filespec);
 		return new FSDataInputStream(new BufferedFSInputStream(new EOSInputStream(filespec), buffer_size));
 	}
 
@@ -285,7 +280,7 @@ public class EOSFileSystem extends FileSystem {
 		initHandle();
 
 		String fileSpec = convertURIToString(toUri(p));
-		long status = MkDir(nHandle, filespec, permission.toShort());
+		long status = MkDir(nHandle, fileSpec, permission.toShort());
 		return status == 0;
 	}
 
@@ -298,7 +293,7 @@ public class EOSFileSystem extends FileSystem {
 	}
 
 	public void setWorkingDirectory(Path f) {
-		throw new NotImplementedException("setWorkingDirectory");
+		throw new UnsupportedOperationException("setWorkingDirectory");
 	}
 
 	public boolean rename(Path src, Path dst) throws IOException {

@@ -92,7 +92,7 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
     }
 
     public void readFully(long pos, byte[] buffer, int off, int len) throws IOException {
-        this.eosDebugLogger.printprintln("EOSInputStream.readFully(long pos, byte[] buffer, int off, int len) pos: " + pos);
+        this.eosDebugLogger.print("EOSInputStream.readFully(long pos, byte[] buffer, int off, int len) pos: " + pos);
         read(pos,buffer,off,len);
     }
 
@@ -101,7 +101,7 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
     }
 
     public boolean seekToNewSource(long targetPos) {
-	    throw new NotImplementedException("seekToNewSource");
+	    throw new UnsupportedOperationException("seekToNewSource");
     }
 
     public void close() throws IOException {
