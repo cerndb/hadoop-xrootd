@@ -301,5 +301,6 @@ public class EOSFileSystem extends FileSystem {
 
 		long status = Mv(nHandle, toUri(src).getPath(), toUri(dst).getPath());
 		return status == 0;
-	};
+	
+};
 };
