@@ -273,7 +273,7 @@ public class EOSFileSystem extends FileSystem {
 	public FileStatus[] listStatus(Path p) throws IOException {
 		initHandle();
 		String fileSpec = convertURIToString(toUri(p));
-		return listFileStatusS(nHandle, filespec, p);
+		return listFileStatusS(nHandle, fileSpec, p);
 	}
 
 	public boolean mkdirs(Path p, FsPermission permission) throws IOException {
