@@ -153,7 +153,7 @@ public class EOSFileSystem extends FileSystem {
 		return status == 0;
 	}
 
-	private long deleteRecursiveDirectory(Path p, long status) {
+	private long deleteRecursiveDirectory(Path p, long status) throws IOException {
 		FileStatus st[] = listStatus(p);
 
 		for (FileStatus s : st) {
@@ -184,7 +184,7 @@ public class EOSFileSystem extends FileSystem {
 		initJXrdCl();
 	}
 
-	private static void initJXrdCl() {
+	private static void initJXrdCl() throws IOException {
 		try {
 			System.loadLibrary("jXrdCl");
 		} catch (UnsatisfiedLinkError e) {
