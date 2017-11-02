@@ -149,6 +149,7 @@ public class EOSFileSystem extends FileSystem {
 				}
 			}
 		}
+		return status;
 	}
 
     public static void initLib() throws IOException {
