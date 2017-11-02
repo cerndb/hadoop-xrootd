@@ -65,9 +65,10 @@ class EOSOutputStream extends OutputStream {
 	}
 
 	public void write(byte[] b, int off, int len) throws IOException {
-		if (pos < 0)
+		if (pos < 0) {
 			throw new IOException("Stream closed");
-
+		}
+		
 		long st = file.Write(pos, b, off, len);
 		if (st != 0) {
 			throw new IOException("write " + len + " bytes error " + st);
@@ -77,21 +78,25 @@ class EOSOutputStream extends OutputStream {
 	}
 
 	public void close() throws IOException {
-		if (pos < 0)
+		if (pos < 0) {
 			return;
-
+		}
+		
 		long st = file.Close();
-		if (st != 0)
+		if (st != 0) {
 			throw new IOException("close() failed: " + st);
-
-		if (st == 0)
+		}
+		
+		if (st == 0) {
 			pos = -1;
+		}
 	}
 
 	public void write(long pos, byte[] b, int off, int len) throws IOException {
 		long st = file.Write(pos, b, off, len);
-		if (st != 0)
+		if (st != 0) {
 			throw new IOException("write failed error " + st);
+		}
 	}
 
 	public void seek(long pos) {

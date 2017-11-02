@@ -31,7 +31,9 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
         this.file = new XrdClFile();
         long status = file.Open(url, 0, 0);
         
-        if (status != 0) System.out.println("open " + url + " status=" + status);
+        if (status != 0) {
+        	System.out.println("open " + url + " status=" + status);
+        }
     }
 
     public long getPos() {
@@ -43,8 +45,12 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
         byte[] b = new byte[1];
 
         long rd = read(pos, b, 0, 1);
-        if (rd > 0) return b[0] & 0xFF;
-        if (rd == -1) return -1;
+        if (rd > 0) {
+        	return b[0] & 0xFF;
+        }
+        if (rd == -1) {
+        	return -1;
+        }
         
         throw new IOException("read returned " + rd);
     }
@@ -59,7 +65,9 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
         if (this.pos < 0) {
             this.eosDebugLogger.print("EOSInputStream.read() pos: " + this.pos);
 
-            if (this.pos == -1) throw new EOFException();
+            if (this.pos == -1) {
+            	throw new EOFException();
+            }
             return (int)this.pos;
         }
 
@@ -67,7 +75,9 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
         this.eosDebugLogger.print("EOSInputStream.read() bytes: " + rd);
         if (rd >= 0) {
             this.pos += rd;
-            if (rd > 0) return (int) rd;
+            if (rd > 0) {
+            	return (int) rd;
+            }
             this.pos = -1;
             return -1;
         }
@@ -101,14 +111,18 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
     }
 
     public boolean seekToNewSource(long targetPos) {
-	    throw new UnsupportedOperationException("seekToNewSource");
+	    throw new IllegalArgumentException("seekToNewSource");
     }
 
     public void close() throws IOException {
-        if (pos < -1) return;
+        if (pos < -1) {
+        	return;
+        }
 
         long st = file.Close();
-        if (st != 0) System.out.println("close(): " + st);
+        if (st != 0) {
+        	System.out.println("close(): " + st);
+        }
         pos = -2;
     }
 }

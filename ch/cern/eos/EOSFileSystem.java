@@ -63,7 +63,6 @@ public class EOSFileSystem extends FileSystem {
 
     public boolean kerberos = true;
 
-
     public EOSFileSystem() {
     }
 
@@ -158,7 +157,11 @@ public class EOSFileSystem extends FileSystem {
 		if (libLoaded) {
 			return;
 		}
-
+		initHadoopNative();
+		initJXrdCl();
+    }
+    
+	private static void initHadoopNative() throws IOException {
 		String jlp = System.getProperty(JAVA_LIB_PATH);
 		if (!jlp.contains(HADOOP_NATIVE_PATH)) {
 			System.setProperty(JAVA_LIB_PATH, HADOOP_NATIVE_PATH + ":" + jlp);
@@ -174,9 +177,8 @@ public class EOSFileSystem extends FileSystem {
 				e.printStackTrace();
 			}
 		}
-		initJXrdCl();
-    }
-
+	}
+	
 	private static void initJXrdCl() throws IOException {
 		try {
 			System.loadLibrary("jXrdCl");
