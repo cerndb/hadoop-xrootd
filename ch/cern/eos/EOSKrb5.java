@@ -167,8 +167,8 @@ public class EOSKrb5
             // Already set, perhaps because this is the M/R task
             return;
         }
-        PrincipalName client;
-        Credentials cccreds;
+        PrincipalName client=null;
+        Credentials cccreds=null;
 
 	    int cc_version = FileCCacheConstants.KRB5_FCC_FVNO_3;
 
@@ -189,7 +189,7 @@ public class EOSKrb5
             }
         } 
 
-        String krb5ccname;
+        String krb5ccname=null;
 
         if (cccreds == null) {
             CredentialsCache ncc = CredentialsCache.getInstance();
