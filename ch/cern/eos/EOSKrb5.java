@@ -68,7 +68,7 @@ public class EOSKrb5
                     krb5ccname = setKrbTGT();
                 } catch (IOException | KrbException e) {
                     eosDebugLogger.print("setKrbTGT: " + e.getMessage());
-                    eosDebugLogger.printStackTrace();
+                    eosDebugLogger.printStackTrace(e);
                     hasKrbTGT -= 1;
                 }
             }
@@ -78,7 +78,7 @@ public class EOSKrb5
             } 
             catch(IOException | KrbException e) {
                 eosDebugLogger.print("setKrbToken: " + e.getMessage());
-                eosDebugLogger.printStackTrace();
+                eosDebugLogger.printStackTrace(e);
             }
         }
         else if (executor==1)
@@ -88,7 +88,7 @@ public class EOSKrb5
             } 
             catch(IOException | KrbException e) {
                 eosDebugLogger.print("setKrbTGT: " + e.getMessage());
-                eosDebugLogger.printStackTrace();
+                eosDebugLogger.printStackTrace(e);
                 hasKrbTGT -= 1;
             }
         }
