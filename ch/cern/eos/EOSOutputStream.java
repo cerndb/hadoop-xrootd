@@ -16,88 +16,86 @@ import ch.cern.eos.XrdClFile;
 
 class EOSOutputStream extends OutputStream {
 
-    private static final Log LOG = LogFactory.getLog(EOSOutputStream.class);
-    private XrdClFile file;
+	private static final Log LOG = LogFactory.getLog(EOSOutputStream.class);
+	private EOSDebugLogger eosDebugLogger;
+	private XrdClFile file;
 
-    private long pos;
-    private boolean debug = false;
+	private long pos;
 
-    public EOSOutputStream(String url, FsPermission permission, boolean overwrite) {
-	/* OpenFlags:
-	 *  None     = 0 
-	 *  kXR_delete   = 2
-	 *  kXR_new      = 8
-	 *  kXR_open_read= 16
-	 *  kXR_open_updt= 32
-	 *  kXR_mkpath   = 256
-	 *  kXR_open_apnd= 512
-	 *  kXR_open_wrto=32768
-	 *  */
+	public EOSOutputStream(String url, FsPermission permission, boolean overwrite) {
+		/* OpenFlags:
+		 *  None     = 0 
+		 *  kXR_delete   = 2
+		 *  kXR_new      = 8
+		 *  kXR_open_read= 16
+		 *  kXR_open_updt= 32
+		 *  kXR_mkpath   = 256
+		 *  kXR_open_apnd= 512
+		 *  kXR_open_wrto=32768
+		 *  */
 
-	/*url = "root://eosuser//eos/user/t/tobbicke/TeSt";*/
+		int oflags = overwrite ? 2 : 8;
 
-	int oflags = overwrite ? 2 : 8;
+		this.eosDebugLogger = new EOSDebugLogger(System.getenv("EOS_debug") != null);
 
-	/*  System.out.println("EOSOutputStream constructor url = " + url);*/
-	if (System.getenv("EOS_debug") != null)
-	    debug = true;
+		this.file = new XrdClFile();
+		long status = file.Open(url, oflags, 0x0180);
+		this.eosDebugLogger.print("EOSOutputStream create " + url + " status=" + status);
 
-
-	file = new XrdClFile();
-	long status = file.Open(url, oflags, 0x0180);
-	if (debug) System.out.println("EOSOutputStream create " + url + " status=" + status);
-
-	pos = 0;
-    }
-
-    public long getPos() {
-	return pos;
-    }
-
-    public void flush() throws IOException {
-	long st = file.Sync();
-	if (st != 0) throw new IOException("flush() failed: " + st);
-
-    }
-
-    public void write(int b) throws IOException {
-	byte[] buf = new byte[1];
-	buf[0] = (byte) b;
-
-	write(0L, buf, 0, 1);
-	pos++;
-    }
-
-    public void write(byte[] b, int off, int len) throws IOException {
-	if (pos < 0) 
-	    throw new IOException("Stream closed");
-
-       	long st = file.Write(pos, b, off, len);
-	if (st != 0) {
-	    throw new IOException("write " + len + " bytes error " + st);
+		this.pos = 0;
 	}
 
-	pos += len;
-    }
+	public long getPos() {
+		return this.pos;
+	}
 
-    public void close() throws IOException {
-	if (pos < 0) return;
+	public void flush() throws IOException {
+		long st = this.file.Sync();
+		if (st != 0) {
+			throw new IOException("flush() failed: " + st);
+		}
+	}
 
-	long st = file.Close();
-	if (st != 0) throw new IOException("close() failed: " + st);
+	public void write(int b) throws IOException {
+		byte[] buf = new byte[1];
+		buf[0] = (byte) b;
 
-	if (st == 0)
-	    pos = -1;
-    }
+		write(0L, buf, 0, 1);
+		pos++;
+	}
 
-    public void write(long pos, byte[] b, int off, int len) throws IOException {
-	long st = file.Write(pos, b, off, len);
-	if (st != 0) throw new IOException("write failed error " + st);
-    }
+	public void write(byte[] b, int off, int len) throws IOException {
+		if (pos < 0)
+			throw new IOException("Stream closed");
 
+		long st = file.Write(pos, b, off, len);
+		if (st != 0) {
+			throw new IOException("write " + len + " bytes error " + st);
+		}
 
-    public void seek(long pos) {
-	this.pos = pos;
-    }
+		pos += len;
+	}
+
+	public void close() throws IOException {
+		if (pos < 0)
+			return;
+
+		long st = file.Close();
+		if (st != 0)
+			throw new IOException("close() failed: " + st);
+
+		if (st == 0)
+			pos = -1;
+	}
+
+	public void write(long pos, byte[] b, int off, int len) throws IOException {
+		long st = file.Write(pos, b, off, len);
+		if (st != 0)
+			throw new IOException("write failed error " + st);
+	}
+
+	public void seek(long pos) {
+		this.pos = pos;
+	}
 
 }
