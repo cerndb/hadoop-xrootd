@@ -53,9 +53,7 @@ public class EOSKrb5
     private static int executor = 0;
     private static EOSDebugLogger eosDebugLogger;
 
-    public synchronized static String setKrb() {
-        eosDebugLogger = new EOSDebugLogger(System.getenv("EOS_debug") != null);
-        
+    public synchronized static String setKrb() {        
         // if no Krb ticket, set from Token. If no Krb Token, set from ticket
         int hadKrbTGT = hasKrbTGT, hadKrbToken = hasKrbToken;
         if (hasKrbToken < 0 && hasKrbTGT < 0) {
@@ -69,32 +67,35 @@ public class EOSKrb5
                 } catch (IOException | KrbException e) {
                     eosDebugLogger.print("setKrbTGT: " + e.getMessage());
                     eosDebugLogger.printStackTrace(e);
-                    hasKrbTGT -= 1;
                 }
+                hasKrbTGT -= 1;                
             }
         } else if (hasKrbTGT != 0 && executor==0) {		// we either have a Krb TGT or don't know yet
             try {
                 setKrbToken();
             } 
-            catch(IOException | KrbException e) {
+            catch (IOException | KrbException e) {
                 eosDebugLogger.print("setKrbToken: " + e.getMessage());
                 eosDebugLogger.printStackTrace(e);
             }
         }
-        else if (executor==1)
-        {
+        else if (executor==1) {
             try {
                 krb5ccname = setKrbTGT();
             } 
             catch(IOException | KrbException e) {
                 eosDebugLogger.print("setKrbTGT: " + e.getMessage());
                 eosDebugLogger.printStackTrace(e);
-                hasKrbTGT -= 1;
             }
+            hasKrbTGT -= 1;            
         }
 
         eosDebugLogger.print("setKrb: hasKrbToken " + hasKrbToken + "(" + hadKrbToken + ") hasKrbTGT " + hasKrbTGT + "(" + hadKrbTGT + ")"); 
         return krb5ccname;
+    }
+
+    public static void setDebug(boolean debug) {
+        eosDebugLogger = new EOSDebugLogger(debug);
     }
 
     private static boolean checkTGT()
@@ -102,7 +103,7 @@ public class EOSKrb5
         // Check if Kerberos Cache is available locally
         String ccname = null;
         try {
-           ccname =  System.getenv("KRB5CCNAME");
+           ccname = System.getenv("KRB5CCNAME");
         }
         catch (UnsatisfiedLinkError e) {
             return false;  
@@ -114,10 +115,10 @@ public class EOSKrb5
         if (ccname == null) {
             return false;
         }
+
         if (ccname.length() > 5 && ccname.regionMatches(true, 0,  "FILE:", 0, 5)) {
             ccname = ccname.substring(5);
-        }
-        else {
+        } else {
             return false;
         }
 
@@ -138,7 +139,7 @@ public class EOSKrb5
         }
 
 	    boolean found = false;
-        int i=0;
+        int i = 0;
 
         for (Token<? extends TokenIdentifier> t : ugi.getTokens()) {
             eosDebugLogger.print("checkToken: found token " + t.getKind().toString());
@@ -147,7 +148,7 @@ public class EOSKrb5
             }
 
             if (t.getKind().toString().equals("HDFS_DELEGATION_TOKEN")) {
-                executor=1;
+                executor = 1;
             }
             i++;
         }
@@ -156,7 +157,8 @@ public class EOSKrb5
         if (found) {
             hasKrbToken = 1;
         }
-
+        eosDebugLogger.print("Executor: " + executor);
+        
         /* either no Krb token, or called too early? Leave it at current (limbo) state */
         return;
     }
@@ -263,7 +265,7 @@ public class EOSKrb5
 
     /* Recover TGT from Token cache and set up krb5 crdentials cache */
     public static String setKrbTGT() throws IOException, KrbException {
-        if (hasKrbTGT==1) {
+        if (hasKrbTGT == 1) {
             return krb5ccname;
         }
 
@@ -282,8 +284,8 @@ public class EOSKrb5
             krb5ccname = Files.createTempFile("krb5", null).toString();
             eosDebugLogger.print("created krb5ccname " + krb5ccname);
         }
-        //store the future location of TGT
-        EOSKrb5.krb5ccname=krb5ccname;
+        // store the future location of TGT
+        EOSKrb5.krb5ccname = krb5ccname;
 
         Token<? extends TokenIdentifier> tok = null;
 

@@ -75,8 +75,7 @@ public class EOSFileSystem extends FileSystem {
 			
 			// need to re-parse otherwise '?query' becomes part of filename
 			URI u = new URI(p.toString()); 
-			eosDebugLogger.print("EOSFileSystem.toUri (Scheme,Authority,Path,Query): " + u.getScheme() + ","
-						+ u.getAuthority() + "," + u.getPath() + "," + u.getQuery());
+		    eosDebugLogger.print("EOSFileSystem.toUri (Scheme,Authority,Path,Query): " + u.getScheme() + "," + u.getAuthority() + "," + u.getPath() + "," + u.getQuery());
 			return u;
 		} catch (URISyntaxException e) {
 			eosDebugLogger.printStackTrace(e);
@@ -154,7 +153,8 @@ public class EOSFileSystem extends FileSystem {
 
     public static void initLib() throws IOException {
 		eosDebugLogger = new EOSDebugLogger(System.getenv("EOS_debug") != null);	
-			
+		EOSKrb5.setDebug(eosDebugLogger.isDebugEnabled());
+		
 		if (libLoaded) {
 			return;
 		}
@@ -245,7 +245,7 @@ public class EOSFileSystem extends FileSystem {
 		URI u = toUri(path);
 		String filespec = uri.getScheme() + "://" +  uri.getAuthority() + "/" + u.getPath();
 		
-		eosDebugLogger.print("EOSfs open " + u.getScheme() + "://" + u.getAuthority() + u.getPath() + " --> " + filespec);
+		eosDebugLogger.print("EOSfs open " + fileSpec + " --> " + filespec);
 		return new FSDataInputStream(new BufferedFSInputStream (new EOSInputStream(filespec),buffer_size));
     }
 
