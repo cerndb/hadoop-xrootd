@@ -245,7 +245,7 @@ public class EOSFileSystem extends FileSystem {
 		URI u = toUri(path);
 		String filespec = uri.getScheme() + "://" +  uri.getAuthority() + "/" + u.getPath();
 		
-		eosDebugLogger.print("EOSfs open " + fileSpec + " --> " + filespec);
+		eosDebugLogger.print("EOSfs open " + filespec + " --> " + filespec);
 		return new FSDataInputStream(new BufferedFSInputStream (new EOSInputStream(filespec),buffer_size));
     }
 
