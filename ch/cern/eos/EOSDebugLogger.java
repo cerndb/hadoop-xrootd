@@ -20,6 +20,10 @@ public class EOSDebugLogger {
         }
     }
 
+    public void setDebug(boolean debugEnabled) {
+    	this.debugEnabled = debugEnabled;
+    }
+    
     public boolean isDebugEnabled() {
         return this.debugEnabled;
     }

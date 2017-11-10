@@ -95,7 +95,7 @@ public class EOSKrb5
     }
 
     public static void setDebug(boolean debug) {
-        eosDebugLogger = new EOSDebugLogger(debug);
+        eosDebugLogger.setDebug(debug);
     }
 
     private static boolean checkTGT()

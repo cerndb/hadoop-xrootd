@@ -39,10 +39,9 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenRenewer;
 
-
 public class Krb5TokenRenewer extends TokenRenewer {
     public String krb5ccname;		    /* needed by EOSFileSystem */
-	private EOSDebugLogger eosDebugLogger;
+	private EOSDebugLogger eosDebugLogger = new EOSDebugLogger(false);
 	
 	public boolean handleKind(Text kind) {
     	return Krb5TokenIdentifier.KIND_NAME.equals(kind);
@@ -54,7 +53,7 @@ public class Krb5TokenRenewer extends TokenRenewer {
 
     public long renew(Token<?> token, Configuration conf) throws IOException {
 		String prop_EOS_debug = System.getProperty("EOS_debug");
-		eosDebugLogger = new EOSDebugLogger((prop_EOS_debug != null) && (prop_EOS_debug.equals("true")));
+		eosDebugLogger.setDebug(((prop_EOS_debug != null) && (prop_EOS_debug.equals("true"))));
 		byte krb5cc[] = token.getPassword();
 		int cc_version;
 
