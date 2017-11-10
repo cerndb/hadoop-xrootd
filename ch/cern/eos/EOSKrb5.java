@@ -51,7 +51,7 @@ public class EOSKrb5
     private static String tokenKind = "krb5";
 
     private static int executor = 0;
-    private static EOSDebugLogger eosDebugLogger;
+    private static EOSDebugLogger eosDebugLogger = new EOSDebugLogger(false);
 
     public synchronized static String setKrb() {        
         // if no Krb ticket, set from Token. If no Krb Token, set from ticket
