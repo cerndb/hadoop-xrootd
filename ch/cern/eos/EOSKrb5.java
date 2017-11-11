@@ -1,3 +1,6 @@
+/* 
+ * Author: CERN IT
+ */
 package ch.cern.eos;
 
 import org.apache.hadoop.security.UserGroupInformation;
@@ -54,7 +57,8 @@ public class EOSKrb5
     private static EOSDebugLogger eosDebugLogger = new EOSDebugLogger(false);
 
     public synchronized static String setKrb() {        
-        // if no Krb ticket, set from Token. If no Krb Token, set from ticket
+        // If no Krb ticket, set from Token. 
+    	// If no Krb Token, set from ticket.
         int hadKrbTGT = hasKrbTGT, hadKrbToken = hasKrbToken;
         if (hasKrbToken < 0 && hasKrbTGT < 0) {
             checkToken();	    // check for token if still initial state
@@ -176,9 +180,9 @@ public class EOSKrb5
 
         if (ugi.hasKerberosCredentials()) {	/* set up by checkToken */
             try {
-                Method getTGT = ugi.getClass().getDeclaredMethod("getTGT");	/* , (Class<UserGroupInformation>) null); */
+                Method getTGT = ugi.getClass().getDeclaredMethod("getTGT");
                 getTGT.setAccessible(true);
-                KerberosTicket TGT = (KerberosTicket) getTGT.invoke(ugi);	/*, (Class<UserGroupInformation>) null); */
+                KerberosTicket TGT = (KerberosTicket) getTGT.invoke(ugi);
                 eosDebugLogger.print("got TGT for " + ugi);
 
                 KerberosPrincipal p = TGT.getClient();
@@ -191,8 +195,7 @@ public class EOSKrb5
             }
         } 
 
-        String krb5ccname=null;
-
+        String krb5ccname = null;
         if (cccreds == null) {
             CredentialsCache ncc = CredentialsCache.getInstance();
             if (ncc == null) {
@@ -224,7 +227,7 @@ public class EOSKrb5
                 eosDebugLogger.print("created krb5ccname " + krb5ccname);
             }
         }
-        //saving  new cache location
+        // saving  new cache location
         EOSKrb5.krb5ccname = krb5ccname;
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream(16384);
@@ -275,10 +278,9 @@ public class EOSKrb5
 	        eosDebugLogger.print("krb5ccname filename " + krb5ccname);
                 
             // if file exists we do not need to extract TGT from token
-            // TBD: this check should be improved with ticket validity check 
             if (new File(krb5ccname).isFile()) {
                 hasKrbTGT = 1;
-                return krb5ccname; //TBD: should be timely renewed
+                return krb5ccname;
             }
         } else {
             krb5ccname = Files.createTempFile("krb5", null).toString();

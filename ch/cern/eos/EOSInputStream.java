@@ -1,3 +1,6 @@
+/* 
+ * Author: CERN IT
+ */
 package ch.cern.eos;
 
 import java.io.DataInputStream;
@@ -32,7 +35,7 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
         long status = file.Open(url, 0, 0);
         
         if (status != 0) {
-        	System.out.println("open " + url + " status=" + status);
+        	eosDebugLogger.print("open " + url + " status=" + status);
         }
     }
 

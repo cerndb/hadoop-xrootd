@@ -1,7 +1,5 @@
 /*
     Wrapper class for C++ XrdClFile
-
-    JNI interface to xrootd, used for 
 */
 
 package ch.cern.eos;
@@ -19,7 +17,7 @@ public class XrdClFile {
     private native long syncFile(long handle);
     private native long closeFile(long handle);
 
-    public XrdClFile() {	/* Constructor */
+    public XrdClFile() {
         nHandle = initFile();
     }
 
@@ -50,8 +48,7 @@ public class XrdClFile {
     	return readFile(nHandle, filepos, buff, off, len);
     }
 
-
-    /* read from position filepos up to len bytes from buffer starting at offset off */
+    /* write from position filepos up to len bytes from buffer starting at offset off */
     public long Write(long filepos, byte[] buff, int off, int len) {
     	return writeFile(nHandle, filepos, buff, off, len);
     }
@@ -62,23 +59,6 @@ public class XrdClFile {
 
     public long Sync() {
     	return syncFile(nHandle);
-    }
-
-    public static void main (String[] args) throws Exception {
-		System.out.println("hello");
-	
-		XrdClFile tt = new XrdClFile();
-	
-		long status = tt.Open("root://eosuser//eos/user/t/tobbicke/TeSt", 0, 0);
-		System.out.println("main open: status="+status);
-	
-		byte buff[] = new byte[8192];
-		long len = tt.Read(0L, buff, 0, 8192);
-	
-		System.out.println("read " + len + " bytes");
-		System.out.println(new String(buff));
-	
-		tt = null;
     }
 }
 

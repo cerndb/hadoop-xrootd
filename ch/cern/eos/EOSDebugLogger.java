@@ -1,3 +1,6 @@
+/* 
+ * Author: CERN IT
+ */
 package ch.cern.eos;
 
 public class EOSDebugLogger {

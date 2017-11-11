@@ -1,3 +1,6 @@
+/* 
+ * Author: CERN IT
+ */
 package ch.cern.eos;
 
 import java.io.ByteArrayInputStream;
@@ -22,8 +25,6 @@ import java.util.Vector;
 import sun.security.krb5.*;
 import sun.security.krb5.internal.*;
 
-/*import sun.security.krb5.internal.ccache.Krb5ByteCCache;*/
-
 import sun.security.krb5.internal.ccache.CCacheInputStream;
 import sun.security.krb5.internal.ccache.CCacheOutputStream;
 import sun.security.krb5.internal.ccache.FileCredentialsCache;
@@ -40,7 +41,7 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenRenewer;
 
 public class Krb5TokenRenewer extends TokenRenewer {
-    public String krb5ccname;		    /* needed by EOSFileSystem */
+    public String krb5ccname; // needed by EOSFileSystem
 	private EOSDebugLogger eosDebugLogger = new EOSDebugLogger(false);
 	
 	public boolean handleKind(Text kind) {
@@ -117,9 +118,9 @@ public class Krb5TokenRenewer extends TokenRenewer {
 			    null);
 	
 		    CredentialsCache fcc = null;
-		    EOSFileSystem.initLib();		    /* most often a no-op */
+		    EOSFileSystem.initLib();
             krb5ccname = EOSKrb5.krb5ccname;
-            System.out.println("TokenRenewer: krb5ccname " +krb5ccname);
+            System.out.println("TokenRenewer: krb5ccname " + krb5ccname);
 	
 		    try { 
 		    	fcc = CredentialsCache.getInstance(newCreds.getClient(), krb5ccname);

@@ -1,3 +1,6 @@
+/* 
+ * Author: CERN IT
+ */
 package ch.cern.eos;
 
 import java.io.DataInput;

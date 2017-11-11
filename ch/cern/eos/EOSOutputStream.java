@@ -1,3 +1,6 @@
+/* 
+ * Author: CERN IT
+ */
 package ch.cern.eos;
 
 import java.lang.System;
@@ -19,7 +22,6 @@ class EOSOutputStream extends OutputStream {
 	private static final Log LOG = LogFactory.getLog(EOSOutputStream.class);
 	private EOSDebugLogger eosDebugLogger;
 	private XrdClFile file;
-
 	private long pos;
 
 	public EOSOutputStream(String url, FsPermission permission, boolean overwrite) {
@@ -31,8 +33,8 @@ class EOSOutputStream extends OutputStream {
 		 *  kXR_open_updt= 32
 		 *  kXR_mkpath   = 256
 		 *  kXR_open_apnd= 512
-		 *  kXR_open_wrto=32768
-		 *  */
+		 *  kXR_open_wrto= 32768
+		 */
 
 		int oflags = overwrite ? 2 : 8;
 
@@ -102,5 +104,4 @@ class EOSOutputStream extends OutputStream {
 	public void seek(long pos) {
 		this.pos = pos;
 	}
-
 }

@@ -1,5 +1,7 @@
-just use make on hadalytic to compile
-all the required libraries are already installed there
+# CERN IT Hadoop xrootd Connector
 
-anywhere else you'll need to install
+## Prerequisites
 xrootd-client, xrootd-client-libs, xrootd-client-devel
+
+## Installation
+Use "make all" command to compile
