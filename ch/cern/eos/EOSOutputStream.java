@@ -42,7 +42,7 @@ class EOSOutputStream extends OutputStream {
 
 		this.file = new XrdClFile();
 		long status = file.Open(url, oflags, 0x0180);
-		this.eosDebugLogger.print("EOSOutputStream create " + url + " status=" + status);
+		this.eosDebugLogger.printDebug("EOSOutputStream create " + url + " status=" + status);
 
 		this.pos = 0;
 	}

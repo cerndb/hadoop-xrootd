@@ -35,7 +35,7 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
         long status = file.Open(url, 0, 0);
         
         if (status != 0) {
-        	eosDebugLogger.print("open " + url + " status=" + status);
+        	eosDebugLogger.printDebug("open " + url + " status=" + status);
         }
     }
 
@@ -66,7 +66,7 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
         this.pos = pos;
 
         if (this.pos < 0) {
-            this.eosDebugLogger.print("EOSInputStream.read() pos: " + this.pos);
+            this.eosDebugLogger.printDebug("EOSInputStream.read() pos: " + this.pos);
 
             if (this.pos == -1) {
             	throw new EOFException();
@@ -75,7 +75,7 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
         }
 
         long rd = file.Read(this.pos, b, off, len);
-        this.eosDebugLogger.print("EOSInputStream.read() bytes: " + rd);
+        this.eosDebugLogger.printDebug("EOSInputStream.read() bytes: " + rd);
         if (rd >= 0) {
             this.pos += rd;
             if (rd > 0) {
@@ -93,7 +93,7 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
         int apos=0;
 
         this.pos=pos;
-        this.eosDebugLogger.print("EOSInputStream.(long pos, byte[] b) pos: " + pos);
+        this.eosDebugLogger.printDebug("EOSInputStream.(long pos, byte[] b) pos: " + pos);
         while (this.pos >= 0)
         {
             byte[] a = new byte[IO_SIZE];
@@ -101,11 +101,11 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
             System.arraycopy(a, 0, b, apos, (int)rd);
             apos += rd;
         }
-        this.eosDebugLogger.print("EOSInputStream.(long pos, byte[] b) bytes read: " + apos);
+        this.eosDebugLogger.printDebug("EOSInputStream.(long pos, byte[] b) bytes read: " + apos);
     }
 
     public void readFully(long pos, byte[] buffer, int off, int len) throws IOException {
-        this.eosDebugLogger.print("EOSInputStream.readFully(long pos, byte[] buffer, int off, int len) pos: " + pos);
+        this.eosDebugLogger.printDebug("EOSInputStream.readFully(long pos, byte[] buffer, int off, int len) pos: " + pos);
         read(pos,buffer,off,len);
     }
 
@@ -124,7 +124,7 @@ class EOSInputStream extends FSInputStream implements Seekable, PositionedReadab
 
         long st = file.Close();
         if (st != 0) {
-        	System.out.println("close(): " + st);
+        	eosDebugLogger.print("close(): " + st);
         }
         pos = -2;
     }

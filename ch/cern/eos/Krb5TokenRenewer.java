@@ -58,7 +58,7 @@ public class Krb5TokenRenewer extends TokenRenewer {
 		byte krb5cc[] = token.getPassword();
 		int cc_version;
 
-		eosDebugLogger.print("renew: token l=" + krb5cc.length);
+		eosDebugLogger.printDebug("renew: token l=" + krb5cc.length);
 
 		sun.security.krb5.internal.ccache.Credentials cccreds = null;
 	
@@ -67,7 +67,7 @@ public class Krb5TokenRenewer extends TokenRenewer {
 		    cc_version = ccis.readVersion();
 	
 		    PrincipalName principal = ccis.readPrincipal(cc_version);
-		    eosDebugLogger.print("renew: version " + cc_version + " principal " + principal.toString());
+		    eosDebugLogger.printDebug("renew: version " + cc_version + " principal " + principal.toString());
 	
 		    Method readCred = ccis.getClass().getDeclaredMethod("readCred", int.class);
 		    readCred.setAccessible(true);
@@ -80,18 +80,18 @@ public class Krb5TokenRenewer extends TokenRenewer {
 	
 		    while (ccis.available() > 0) {
 				sun.security.krb5.internal.ccache.Credentials cr = null;
-				eosDebugLogger.print("renew: reading credentials version " + cc_version);
+				eosDebugLogger.printDebug("renew: reading credentials version " + cc_version);
 				try {
 				    cr = (sun.security.krb5.internal.ccache.Credentials) readCred.invoke(ccis, cc_version);
 				} catch (Exception e) {
 				    e.printStackTrace();
 				    System.out.println("Failed to read Credentials version " + cc_version + ": " + e.getMessage());
 				}
-				eosDebugLogger.print("renew: read credentials for " + cr.getServicePrincipal().toString());
+				eosDebugLogger.printDebug("renew: read credentials for " + cr.getServicePrincipal().toString());
 		
 				if (cr != null && cr.getServicePrincipal().getName().startsWith("krbtgt")) {
 				    String[] nameStrings = cr.getServicePrincipal().getNameStrings();
-				    eosDebugLogger.print("renew: nameStrings " + Arrays.toString(nameStrings));
+				    eosDebugLogger.printDebug("renew: nameStrings " + Arrays.toString(nameStrings));
 		
 				    if (nameStrings[1].equals(cr.getServicePrincipal().getRealm().toString())) {
 						cccreds = cr;
@@ -155,10 +155,10 @@ public class Krb5TokenRenewer extends TokenRenewer {
 		    dos.close();
 		    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bos.toByteArray()));
 		    token.readFields(dis);
-		    eosDebugLogger.print("Krb5TokenRenewer updated token " + token);
+		    eosDebugLogger.printDebug("Krb5TokenRenewer updated token " + token);
 	
 		    long ticketLife = newCCcreds.getEndTime().getTime() - System.currentTimeMillis();
-		    eosDebugLogger.print("Krb5TokenRenewer renewed " + fcc.cacheName() + " for " + fcc.getPrimaryPrincipal().toString() + " ticketLife " + ticketLife);
+		    eosDebugLogger.printDebug("Krb5TokenRenewer renewed " + fcc.cacheName() + " for " + fcc.getPrimaryPrincipal().toString() + " ticketLife " + ticketLife);
 	
 		    return ticketLife;
 	

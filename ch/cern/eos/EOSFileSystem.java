@@ -75,7 +75,7 @@ public class EOSFileSystem extends FileSystem {
 			
 			// need to re-parse otherwise '?query' becomes part of filename
 			URI u = new URI(p.toString()); 
-		    eosDebugLogger.print("EOSFileSystem.toUri (Scheme,Authority,Path,Query): " + u.getScheme() + "," + u.getAuthority() + "," + u.getPath() + "," + u.getQuery());
+		    eosDebugLogger.printDebug("EOSFileSystem.toUri (Scheme,Authority,Path,Query): " + u.getScheme() + "," + u.getAuthority() + "," + u.getPath() + "," + u.getQuery());
 			return u;
 		} catch (URISyntaxException e) {
 			eosDebugLogger.printStackTrace(e);
@@ -100,7 +100,7 @@ public class EOSFileSystem extends FileSystem {
     public FSDataOutputStream create(Path p, FsPermission permission, boolean overwrite, int bufferSize, short replication, long blockSize, Progressable progress) throws IOException {
 		initHandle();
 		String filespec = uri.getScheme() + "://" +  uri.getAuthority() + "/" + toFilePath(p);
-		eosDebugLogger.print("EOSfs create " + filespec);
+		eosDebugLogger.printDebug("EOSfs create " + filespec);
 		return new FSDataOutputStream(new EOSOutputStream(filespec, permission, overwrite), null);
     }
 
@@ -114,17 +114,17 @@ public class EOSFileSystem extends FileSystem {
 
 		if (std.isDirectory()) {
 			if (recursive) {
-				eosDebugLogger.print("EOSFileSystem.delete recursive " + filespec);
+				eosDebugLogger.printDebug("EOSFileSystem.delete recursive " + filespec);
 				status = this.deleteRecursiveDirectory(p, status);				
 			}
 
 			if (status == 0) {
 				status = RmDir(nHandle, filespec);
-				eosDebugLogger.print("EOSFileSystem.delete RmDir " + filespec + " status = " + status);
+				eosDebugLogger.printDebug("EOSFileSystem.delete RmDir " + filespec + " status = " + status);
 			}
 		} else {
 			status = Rm(nHandle, filespec);
-			eosDebugLogger.print("EOSFileSystem.delete " + filespec + " status = " + status);
+			eosDebugLogger.printDebug("EOSFileSystem.delete " + filespec + " status = " + status);
 		}
 		if (status != 0) {
 			throw new IOException("Cannot delete " + p.toString() + ", status = " + status);
@@ -142,7 +142,7 @@ public class EOSFileSystem extends FileSystem {
 				}
 			} else { 
 				status = Rm(nHandle, s.getPath().toUri().getPath());
-				eosDebugLogger.print("EOSFileSystem.delete " + s.getPath().toString() + " status = " + status);
+				eosDebugLogger.printDebug("EOSFileSystem.delete " + s.getPath().toString() + " status = " + status);
 				if (status != 0) {
 					break;
 				}
@@ -166,7 +166,7 @@ public class EOSFileSystem extends FileSystem {
 		String jlp = System.getProperty(JAVA_LIB_PATH);
 		if (!jlp.contains(HADOOP_NATIVE_PATH)) {
 			System.setProperty(JAVA_LIB_PATH, HADOOP_NATIVE_PATH + ":" + jlp);
-			eosDebugLogger.print("EOSfs.initlib: using java.library.path: " + System.getProperty("java.library.path"));
+			eosDebugLogger.printDebug("EOSfs.initlib: using java.library.path: " + System.getProperty("java.library.path"));
 			
 			//set sys_paths to null so that java.library.path will be reevaluated next time it is needed
 			try {
@@ -174,7 +174,7 @@ public class EOSFileSystem extends FileSystem {
 				sysPathsField.setAccessible(true);
 				sysPathsField.set(null, null);
 			} catch (Exception e) {
-				System.out.println("Could not reset java.library.path: " + e.getMessage());
+				eosDebugLogger.print("Could not reset java.library.path: " + e.getMessage());
 				e.printStackTrace();
 			}
 		}
@@ -185,7 +185,7 @@ public class EOSFileSystem extends FileSystem {
 			System.loadLibrary("jXrdCl");
 		} catch (UnsatisfiedLinkError e) {
 			e.printStackTrace();
-			System.out.println("failed to load jXrdCl");
+			eosDebugLogger.print("failed to load jXrdCl");
 			throw new IOException();
 		}
 	}
@@ -199,7 +199,7 @@ public class EOSFileSystem extends FileSystem {
 
 		String fileSystemURI = this.uri.getScheme() + "://" + this.uri.getAuthority();
 		this.nHandle = initFileSystem(fileSystemURI);
-		eosDebugLogger.print("initFileSystem(" + fileSystemURI + ") = " + nHandle);
+		eosDebugLogger.printDebug("initFileSystem(" + fileSystemURI + ") = " + nHandle);
 
         if (kerberos) {
 			setkrbcc(EOSKrb5.setKrb());
@@ -250,7 +250,7 @@ public class EOSFileSystem extends FileSystem {
 		URI u = toUri(path);
 		String filespec = uri.getScheme() + "://" +  uri.getAuthority() + "/" + u.getPath();
 		
-		eosDebugLogger.print("EOSfs open " + filespec + " --> " + filespec);
+		eosDebugLogger.printDebug("EOSfs open " + filespec + " --> " + filespec);
 		return new FSDataInputStream(new BufferedFSInputStream (new EOSInputStream(filespec),buffer_size));
     }
 
@@ -262,7 +262,7 @@ public class EOSFileSystem extends FileSystem {
 			throw new FileNotFoundException("File not found");
 		}
 		else {
-			eosDebugLogger.print(st.toString());
+			eosDebugLogger.printDebug(st.toString());
 		}
 		return st;
     }
@@ -296,7 +296,7 @@ public class EOSFileSystem extends FileSystem {
 		initHandle();
 		long st = Prepare(nHandle, uris, pFlags);
 		if (st != 0) {
-			eosDebugLogger.print("prepare failed on " + uris[0] + "... (" + uris.length + " elements) st = " + st);
+			eosDebugLogger.printDebug("prepare failed on " + uris[0] + "... (" + uris.length + " elements) st = " + st);
 		}
 		return st == 0;
     }

@@ -69,7 +69,7 @@ public class EOSKrb5
                 try {
                     krb5ccname = setKrbTGT();
                 } catch (IOException | KrbException e) {
-                    eosDebugLogger.print("setKrbTGT: " + e.getMessage());
+                    eosDebugLogger.printDebug("setKrbTGT: " + e.getMessage());
                     eosDebugLogger.printStackTrace(e);
                 }
                 hasKrbTGT -= 1;                
@@ -79,7 +79,7 @@ public class EOSKrb5
                 setKrbToken();
             } 
             catch (IOException | KrbException e) {
-                eosDebugLogger.print("setKrbToken: " + e.getMessage());
+                eosDebugLogger.printDebug("setKrbToken: " + e.getMessage());
                 eosDebugLogger.printStackTrace(e);
             }
         }
@@ -88,13 +88,13 @@ public class EOSKrb5
                 krb5ccname = setKrbTGT();
             } 
             catch(IOException | KrbException e) {
-                eosDebugLogger.print("setKrbTGT: " + e.getMessage());
+                eosDebugLogger.printDebug("setKrbTGT: " + e.getMessage());
                 eosDebugLogger.printStackTrace(e);
             }
             hasKrbTGT -= 1;            
         }
 
-        eosDebugLogger.print("setKrb: hasKrbToken " + hasKrbToken + "(" + hadKrbToken + ") hasKrbTGT " + hasKrbTGT + "(" + hadKrbTGT + ")"); 
+        eosDebugLogger.printDebug("setKrb: hasKrbToken " + hasKrbToken + "(" + hadKrbToken + ") hasKrbTGT " + hasKrbTGT + "(" + hadKrbTGT + ")"); 
         return krb5ccname;
     }
 
@@ -139,14 +139,14 @@ public class EOSKrb5
         try {
             ugi = UserGroupInformation.getLoginUser();
         } catch (IOException e) {
-            eosDebugLogger.print("IOException in checkToken");
+            eosDebugLogger.printDebug("IOException in checkToken");
         }
 
 	    boolean found = false;
         int i = 0;
 
         for (Token<? extends TokenIdentifier> t : ugi.getTokens()) {
-            eosDebugLogger.print("checkToken: found token " + t.getKind().toString());
+            eosDebugLogger.printDebug("checkToken: found token " + t.getKind().toString());
             if (t.getKind().toString().equals(tokenKind)) {
                 found = true;
             }
@@ -157,11 +157,11 @@ public class EOSKrb5
             i++;
         }
 
-        eosDebugLogger.print("Total tokens found: " + i);
+        eosDebugLogger.printDebug("Total tokens found: " + i);
         if (found) {
             hasKrbToken = 1;
         }
-        eosDebugLogger.print("Executor: " + executor);
+        eosDebugLogger.printDebug("Executor: " + executor);
         
         /* either no Krb token, or called too early? Leave it at current (limbo) state */
         return;
@@ -183,7 +183,7 @@ public class EOSKrb5
                 Method getTGT = ugi.getClass().getDeclaredMethod("getTGT");
                 getTGT.setAccessible(true);
                 KerberosTicket TGT = (KerberosTicket) getTGT.invoke(ugi);
-                eosDebugLogger.print("got TGT for " + ugi);
+                eosDebugLogger.printDebug("got TGT for " + ugi);
 
                 KerberosPrincipal p = TGT.getClient();
                 client = new PrincipalName(p.getName(), p.getNameType());
@@ -214,7 +214,7 @@ public class EOSKrb5
             krb5ccname = System.getenv("KRB5CCNAME");
             if (krb5ccname != null && krb5ccname.length() > 5 && krb5ccname.regionMatches(true, 0,  "FILE:", 0, 5)) {
                 krb5ccname = krb5ccname.substring(5);	
-                eosDebugLogger.print("krb5ccname filename " + krb5ccname);
+                eosDebugLogger.printDebug("krb5ccname filename " + krb5ccname);
                 if (eosDebugLogger.isDebugEnabled()) { 
                     BufferedReader ir = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec(new String[]{"ls", "-l", krb5ccname}).getInputStream()));
                     String ll; 
@@ -224,7 +224,7 @@ public class EOSKrb5
                 }
             } else {
                 krb5ccname = Files.createTempFile("krb5", null).toString();
-                eosDebugLogger.print("created krb5ccname " + krb5ccname);
+                eosDebugLogger.printDebug("created krb5ccname " + krb5ccname);
             }
         }
         // saving  new cache location
@@ -246,20 +246,20 @@ public class EOSKrb5
         k5id.write(dos);
         dos.close();
 
-        eosDebugLogger.print("setKrbToken saving krb5 ticket l=" + krb5cc.length + " in identifier l=" + bos.toByteArray().length);
+        eosDebugLogger.printDebug("setKrbToken saving krb5 ticket l=" + krb5cc.length + " in identifier l=" + bos.toByteArray().length);
         Token<? extends TokenIdentifier> t = new Token<Krb5TokenIdentifier>(bos.toByteArray(), krb5cc, new Text("krb5"), new Text("Cerberus service"));
         if (eosDebugLogger.isDebugEnabled()) {
             try { 
                 t.renew(new Configuration());
             } catch (Exception e) {
-                eosDebugLogger.print("setKrbToken failed to renew " + t.toString() + ": " + e);
+                eosDebugLogger.printDebug("setKrbToken failed to renew " + t.toString() + ": " + e);
             }
         } 
 
         hasKrbTGT = 1;
         if (!ugi.addToken(t)) {
             hasKrbToken = 0;
-            eosDebugLogger.print("setKrbToken failed to add token " + t.toString());
+            eosDebugLogger.printDebug("setKrbToken failed to add token " + t.toString());
             throw new KrbException("could not add token " + t.toString());
         } else {
             hasKrbToken = 1;
@@ -275,7 +275,7 @@ public class EOSKrb5
     	String krb5ccname = EOSFileSystem.getenv("KRB5CCNAME");
         if (krb5ccname != null && krb5ccname.length() > 5 && krb5ccname.regionMatches(true, 0,  "FILE:", 0, 5)) {
 	        krb5ccname = krb5ccname.substring(5);
-	        eosDebugLogger.print("krb5ccname filename " + krb5ccname);
+	        eosDebugLogger.printDebug("krb5ccname filename " + krb5ccname);
                 
             // if file exists we do not need to extract TGT from token
             if (new File(krb5ccname).isFile()) {
@@ -284,7 +284,7 @@ public class EOSKrb5
             }
         } else {
             krb5ccname = Files.createTempFile("krb5", null).toString();
-            eosDebugLogger.print("created krb5ccname " + krb5ccname);
+            eosDebugLogger.printDebug("created krb5ccname " + krb5ccname);
         }
         // store the future location of TGT
         EOSKrb5.krb5ccname = krb5ccname;
@@ -294,7 +294,7 @@ public class EOSKrb5
         for (Token<? extends TokenIdentifier> t : ugi.getTokens()) {
             if (t.getKind().toString().equals(tokenKind)) {
                 tok = t;
-                eosDebugLogger.print("setKrbTGT found " + t);
+                eosDebugLogger.printDebug("setKrbTGT found " + t);
                 break;
             }
         }
@@ -310,7 +310,7 @@ public class EOSKrb5
         Krb5TokenRenewer renewer = new Krb5TokenRenewer();
         long lifeTime = renewer.renew(tok, conf);
     
-        eosDebugLogger.print("setKrbTGT lifeTime " + lifeTime + " cache " + krb5ccname);
+        eosDebugLogger.printDebug("setKrbTGT lifeTime " + lifeTime + " cache " + krb5ccname);
         hasKrbTGT = 1;
         return krb5ccname;
     }    
