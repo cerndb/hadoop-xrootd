@@ -219,7 +219,7 @@ public class EOSKrb5
                     BufferedReader ir = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec(new String[]{"ls", "-l", krb5ccname}).getInputStream()));
                     String ll; 
                     while ((ll = ir.readLine()) != null) { 
-                        System.out.println(ll); 
+                        eosDebugLogger.print(ll); 
                     }
                 }
             } else {

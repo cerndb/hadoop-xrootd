@@ -85,7 +85,7 @@ public class Krb5TokenRenewer extends TokenRenewer {
 				    cr = (sun.security.krb5.internal.ccache.Credentials) readCred.invoke(ccis, cc_version);
 				} catch (Exception e) {
 				    e.printStackTrace();
-				    System.out.println("Failed to read Credentials version " + cc_version + ": " + e.getMessage());
+				    eosDebugLogger.print("Failed to read Credentials version " + cc_version + ": " + e.getMessage());
 				}
 				eosDebugLogger.printDebug("renew: read credentials for " + cr.getServicePrincipal().toString());
 		
@@ -120,12 +120,12 @@ public class Krb5TokenRenewer extends TokenRenewer {
 		    CredentialsCache fcc = null;
 		    EOSFileSystem.initLib();
             krb5ccname = EOSKrb5.krb5ccname;
-            System.out.println("TokenRenewer: krb5ccname " + krb5ccname);
+            eosDebugLogger.print("TokenRenewer: krb5ccname " + krb5ccname);
 	
 		    try { 
 		    	fcc = CredentialsCache.getInstance(newCreds.getClient(), krb5ccname);
 		    } catch(OutOfMemoryError e) {
-				System.out.println("failed to acquire existing CredentialsCache, allocating a new one");
+				eosDebugLogger.print("failed to acquire existing CredentialsCache, allocating a new one");
 				e.printStackTrace();
 		    }
 	
