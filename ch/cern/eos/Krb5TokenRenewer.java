@@ -129,7 +129,9 @@ public class Krb5TokenRenewer extends TokenRenewer {
 				e.printStackTrace();
 		    }
 	
-		    if (fcc == null) fcc = CredentialsCache.create(newCreds.getClient(), krb5ccname);
+		    if (fcc == null) {
+		    	fcc = CredentialsCache.create(newCreds.getClient(), krb5ccname);
+		    }
 		    ((FileCredentialsCache) fcc).version = cc_version;
 		    fcc.update(newCCcreds);
 		    fcc.save();

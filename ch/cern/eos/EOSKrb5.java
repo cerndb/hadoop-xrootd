@@ -102,38 +102,6 @@ public class EOSKrb5
         eosDebugLogger.setDebug(debug);
     }
 
-    private static boolean checkTGT()
-    {
-        // Check if Kerberos Cache is available locally
-        String ccname = null;
-        try {
-           ccname = System.getenv("KRB5CCNAME");
-        }
-        catch (UnsatisfiedLinkError e) {
-            return false;  
-        }
-
-        CredentialsCache ncc;
-        sun.security.krb5.Credentials crn;
-
-        if (ccname == null) {
-            return false;
-        }
-
-        if (ccname.length() > 5 && ccname.regionMatches(true, 0,  "FILE:", 0, 5)) {
-            ccname = ccname.substring(5);
-        } else {
-            return false;
-        }
-
-        // testing if the krb cache is valid
-        if (!new File(ccname).isFile()) {
-            return false;
-        }
-        krb5ccname = ccname;
-        return true;
-    }
-
     //Checks if KRB cache exists in the token cache
     private static void checkToken() {
         try {
@@ -267,7 +235,7 @@ public class EOSKrb5
     }
 
     /* Recover TGT from Token cache and set up krb5 crdentials cache */
-    public static String setKrbTGT() throws IOException, KrbException {
+	public static String setKrbTGT() throws IOException, KrbException {
         if (hasKrbTGT == 1) {
             return krb5ccname;
         }
