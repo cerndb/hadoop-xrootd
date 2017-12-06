@@ -38,7 +38,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.Progressable;
 
-public class EOSFileSystem extends FileSystem {
+public class XrootDBasedFileSystem extends FileSystem {
     private long nHandle = 0;
     private static boolean libLoaded = false;
     private native long initFileSystem(String url);
@@ -53,17 +53,14 @@ public class EOSFileSystem extends FileSystem {
     public static native String getenv(String envname);
     public native String getErrText(long errcode);
 
-    private static final Log LOG = LogFactory.getLog(EOSFileSystem.class);
     private URI uri;
 
 	private static EOSDebugLogger eosDebugLogger;
-    public static int buffer_size = 32*1024*1024;
+    public static int buffer_size = 32 * 1024 * 1024;
 	private static final String JAVA_LIB_PATH = "java.library.path";
 	private static final String HADOOP_NATIVE_PATH = "/usr/lib/hadoop/lib/native";
 
-    public boolean kerberos = true;
-
-    public EOSFileSystem() {
+    public XrootDBasedFileSystem() {
     }
 
     public URI toUri(Path p) throws IOException {
@@ -190,7 +187,7 @@ public class EOSFileSystem extends FileSystem {
 		}
 	}
 
-    private void initHandle() throws IOException {
+    protected void initHandle() throws IOException {
 		if (nHandle != 0) {
 			return;
 		}
@@ -200,29 +197,6 @@ public class EOSFileSystem extends FileSystem {
 		String fileSystemURI = this.uri.getScheme() + "://" + this.uri.getAuthority();
 		this.nHandle = initFileSystem(fileSystemURI);
 		eosDebugLogger.printDebug("initFileSystem(" + fileSystemURI + ") = " + nHandle);
-
-        if (kerberos) {
-			setkrbcc(EOSKrb5.setKrb());
-		}
-    }
-   
-    /*
-     * Setting token cache from TGT (on Spark or MR drivers) or init local krb cache from token 
-     * (if mapper or executor) 
-     */
-    public static void setKrb() {
-		EOSKrb5.setKrb();
-    }
-
-    /* 
-     * This sets (setenv()) KRB5CCNAME in the current (!) environment, 
-     * which is NOT the one java currently sees, nor the one a java sub-process is going to see spawned
-     * using execve() - for the latter one would have to modify java's copy of the environment which is doable.
-     * jython or scala may yet play different games
-     */
-    public static void setkrbcc(String ccname) throws IOException {
-		initLib();
-		setenv("KRB5CCNAME", "FILE:" + ccname);
     }
 
     public void initialize(URI uri, Configuration conf) throws IOException {
@@ -230,10 +204,6 @@ public class EOSFileSystem extends FileSystem {
 
 		this.uri = uri;
         initLib();
-
-        if (kerberos) {
-			setkrbcc(EOSKrb5.setKrb());
-		}
     }
 
     public String getScheme() {

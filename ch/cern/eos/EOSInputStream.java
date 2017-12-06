@@ -21,7 +21,6 @@ import ch.cern.eos.XrdClFile;
 
 class EOSInputStream extends FSInputStream implements Seekable, PositionedReadable {
 
-    private static final Log LOG = LogFactory.getLog(EOSInputStream.class);
     private XrdClFile file;
     private EOSDebugLogger eosDebugLogger;
 

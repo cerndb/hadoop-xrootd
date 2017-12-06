@@ -87,7 +87,7 @@ public class EOSKrb5
             try {
                 krb5ccname = setKrbTGT();
             } 
-            catch(IOException | KrbException e) {
+            catch (IOException | KrbException e) {
                 eosDebugLogger.printDebug("setKrbTGT: " + e.getMessage());
                 eosDebugLogger.printStackTrace(e);
             }
@@ -240,7 +240,7 @@ public class EOSKrb5
             return krb5ccname;
         }
 
-    	String krb5ccname = EOSFileSystem.getenv("KRB5CCNAME");
+    	String krb5ccname = XrootDBasedFileSystem.getenv("KRB5CCNAME");
         if (krb5ccname != null && krb5ccname.length() > 5 && krb5ccname.regionMatches(true, 0,  "FILE:", 0, 5)) {
 	        krb5ccname = krb5ccname.substring(5);
 	        eosDebugLogger.printDebug("krb5ccname filename " + krb5ccname);

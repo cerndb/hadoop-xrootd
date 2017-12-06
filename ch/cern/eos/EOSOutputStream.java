@@ -19,7 +19,6 @@ import ch.cern.eos.XrdClFile;
 
 class EOSOutputStream extends OutputStream {
 
-	private static final Log LOG = LogFactory.getLog(EOSOutputStream.class);
 	private EOSDebugLogger eosDebugLogger;
 	private XrdClFile file;
 	private long pos;

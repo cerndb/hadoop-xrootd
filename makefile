@@ -12,7 +12,7 @@ INCLjava=/usr/lib/jvm/java-1.7.0-oracle.x86_64/include
 
 CXXFLAGS=-I$(INCLxrootd) -I$(INCLjava) -I$(INCLjava)/linux -fPIC
 
-CLASSES = ch/cern/eos/XrdClFile.java ch/cern/eos/Krb5TokenIdentifier.java ch/cern/eos/EOSFileSystem.java ch/cern/eos/EOSInputStream.java ch/cern/eos/EOSOutputStream.java ch/cern/eos/EOSKrb5.java ch/cern/eos/Krb5TokenRenewer.java ch/cern/eos/EOSDebugLogger.java
+CLASSES = ch/cern/eos/XrdClFile.java ch/cern/eos/Krb5TokenIdentifier.java ch/cern/eos/XrootDBasedFileSystem.java ch/cern/eos/KerberizedXrootDBasedFileSystem.java ch/cern/eos/EOSInputStream.java ch/cern/eos/EOSOutputStream.java ch/cern/eos/EOSKrb5.java ch/cern/eos/Krb5TokenRenewer.java ch/cern/eos/EOSDebugLogger.java
 
 all: libjXrdCl.so EOSfs.jar
 
