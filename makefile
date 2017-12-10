@@ -35,7 +35,7 @@ ch_cern_eos_XrootDBasedClFile.h: ch/cern/eos/XrootDBasedClFile.class
 ch_cern_eos_XrootDBasedKerberizedFileSystem.h: ch/cern/eos/XrootDBasedKerberizedFileSystem.class
 	javah $(JHFLAGS) ch.cern.eos.XrootDBasedKerberizedFileSystem
 
-ch_cern_eos_XrootDBasedFile.o: ch_cern_eos_XrdClFile.cpp ch_cern_eos_XrdClFile.h
+ch_cern_eos_XrootDBasedFile.o: ch_cern_eos_XrootDBasedClFile.cpp ch_cern_eos_XrootDBasedClFile.h
 
 ch_cern_eos_XrootDBasedKerberizedFileSystem.o: ch_cern_eos_XrootDBasedKerberizedFileSystem.cpp ch_cern_eos_XrootDBasedKerberizedFileSystem.h
 
