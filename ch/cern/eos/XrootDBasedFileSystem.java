@@ -55,7 +55,7 @@ public class XrootDBasedFileSystem extends FileSystem {
 
     private URI uri;
 
-	private static EOSDebugLogger eosDebugLogger;
+	private static DebugLogger eosDebugLogger;
     public static int buffer_size = 32 * 1024 * 1024;
 	private static final String JAVA_LIB_PATH = "java.library.path";
 	private static final String HADOOP_NATIVE_PATH = "/usr/lib/hadoop/lib/native";
@@ -98,7 +98,7 @@ public class XrootDBasedFileSystem extends FileSystem {
 		initHandle();
 		String filespec = uri.getScheme() + "://" +  uri.getAuthority() + "/" + toFilePath(p);
 		eosDebugLogger.printDebug("EOSfs create " + filespec);
-		return new FSDataOutputStream(new EOSOutputStream(filespec, permission, overwrite), null);
+		return new FSDataOutputStream(new XrootDBasedOutputStream(filespec, permission, overwrite), null);
     }
 
     public boolean delete(Path p, boolean recursive) throws IOException {
@@ -149,8 +149,8 @@ public class XrootDBasedFileSystem extends FileSystem {
 	}
 
     public static void initLib() throws IOException {
-		eosDebugLogger = new EOSDebugLogger(System.getenv("EOS_debug") != null);	
-		EOSKrb5.setDebug(eosDebugLogger.isDebugEnabled());
+		eosDebugLogger = new DebugLogger(System.getenv("EOS_debug") != null);	
+		XrootDBasedKrb5.setDebug(eosDebugLogger.isDebugEnabled());
 		
 		if (libLoaded) {
 			return;
@@ -220,7 +220,7 @@ public class XrootDBasedFileSystem extends FileSystem {
 		String filespec = uri.getScheme() + "://" +  uri.getAuthority() + "/" + u.getPath();
 		
 		eosDebugLogger.printDebug("EOSfs open " + filespec + " --> " + filespec);
-		return new FSDataInputStream(new BufferedFSInputStream (new EOSInputStream(filespec),buffer_size));
+		return new FSDataInputStream(new BufferedFSInputStream (new XrootDBasedInputStream(filespec),buffer_size));
     }
 
     public FileStatus getFileStatus(Path p) throws IOException {

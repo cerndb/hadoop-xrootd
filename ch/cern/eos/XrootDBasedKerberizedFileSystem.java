@@ -3,20 +3,20 @@ package ch.cern.eos;
 import java.io.IOException;
 import java.net.URI;
 
-public class KerberizedXrootDBasedFileSystem extends XrootDBasedFileSystem {
+public class XrootDBasedKerberizedFileSystem extends XrootDBasedFileSystem {
 
-	public KerberizedXrootDBasedFileSystem() {
+	public XrootDBasedKerberizedFileSystem() {
 		super();
 	}
 	
 	protected void initHandle() throws IOException {
 		super.initHandle();
-		setkrbcc(EOSKrb5.setKrb());
+		setkrbcc(XrootDBasedKrb5.setKrb());
     }
 	
 	public void initialize(URI uri, Configuration conf) throws IOException {
 		super.initialize(uri, conf);
-		setkrbcc(EOSKrb5.setKrb());
+		setkrbcc(XrootDBasedKrb5.setKrb());
     }
 
     /*
@@ -24,7 +24,7 @@ public class KerberizedXrootDBasedFileSystem extends XrootDBasedFileSystem {
      * (if mapper or executor) 
      */
     public static void setKrb() {
-		EOSKrb5.setKrb();
+		XrootDBasedKrb5.setKrb();
     }
 
     /* 

@@ -42,7 +42,7 @@ import org.apache.hadoop.security.token.TokenRenewer;
 
 public class Krb5TokenRenewer extends TokenRenewer {
 	public String krb5ccname;
-	private EOSDebugLogger eosDebugLogger = new EOSDebugLogger(false);
+	private DebugLogger eosDebugLogger = new DebugLogger(false);
 
 	public boolean handleKind(Text kind) {
 		return Krb5TokenIdentifier.KIND_NAME.equals(kind);
@@ -118,7 +118,7 @@ public class Krb5TokenRenewer extends TokenRenewer {
 
 			CredentialsCache fcc = null;
 			XrootDBasedFileSystem.initLib();
-			krb5ccname = EOSKrb5.krb5ccname;
+			krb5ccname = XrootDBasedKrb5.krb5ccname;
 			eosDebugLogger.print("TokenRenewer: krb5ccname " + krb5ccname);
 
 			try {

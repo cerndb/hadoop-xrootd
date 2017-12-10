@@ -43,7 +43,7 @@ import java.lang.reflect.Method;
 import javax.security.auth.kerberos.KerberosPrincipal;
 import javax.security.auth.kerberos.KerberosTicket;
 
-public class EOSKrb5
+public class XrootDBasedKrb5
 {
     public static String krb5ccname="";
     public static int hasKrbToken = -1;
@@ -54,7 +54,7 @@ public class EOSKrb5
     private static String tokenKind = "krb5";
 
     private static int executor = 0;
-    private static EOSDebugLogger eosDebugLogger = new EOSDebugLogger(false);
+    private static DebugLogger eosDebugLogger = new DebugLogger(false);
 
     public synchronized static String setKrb() {        
         // If no Krb ticket, set from Token. 
@@ -196,7 +196,7 @@ public class EOSKrb5
             }
         }
         // saving  new cache location
-        EOSKrb5.krb5ccname = krb5ccname;
+        XrootDBasedKrb5.krb5ccname = krb5ccname;
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream(16384);
         CCacheOutputStream ccos = new CCacheOutputStream(bos);
@@ -255,7 +255,7 @@ public class EOSKrb5
             eosDebugLogger.printDebug("created krb5ccname " + krb5ccname);
         }
         // store the future location of TGT
-        EOSKrb5.krb5ccname = krb5ccname;
+        XrootDBasedKrb5.krb5ccname = krb5ccname;
 
         Token<? extends TokenIdentifier> tok = null;
 
