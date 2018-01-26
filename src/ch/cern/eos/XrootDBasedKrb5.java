@@ -69,7 +69,7 @@ public class XrootDBasedKrb5
                 try {
                     krb5ccname = setKrbTGT();
                 } catch (IOException | KrbException e) {
-                    eosDebugLogger.printDebug("setKrbTGT: " + e.getMessage());
+                    eosDebugLogger.printDebug("2018 january setKrbTGT: " + e.getMessage());
                     eosDebugLogger.printStackTrace(e);
                 }
                 hasKrbTGT -= 1;                
@@ -79,7 +79,7 @@ public class XrootDBasedKrb5
                 setKrbToken();
             } 
             catch (IOException | KrbException e) {
-                eosDebugLogger.printDebug("setKrbToken: " + e.getMessage());
+                eosDebugLogger.printDebug("2018 january setKrbToken: " + e.getMessage());
                 eosDebugLogger.printStackTrace(e);
             }
         }
@@ -88,13 +88,13 @@ public class XrootDBasedKrb5
                 krb5ccname = setKrbTGT();
             } 
             catch (IOException | KrbException e) {
-                eosDebugLogger.printDebug("setKrbTGT: " + e.getMessage());
+                eosDebugLogger.printDebug("2018 january setKrbTGT: " + e.getMessage());
                 eosDebugLogger.printStackTrace(e);
             }
             hasKrbTGT -= 1;            
         }
 
-        eosDebugLogger.printDebug("setKrb: hasKrbToken " + hasKrbToken + "(" + hadKrbToken + ") hasKrbTGT " + hasKrbTGT + "(" + hadKrbTGT + ")"); 
+        eosDebugLogger.printDebug("2018 january setKrb: hasKrbToken " + hasKrbToken + "(" + hadKrbToken + ") hasKrbTGT " + hasKrbTGT + "(" + hadKrbTGT + ")");
         return krb5ccname;
     }
 
