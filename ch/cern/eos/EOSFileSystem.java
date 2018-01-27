@@ -257,7 +257,7 @@ public class EOSFileSystem extends FileSystem {
 
     public FileStatus[] listStatus(Path p) throws IOException {
 	if (nHandle == 0) initHandle();
-        FileStatus st = getFileStatusS(nHandle, toUri(p).getPath(), p);
+        FileStatus st = getFileStatus(p);
         if (st.isFile())
 	    return new FileStatus[]{st};
       
