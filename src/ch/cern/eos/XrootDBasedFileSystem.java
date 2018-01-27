@@ -238,7 +238,14 @@ public class XrootDBasedFileSystem extends FileSystem {
 
     public FileStatus[] listStatus(Path p) throws IOException {
 		initHandle();
-		return listFileStatusS(nHandle, toFilePath(p), p);
+
+		// If isFile return FileStatus directly
+        FileStatus st = getFileStatusS(nHandle, toUri(p).getPath(), p);
+        if (st.isFile())
+            return new FileStatus[]{st};
+
+        // If isDirectory use listFileStatusS of path
+        return listFileStatusS(nHandle, toFilePath(p), p);
     }
 
     public boolean mkdirs(Path p, FsPermission permission) throws IOException {
