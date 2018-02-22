@@ -12,6 +12,8 @@ INCLjava=/usr/lib/jvm/java-1.7.0-oracle.x86_64/include
 
 CXXFLAGS=-I$(INCLxrootd) -I$(INCLjava) -I$(INCLjava)/linux -fPIC
 
+export CLASSPATH=$(shell hadoop classpath) 
+
 CLASSES = ch/cern/eos/XrootDBasedClFile.java ch/cern/eos/Krb5TokenIdentifier.java ch/cern/eos/XrootDBasedFileSystem.java ch/cern/eos/XrootDBasedKerberizedFileSystem.java ch/cern/eos/XrootDBasedInputStream.java ch/cern/eos/XrootDBasedOutputStream.java ch/cern/eos/XrootDBasedKrb5.java ch/cern/eos/Krb5TokenRenewer.java ch/cern/eos/DebugLogger.java
 
 all: libjXrdCl.so EOSfs.jar
@@ -23,7 +25,7 @@ classes: $(CLASSES:.java=.class)
 
 #	jar -cfe $@ coucou $(CLASSES:.java=.class) META-INF
 EOSfs.jar: classes
-	jar -cfe $@ coucou $(CLASSES:.java=.class) META-INF
+	jar -cp $(CLASSPATH)-cfe $@ coucou $(CLASSES:.java=.class) META-INF
 	
 
 #ch/cern/eos/XrootDBasedFile.class: ch/cern/eos/XrootDBasedClFile.java
