@@ -2,6 +2,7 @@ package ch.cern.eos;
 
 import java.io.IOException;
 import java.net.URI;
+import org.apache.hadoop.conf.Configuration;
 
 public class XrootDBasedKerberizedFileSystem extends XrootDBasedFileSystem {
 
