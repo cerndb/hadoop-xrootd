@@ -8,7 +8,12 @@ JC = javac
 
 INCLxrootd=/usr/include/xrootd
 #INCLjava=/usr/java/jdk1.8.0_121/include
-INCLjava=/usr/lib/jvm/java-1.7.0-oracle.x86_64/include
+#INCLjava=/usr/lib/jvm/java-1.7.0-oracle.x86_64/include
+ifeq ($(JAVA_HOME),)
+INCLjava := /usr/lib/jvm/java-1.7.0-oracle.x86_64/include
+else
+INCLjava := $(JAVA_HOME)/include
+endif
 
 CXXFLAGS=-I$(INCLxrootd) -I$(INCLjava) -I$(INCLjava)/linux -fPIC
 
