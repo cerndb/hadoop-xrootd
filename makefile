@@ -19,13 +19,13 @@ CLASSES = ch/cern/eos/XrootDBasedClFile.java ch/cern/eos/Krb5TokenIdentifier.jav
 all: libjXrdCl.so EOSfs.jar
 
 clean:
-	-rm ch_cern_eos_*.o ch_cern_eos_*.h ch/cern/eos/*.class libjXrdCl.so
+	-rm ch_cern_eos_*.o ch_cern_eos_*.h ch/cern/eos/*.class libjXrdCl.so EOSfs.jar
 
 classes: $(CLASSES:.java=.class)
 
 #	jar -cfe $@ coucou $(CLASSES:.java=.class) META-INF
 EOSfs.jar: classes
-	jar -cp $(CLASSPATH)-cfe $@ coucou $(CLASSES:.java=.class) META-INF
+	jar -cfe $@ coucou $(CLASSES:.java=.class) META-INF
 	
 
 #ch/cern/eos/XrootDBasedFile.class: ch/cern/eos/XrootDBasedClFile.java
@@ -37,9 +37,9 @@ ch_cern_eos_XrootDBasedClFile.h: ch/cern/eos/XrootDBasedClFile.class
 ch_cern_eos_XrootDBasedKerberizedFileSystem.h: ch/cern/eos/XrootDBasedKerberizedFileSystem.class
 	javah $(JHFLAGS) ch.cern.eos.XrootDBasedKerberizedFileSystem
 
-ch_cern_eos_XrootDBasedFile.o: ch_cern_eos_XrootDBasedClFile.cpp ch_cern_eos_XrootDBasedClFile.h
+ch_cern_eos_XrootDBasedClFile.o: ch_cern_eos_XrootDBasedClFile.cpp ch_cern_eos_XrootDBasedClFile.h
 
 ch_cern_eos_XrootDBasedKerberizedFileSystem.o: ch_cern_eos_XrootDBasedKerberizedFileSystem.cpp ch_cern_eos_XrootDBasedKerberizedFileSystem.h
 
-libjXrdCl.so: ch_cern_eos_XrootDBasedFile.o ch_cern_eos_XrootDBasedKerberizedFileSystem.o
+libjXrdCl.so: ch_cern_eos_XrootDBasedClFile.o ch_cern_eos_XrootDBasedKerberizedFileSystem.o
 	g++ -shared -o $@ $^  -lXrdCl -lXrdUtils -ldl

@@ -2,7 +2,7 @@
 #include <string>
 #include "stdlib.h"
 
-#include "ch_cern_eos_XrdClFile.h"
+#include "ch_cern_eos_XrootDBasedClFile.h"
 #include "xrootd/XrdCl/XrdClFile.hh"
 #include "xrootd/XrdCl/XrdClDefaultEnv.hh"
 

@@ -4,10 +4,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "ch_cern_eos_XrdClFile.h"
+#include "ch_cern_eos_XrootDBasedClFile.h"
 #include "xrootd/XrdCl/XrdClFile.hh"
 #include "xrootd/XrdCl/XrdClFileSystem.hh"
-#include "ch_cern_eos_EOSFileSystem.h"
+#include "ch_cern_eos_XrootDBasedKerberizedFileSystem.h"
 
 #ifdef __cplusplus
 extern "C" {
