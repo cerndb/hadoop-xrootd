@@ -26,23 +26,24 @@ BUILD_PATH=/path/to/hadoop-xrootd-connector
 echo $BUILD_PATH
 ```
 
-If you have not yet, build the base image containing all required dependencies
+MAKE ALL the hadoop-xrootd-connector in parent directory using `make all`
+
+```
+docker run --rm -v $BUILD_PATH:/data gitlab-registry.cern.ch/awg/hadoop-xrootd-connector make all
+```
+
+MAKE CLEAN hadoop-xrootd-connector in parent directory using `make clean`
+
+```
+docker run --rm -v $BUILD_PATH:/data gitlab-registry.cern.ch/awg/hadoop-xrootd-connector make clean
+```
+
+
+NOTE: If you have not yet, build the base image containing all required dependencies
 
 ```
 docker build -t gitlab-registry.cern.ch/awg/hadoop-xrootd-connector $BUILD_PATH
 ```
 
-Build the hadoop-xrootd-connector in parent directory
-
-```
-docker run --rm -v $BUILD_PATH:/data gitlab-registry.cern.ch/awg/hadoop-xrootd-connector
-```
-
 NOTE: User inside docker is different then on parent host, thus one might need to
 change ownership with `chown`
-
-NOTE: you can also execute custom commands e.g `make clean`
-
-```
-docker run --rm -v $BUILD_PATH:/data gitlab-registry.cern.ch/awg/hadoop-xrootd-connector sh -c "make clean"
-```

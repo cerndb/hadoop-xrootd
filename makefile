@@ -1,6 +1,6 @@
 CP:=$(shell hadoop classpath)
-JFLAGS = -g -XDignore.symbol.file -Xlint:unchecked  -Xlint:deprecation -cp .:$(CP)
-JHFLAGS = -jni -force -classpath .:$(CP)
+JFLAGS = -g -XDignore.symbol.file -Xlint:unchecked  -Xlint:deprecation -cp ./src:$(CP)
+JHFLAGS = -jni -force -classpath ./src:$(CP)
 JC = javac
 .SUFFIXES: .java .class
 .java.class:
@@ -19,12 +19,12 @@ CXXFLAGS=-I$(INCLxrootd) -I$(INCLjava) -I$(INCLjava)/linux -fPIC
 
 export CLASSPATH=$(shell hadoop classpath) 
 
-CLASSES = ch/cern/eos/XrootDBasedClFile.java ch/cern/eos/Krb5TokenIdentifier.java ch/cern/eos/XrootDBasedFileSystem.java ch/cern/eos/XrootDBasedKerberizedFileSystem.java ch/cern/eos/XrootDBasedInputStream.java ch/cern/eos/XrootDBasedOutputStream.java ch/cern/eos/XrootDBasedKrb5.java ch/cern/eos/Krb5TokenRenewer.java ch/cern/eos/DebugLogger.java
+CLASSES = src/ch/cern/eos/XrootDBasedClFile.java src/ch/cern/eos/Krb5TokenIdentifier.java src/ch/cern/eos/XrootDBasedFileSystem.java src/ch/cern/eos/XrootDBasedKerberizedFileSystem.java src/ch/cern/eos/XrootDBasedInputStream.java src/ch/cern/eos/XrootDBasedOutputStream.java src/ch/cern/eos/XrootDBasedKrb5.java src/ch/cern/eos/Krb5TokenRenewer.java src/ch/cern/eos/DebugLogger.java
 
 all: libjXrdCl.so EOSfs.jar
 
 clean:
-	-rm ch_cern_eos_*.o ch_cern_eos_*.h ch/cern/eos/*.class libjXrdCl.so EOSfs.jar
+	-rm ch_cern_eos_*.o ch_cern_eos_*.h src/ch/cern/eos/*.class libjXrdCl.so EOSfs.jar
 
 classes: $(CLASSES:.java=.class)
 
@@ -33,13 +33,13 @@ EOSfs.jar: classes
 	jar -cfe $@ coucou $(CLASSES:.java=.class) META-INF
 	
 
-#ch/cern/eos/XrootDBasedFile.class: ch/cern/eos/XrootDBasedClFile.java
-#	javac ch/cern/eos/XrootDBasedClFile.java
+#ch/cern/eos/XrootDBasedFile.class: src/ch/cern/eos/XrootDBasedClFile.java
+#	javac src/ch/cern/eos/XrootDBasedClFile.java
 
-ch_cern_eos_XrootDBasedClFile.h: ch/cern/eos/XrootDBasedClFile.class
+ch_cern_eos_XrootDBasedClFile.h: src/ch/cern/eos/XrootDBasedClFile.class
 	javah $(JHFLAGS) ch.cern.eos.XrootDBasedClFile
 
-ch_cern_eos_XrootDBasedKerberizedFileSystem.h: ch/cern/eos/XrootDBasedKerberizedFileSystem.class
+ch_cern_eos_XrootDBasedKerberizedFileSystem.h: src/ch/cern/eos/XrootDBasedKerberizedFileSystem.class
 	javah $(JHFLAGS) ch.cern.eos.XrootDBasedKerberizedFileSystem
 
 ch_cern_eos_XrootDBasedClFile.o: ch_cern_eos_XrootDBasedClFile.cpp ch_cern_eos_XrootDBasedClFile.h
