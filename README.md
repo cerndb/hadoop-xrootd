@@ -35,8 +35,6 @@ If you are already on Linux, and in current folder use:
 docker run --rm -it -v $(pwd):/data gitlab-registry.cern.ch/awg/hadoop-xrootd-connector
 ```
 
-
-
 NOTE: If you have not yet, build the base image containing all required dependencies
 
 ```
