@@ -36,11 +36,14 @@ RUN yum update -y && \
 WORKDIR /data
 
 # build the connector on docker run
-CMD make clean ; make all && \
+CMD make clean && \
+    make all && \
     echo '' && \
-    echo '*Done. EOSfs.jar and libjXrdCl.so saved in \$BUILD_PATH*' && \
-    echo '*Move EOSfs.jar to /opt/spark/jars or /usr/lib/hadoop, and libjXrdCl.so to /usr/lib/hadoop/lib/native.*' && \
-    echo '*NOTE: You might also need to change files ownership using chown*'
+    echo '* To test: *' && \
+    echo '* mv /data/EOSfs.jar /usr/lib/hadoop-2.7.4/share/hadoop/common/lib/EOSfs.jar *' && \
+    echo '* mv /data/libjXrdCl.so /usr/lib/hadoop/lib/native/libjXrdCl.so *' && \
+    echo '* hdfs dfs -ls root://eosuser.cern.ch/ *' && \
+    bash
 
 LABEL \
   org.label-schema.version="0.1" \

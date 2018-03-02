@@ -15,28 +15,26 @@ Use "make all" command to compile
 make all
 ```
 
-### Build XRootD-Connector with docker
+### Use XRootD-Connector prebuild environment
 
-**Build XRootD-Connector with your gcc, java version, and hadoop versions**
+**Use XRootD-Connector Docker with your gcc, java version, and hadoop versions**
 
-Go to this repository directory (where e.g. `BUILD_PATH=$(pwd)`)
+Go to this repository directory (where e.g. `BUILD_PATH=$(pwd)`) and run the docker
+This will bring you to the bash shell, in which you can execute `make all`, `make clean` or
+`hdfs dfs -ls root:// ` as you were on preconfigured cluster
 
 ```
 BUILD_PATH=/path/to/hadoop-xrootd-connector
 echo $BUILD_PATH
+docker run --rm -it -v $BUILD_PATH:/data gitlab-registry.cern.ch/awg/hadoop-xrootd-connector
 ```
 
-MAKE ALL the hadoop-xrootd-connector in parent directory using `make all`
+If you are already on Linux, and in current folder use:
 
 ```
-docker run --rm -v $BUILD_PATH:/data gitlab-registry.cern.ch/awg/hadoop-xrootd-connector make all
+docker run --rm -it -v $(pwd):/data gitlab-registry.cern.ch/awg/hadoop-xrootd-connector
 ```
 
-MAKE CLEAN hadoop-xrootd-connector in parent directory using `make clean`
-
-```
-docker run --rm -v $BUILD_PATH:/data gitlab-registry.cern.ch/awg/hadoop-xrootd-connector make clean
-```
 
 
 NOTE: If you have not yet, build the base image containing all required dependencies
