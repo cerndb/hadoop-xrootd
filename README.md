@@ -2,17 +2,7 @@
 
 Connector between Hadoop and XRootD protocols (EOS compatible) 
 
-### Run XRootD-Connector integration tests
-
-This will build the environment image and run integration tests. 
-First run is the longest, but next attempts will be instant
-
-```
-./run-integration-tests.sh
-```
-
-
-### Build XRootD-Connector in hadalytic
+### Build and test XRootD-Connector in hadalytic
 
 Prerequisites:
 
@@ -23,6 +13,21 @@ xrootd-client, xrootd-client-libs, xrootd-client-devel
 Use "make all" command to compile
 ```
 make all
+```
+
+Use "make test" command to run integration tests
+
+```
+make test
+```
+
+### Run XRootD-Connector docker integration tests
+
+This will build the environment image and run integration tests. 
+First run is the longest, but next attempts will be instant
+
+```
+./run-docker-tests.sh
 ```
 
 ### Use XRootD-Connector prebuild environment

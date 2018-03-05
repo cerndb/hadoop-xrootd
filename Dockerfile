@@ -41,10 +41,7 @@ CMD make clean 2>/dev/null && \
     mv /data/EOSfs.jar /usr/lib/hadoop-2.7.4/share/hadoop/common/lib/EOSfs.jar && \
     mv /data/libjXrdCl.so /usr/lib/hadoop/lib/native/libjXrdCl.so && \
     make clean 2>/dev/null && \
-    echo '' && \
-    echo '* Running integration tests...: *' && \
-    set -e && \
-    for file in /data/integration-tests/*; do $file && echo '** Success **' || exit 2 ; done
+    make test
 
 LABEL \
   org.label-schema.version="0.1" \

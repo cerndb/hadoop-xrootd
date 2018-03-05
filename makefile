@@ -26,6 +26,13 @@ all: libjXrdCl.so EOSfs.jar
 clean:
 	-rm ch_cern_eos_*.o ch_cern_eos_*.h ch/cern/eos/*.class libjXrdCl.so EOSfs.jar
 
+test:
+	{ \
+	set -e ;\
+	echo '* Running integration tests...: *' ;\
+	for file in integration-tests/* ; do $${file} && echo '** Success **' ; done ; \
+	}
+
 classes: $(CLASSES:.java=.class)
 
 EOSfs.jar: classes
