@@ -12,8 +12,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#undef ch_cern_eos_XrootDBasedFileSystem_SHUTDOWN_HOOK_PRIORITY
-#define ch_cern_eos_XrootDBasedFileSystem_SHUTDOWN_HOOK_PRIORITY 10L
+#undef ch_cern_eos_XrootDBasedKerberizedFileSystem_SHUTDOWN_HOOK_PRIORITY
+#define ch_cern_eos_XrootDBasedKerberizedFileSystem_SHUTDOWN_HOOK_PRIORITY 10L
 
 
 int EOS_debug = 0;
