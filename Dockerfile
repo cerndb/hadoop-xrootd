@@ -36,21 +36,15 @@ RUN yum update -y && \
 WORKDIR /data
 
 # build the connector on docker run
-CMD make clean && \
+CMD make clean 2>/dev/null && \
     make all && \
-    cp /data/EOSfs.jar /usr/lib/hadoop-2.7.4/share/hadoop/common/lib/EOSfs.jar && \
-    cp /data/libjXrdCl.so /usr/lib/hadoop/lib/native/libjXrdCl.so && \
+    mv /data/EOSfs.jar /usr/lib/hadoop-2.7.4/share/hadoop/common/lib/EOSfs.jar && \
+    mv /data/libjXrdCl.so /usr/lib/hadoop/lib/native/libjXrdCl.so && \
+    make clean 2>/dev/null && \
     echo '' && \
-    echo '* EOSfs.jar: /data/EOSfs.jar /usr/lib/hadoop-2.7.4/share/hadoop/common/lib/EOSfs.jar *' && \
-    echo '* libjXrdCl.so: /data/libjXrdCl.so /usr/lib/hadoop/lib/native/libjXrdCl.so *' && \
-    echo '' && \
-    echo '* To test: *' && \
-    echo '* export EOS_debug=1 *' && \
-    echo '* kinit <your-username> *' && \
-    echo '* hdfs dfs -ls root://eosuser.cern.ch/ *' && \
-    echo '* hdfs dfs -get root://eospublic.cern.ch/eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/20000/DCF94DC3-42CE-E211-867A-001E67398011.root /tmp/ *' && \
-    bash
-
+    echo '* Running integration tests...: *' && \
+    set -e && \
+    for file in /data/integration-tests/*; do $file && echo '** Success **' || exit 2 ; done
 
 LABEL \
   org.label-schema.version="0.1" \
