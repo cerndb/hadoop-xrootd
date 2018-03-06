@@ -26,15 +26,17 @@ all: libjXrdCl.so EOSfs.jar
 clean:
 	-rm ch_cern_eos_*.o ch_cern_eos_*.h ch/cern/eos/*.class libjXrdCl.so EOSfs.jar
 
+test:
+	{ \
+	set -e ;\
+	echo '* Running integration tests...: *' ;\
+	for file in integration-tests/* ; do $${file} && echo '** Success **' || exit ; done ; \
+	}
+
 classes: $(CLASSES:.java=.class)
 
-#	jar -cfe $@ coucou $(CLASSES:.java=.class) META-INF
 EOSfs.jar: classes
 	jar -cfe $@ coucou $(CLASSES:.java=.class) META-INF
-	
-
-#ch/cern/eos/XrootDBasedFile.class: ch/cern/eos/XrootDBasedClFile.java
-#	javac ch/cern/eos/XrootDBasedClFile.java
 
 ch_cern_eos_XrootDBasedClFile.h: ch/cern/eos/XrootDBasedClFile.class
 	javah $(JHFLAGS) ch.cern.eos.XrootDBasedClFile
