@@ -2,6 +2,15 @@
 
 Connector between Hadoop and XRootD protocols (EOS compatible) 
 
+### Build and run PySpark Shell with XRootD-Connector
+
+This will build the environment image and run integration tests. 
+First run is the longest, but next attempts will be instant
+
+```
+./run-demo.sh
+```
+
 ### Build and test XRootD-Connector in hadalytic
 
 Prerequisites:
@@ -18,10 +27,12 @@ make all
 Use "make test" command to run integration tests
 
 ```
+cp EOSfs.jar /usr/lib/hadoop-2.7.4/share/hadoop/common/lib/EOSfs.jar
+cp libjXrdCl.so /usr/lib/hadoop/lib/native/libjXrdCl.so
 make test
 ```
 
-### Run XRootD-Connector docker integration tests
+### Build and test XRootD-Connector in docker on localhost
 
 This will build the environment image and run integration tests. 
 First run is the longest, but next attempts will be instant
@@ -30,47 +41,7 @@ First run is the longest, but next attempts will be instant
 ./run-docker-tests.sh
 ```
 
-### Use XRootD-Connector prebuild environment
-
-**Use XRootD-Connector Docker with your gcc, java version, and hadoop versions**
-
-Go to this repository directory (where e.g. `BUILD_PATH=$(pwd)`) and run the docker
-
-
-If you are already on Linux, and in hadoop-xrootd-connector folder use:
-
-```
-BUILD_PATH=/path/to/hadoop-xrootd-connector
-```
-
-or on Linux
-
-```
-BUILD_PATH=$(pwd) 
-```
-
-The below command will bring you to the bash shell, in which you can execute `make all`, `make clean` or
-`hdfs dfs -ls root:// ` as you were on preconfigured cluster
-
-```
-docker run --rm -it -v $BUILD_PATH:/data gitlab-registry.cern.ch/awg/hadoop-xrootd-connector bash
-```
-
-You can then test your connector with
-
-```
-make clean
-make all
-cp /data/EOSfs.jar /usr/lib/hadoop-2.7.4/share/hadoop/common/lib/EOSfs.jar
-cp /data/libjXrdCl.so /usr/lib/hadoop/lib/native/libjXrdCl.so
-make clean
-export EOS_debug=1
-kinit <your-username>
-hdfs dfs -ls root://eosuser.cern.ch/
-hdfs dfs -get root://eospublic.cern.ch/eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/20000/DCF94DC3-42CE-E211-867A-001E67398011.root /tmp/
-```
-
-### Recommended
+### Documentation: Recommended
 
 NOTE: If you have not yet, build the base image containing all required dependencies
 
@@ -87,4 +58,31 @@ please ensure that you edit `/etc/docker/daemon.json` with
 { 
     "dns": ["<your-cern-dns>", "8.8.8.8"] 
 }
+```
+
+### Documentation: XRootD-Connector prebuild environment
+
+**Use XRootD-Connector Docker with your gcc, java version, and hadoop versions**
+
+Build the image
+```
+docker build -t hadoop-xrootd-connector .
+```
+
+You can go to docker inside with bash
+```
+docker run --rm -it hadoop-xrootd-connector bash
+```
+
+You can then test your connector with
+```
+make clean
+make all
+cp /data/EOSfs.jar /usr/lib/hadoop-2.7.4/share/hadoop/common/lib/EOSfs.jar
+cp /data/libjXrdCl.so /usr/lib/hadoop/lib/native/libjXrdCl.so
+make clean
+export EOS_debug=1
+kinit <your-username>
+hdfs dfs -ls root://eosuser.cern.ch/
+hdfs dfs -get root://eospublic.cern.ch/eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/20000/DCF94DC3-42CE-E211-867A-001E67398011.root /tmp/
 ```
