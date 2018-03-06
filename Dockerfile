@@ -12,8 +12,9 @@ ENV PATH $PATH:/usr/lib/hadoop/bin
 ENV PATH $PATH:/usr/lib/hadoop/sbin
 ENV PATH $PATH:${JAVA_HOME}/bin
 ENV HADOOP_PREFIX /usr/lib/hadoop
-ENV SPARK_HOME=/usr/lib/spark
-ENV PYTHON_DIR_PATH=${SPARK_HOME}/python/
+ENV SPARK_HOME /usr/lib/spark
+ENV PYTHON_DIR_PATH ${SPARK_HOME}/python/
+ENV SPARK_DIST_CLASSPATH /usr/lib/hadoop/etc/hadoop:/usr/lib/hadoop/share/hadoop/common/lib/*:/usr/lib/hadoop/share/hadoop/common/*:/usr/lib/hadoop/share/hadoop/hdfs:/usr/lib/hadoop/share/hadoop/hdfs/lib/*:/usr/lib/hadoop/share/hadoop/hdfs/*:/usr/lib/hadoop/share/hadoop/yarn/lib/*:/usr/lib/hadoop/share/hadoop/yarn/*:/usr/lib/hadoop/share/hadoop/mapreduce/lib/*:/usr/lib/hadoop/share/hadoop/mapreduce/*:/contrib/capacity-scheduler/*.jar
 
 # Get the dependencies for building xrootd-connector
 RUN yum update -y && \
@@ -57,10 +58,10 @@ RUN make clean 2>/dev/null && \
     make clean 2>/dev/null
 
 # bash on docker run
-CMD export SPARK_DIST_CLASSPATH=$(hadoop classpath) && /usr/lib/spark/bin/pyspark
+CMD echo '' && echo '/usr/lib/spark/bin/pyspark --packages org.diana-hep:spark-root_2.11:0.1.15' && bash
 
 LABEL \
   org.label-schema.version="0.1" \
   org.label-schema.name="Hadoop-XRootD-Connector Dockerfile" \
   org.label-schema.vendor="CERN" \
-  org.label-schema.schema-version="1.1"
+  org.label-schema.schema-version="1.2"
