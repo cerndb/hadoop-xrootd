@@ -30,7 +30,7 @@ test:
 	{ \
 	set -e ;\
 	echo '* Running integration tests...: *' ;\
-	for file in integration-tests/* ; do $${file} && echo '** Success **' ; done ; \
+	for file in integration-tests/* ; do $${file} && echo '** Success **' || exit ; done ; \
 	}
 
 classes: $(CLASSES:.java=.class)
