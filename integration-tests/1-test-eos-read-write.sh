@@ -11,4 +11,4 @@ echo "** Try reading $TEST_FILE **"
 hdfs dfs -ls $TEST_FILE
 
 echo "** Try downloading $TEST_FILE **"
-hdfs dfs -get $TEST_FILE /tmp
+hdfs dfs -tail $TEST_FILE > /dev/null
