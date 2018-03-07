@@ -11,6 +11,16 @@ First run is the longest, but next attempts will be instant
 ./run-demo.sh
 ```
 
+While in bash, run pyspark with any required packages
+
+```
+/usr/lib/spark/bin/pyspark --packages org.diana-hep:spark-root_2.11:0.1.15
+
+>>> input = "root://eospublic.cern.ch//eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/20000/DCF94DC3-42CE-E211-867A-001E67398011.root"
+>>> df = sqlContext.read.format("org.dianahep.sparkroot").option("tree", "Events").load(input)
+>>> df.count()
+```
+
 ### Build and test XRootD-Connector in hadalytic
 
 Prerequisites:

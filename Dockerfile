@@ -58,7 +58,7 @@ RUN make clean 2>/dev/null && \
     make clean 2>/dev/null
 
 # bash on docker run
-CMD echo '' && echo '/usr/lib/spark/bin/pyspark --packages org.diana-hep:spark-root_2.11:0.1.15' && bash
+CMD echo '' && echo '** Run Spark-Shell with any required packages **' && echo '/usr/lib/spark/bin/pyspark --packages org.diana-hep:spark-root_2.11:0.1.15' && bash
 
 LABEL \
   org.label-schema.version="0.1" \
