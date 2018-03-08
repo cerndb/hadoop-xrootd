@@ -1,1 +1,1 @@
-ch.cern.eos.EOSFileSystem
+ch.cern.eos.XrootDBasedKerberizedFileSystem

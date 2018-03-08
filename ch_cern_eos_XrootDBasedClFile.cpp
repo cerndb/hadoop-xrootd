@@ -2,7 +2,7 @@
 #include <string>
 #include "stdlib.h"
 
-#include "ch_cern_eos_XrdClFile.h"
+#include "ch_cern_eos_XrootDBasedClFile.h"
 #include "xrootd/XrdCl/XrdClFile.hh"
 #include "xrootd/XrdCl/XrdClDefaultEnv.hh"
 
@@ -14,7 +14,7 @@ extern "C" {
      * Method:    initFile
      * Signature: ()J
      */
-    JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrdClFile_initFile(JNIEnv *, jobject) {
+    JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrootDBasedClFile_initFile(JNIEnv *, jobject) {
 
 	// Andreas, 24.8.2016, doubled 31.8.2016, reduced to 540 (600s hadoop timeouts) 5.9.2016:
 	XrdCl::Env* xenv = XrdCl::DefaultEnv::GetEnv();
@@ -43,7 +43,7 @@ extern "C" {
      * Method:    disposeFile
      * Signature: ()J
      */
-    JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrdClFile_disposeFile (JNIEnv *env, jobject This, jlong handle) {
+    JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrootDBasedClFile_disposeFile (JNIEnv *env, jobject This, jlong handle) {
 	XrdCl::File *file = (XrdCl::File *) handle;
 
 	if (Xrd_debug) printf("disposeFile: deleting %p\n", file);
@@ -58,7 +58,7 @@ extern "C" {
      * Method:    openFile
      * Signature: (Ljava/lang/String;II)J
      */
-    JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrdClFile_openFile (JNIEnv *env, jobject This, jlong handle, jstring url_p, jint flags, jint mode) {
+    JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrootDBasedClFile_openFile (JNIEnv *env, jobject This, jlong handle, jstring url_p, jint flags, jint mode) {
 	uint16_t timeout = 0;
 	const char *fn = env->GetStringUTFChars(url_p, 0);
 
@@ -87,7 +87,7 @@ extern "C" {
      * Method:    readFile
      * Signature: (J[BJI)J
      */
-    JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrdClFile_readFile (JNIEnv *env, jobject This, jlong handle, jlong filepos, jbyteArray b, jint off, jint len) {
+    JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrootDBasedClFile_readFile (JNIEnv *env, jobject This, jlong handle, jlong filepos, jbyteArray b, jint off, jint len) {
 	jboolean isCopy;
 	
 	char *buf = (char *)env->GetPrimitiveArrayCritical(b, &isCopy);
@@ -122,7 +122,7 @@ extern "C" {
  * Method:    writeFile
  * Signature: (JJ[BII)J
  */
-    JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrdClFile_writeFile (JNIEnv *env, jobject This, jlong handle, jlong filepos, jbyteArray b, jint off, jint len) {
+    JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrootDBasedClFile_writeFile (JNIEnv *env, jobject This, jlong handle, jlong filepos, jbyteArray b, jint off, jint len) {
 	uint64_t offset = filepos;
 	uint32_t size = len;
 	uint16_t timeout = 900;
@@ -148,7 +148,7 @@ extern "C" {
  * Method:    closeFile
  * Signature: (J)J
  */
-    JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrdClFile_closeFile (JNIEnv *env, jobject This, jlong handle) {
+    JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrootDBasedClFile_closeFile (JNIEnv *env, jobject This, jlong handle) {
 	XrdCl::File *file = (XrdCl::File *) handle;
 
 	uint16_t timeout = 900;	    /* eos: replica sync on close, might take longer than default 300s */
@@ -166,7 +166,7 @@ extern "C" {
  * Method:    syncFile
  * Signature: (J)J
  */
-    JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrdClFile_syncFile (JNIEnv *env, jobject This, jlong handle) {
+    JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrootDBasedClFile_syncFile (JNIEnv *env, jobject This, jlong handle) {
 	XrdCl::File *file = (XrdCl::File *) handle;
 	uint16_t timeout = 900;	    /* eos: replica sync, might take longer than default 300s */
 
