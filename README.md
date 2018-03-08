@@ -4,14 +4,11 @@ Connector between Hadoop and XRootD protocols (EOS compatible)
 
 ### Build and run PySpark Shell with XRootD-Connector
 
-This will build the environment image and run integration tests. 
-First run is the longest, but next attempts will be instant
+This will build the environment image and run bash shell. While in bash, run pyspark with any required packages or any other command
 
 ```
 ./run-demo.sh
 ```
-
-While in bash, run pyspark with any required packages
 
 ```
 /usr/lib/spark/bin/pyspark --packages org.diana-hep:spark-root_2.11:0.1.15
@@ -20,6 +17,8 @@ While in bash, run pyspark with any required packages
 >>> df = sqlContext.read.format("org.dianahep.sparkroot").option("tree", "Events").load(input)
 >>> df.count()
 ```
+
+NOTE: First run is the longest, but next attempts will be instant
 
 ### Build and test XRootD-Connector in hadalytic
 
@@ -37,7 +36,7 @@ make all
 Use "make test" command to run integration tests
 
 ```
-cp EOSfs.jar /usr/lib/hadoop-2.7.4/share/hadoop/common/lib/EOSfs.jar
+cp EOSfs.jar /usr/lib/hadoop/EOSfs.jar
 cp libjXrdCl.so /usr/lib/hadoop/lib/native/libjXrdCl.so
 make test
 ```
