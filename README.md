@@ -4,12 +4,19 @@ Connector between Hadoop and XRootD protocols (EOS compatible)
 
 ### Build and run PySpark Shell with XRootD-Connector
 
+Prerequisites:  
+
+- Docker Installation https://docs.docker.com/install/
+
+- Docker as non-root user https://docs.docker.com/install/linux/linux-postinstall/
+
 This will build the environment image and run bash shell. While in bash, run pyspark with any required packages or any other command
 
 ```
 ./run-demo.sh
 ```
 
+while in bash shell inside the docker, you can run spark shell with connector preinstalled
 ```
 /usr/lib/spark/bin/pyspark --packages org.diana-hep:spark-root_2.11:0.1.15
 
@@ -36,7 +43,7 @@ make all
 Use "make test" command to run integration tests
 
 ```
-cp EOSfs.jar /usr/lib/hadoop/EOSfs.jar
+cp EOSfs.jar /usr/lib/hadoop/share/hadoop/common/lib/EOSfs.jar
 cp libjXrdCl.so /usr/lib/hadoop/lib/native/libjXrdCl.so
 make test
 ```
@@ -44,19 +51,14 @@ make test
 ### Build and test XRootD-Connector in docker on localhost
 
 This will build the environment image and run integration tests. 
-First run is the longest, but next attempts will be instant
 
 ```
 ./run-docker-tests.sh
 ```
 
+NOTE: First run is the longest, but next attempts will be instant
+
 ### Documentation: Recommended
-
-NOTE: If you have not yet, build the base image containing all required dependencies
-
-```
-docker build -t gitlab-registry.cern.ch/awg/hadoop-xrootd-connector $BUILD_PATH
-```
 
 NOTE: User inside docker is different then on parent host, thus one might need to
 change ownership with `chown
@@ -74,6 +76,7 @@ please ensure that you edit `/etc/docker/daemon.json` with
 **Use XRootD-Connector Docker with your gcc, java version, and hadoop versions**
 
 Build the image
+
 ```
 docker build -t hadoop-xrootd-connector .
 ```
@@ -83,7 +86,8 @@ You can go to docker inside with bash
 docker run --rm -it hadoop-xrootd-connector bash
 ```
 
-You can then test your connector with
+You can then test your connector with e.g.
+
 ```
 make clean
 make all
