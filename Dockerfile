@@ -2,10 +2,10 @@ FROM gitlab-registry.cern.ch/linuxsupport/cc7-base:latest
 
 MAINTAINER Piotr Mrowczynski <piotr.mrowczynski@cern.ch>
 
-ARG HADOOP_VERSION=2.7.4
-ARG HADOOP_URL=https://syscontrol.cern.ch/rpms/hdp/hadoop/soft7/hadoop-${HADOOP_VERSION}.tar.gz
+ARG HADOOP_VERSION=2.7.5
+ARG HADOOP_URL=http://mirror.switch.ch/mirror/apache/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz
 ARG SPARK_VERSION=2.2.0
-ARG SPARK_URL=https://syscontrol.cern.ch/rpms/hdp/spark/soft/spark-${SPARK_VERSION}-nohdp-1.tgz
+ARG SPARK_URL=http://mirror.switch.ch/mirror/apache/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-without-hadoop.tgz
 
 ENV JAVA_HOME /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.161-0.b14.el7_4.x86_64
 ENV PATH $PATH:/usr/lib/hadoop/bin
@@ -44,7 +44,7 @@ RUN curl -s ${HADOOP_URL} | tar -xzvf - -C /usr/lib/ && \
 
 # Install spark - required to run pyspark
 RUN curl -s ${SPARK_URL} | tar -xzvf - -C /usr/lib/ && \
-    cd /usr/lib && ln -s ./spark-${SPARK_VERSION}-bin-cern-spark spark
+    cd /usr/lib && ln -s ./spark-${SPARK_VERSION}-bin-without-hadoop spark
 
 COPY . /data
 
@@ -53,7 +53,7 @@ WORKDIR /data
 # build the connector on docker run
 RUN make clean 2>/dev/null && \
     make all && \
-    mv /data/EOSfs.jar /usr/lib/hadoop-2.7.4/share/hadoop/common/lib/EOSfs.jar && \
+    mv /data/EOSfs.jar /usr/lib/hadoop/share/hadoop/common/lib/EOSfs.jar && \
     mv /data/libjXrdCl.so /usr/lib/hadoop/lib/native/libjXrdCl.so && \
     make clean 2>/dev/null
 
