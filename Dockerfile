@@ -29,7 +29,7 @@ COPY . /data
 WORKDIR /data
 RUN make clean 2>/dev/null && \
     make all && \
-    mv /data/EOSfs.jar /usr/lib/hadoop-2.7.4/share/hadoop/common/lib/EOSfs.jar && \
+    mv /data/EOSfs.jar /usr/lib/hadoop/share/hadoop/common/lib/EOSfs.jar && \
     mv /data/libjXrdCl.so /usr/lib/hadoop/lib/native/libjXrdCl.so && \
     make clean 2>/dev/null
 
