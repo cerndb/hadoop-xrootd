@@ -48,6 +48,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.Progressable;
 
+import ch.cern.eos.EOSConnector.NarSystem;
+
 public class XrootDBasedFileSystem extends FileSystem {
     private long nHandle = 0;
     private static boolean libLoaded = false;
@@ -191,9 +193,13 @@ public class XrootDBasedFileSystem extends FileSystem {
 		try {
 			System.loadLibrary("jXrdCl");
 		} catch (UnsatisfiedLinkError e) {
-			e.printStackTrace();
-			eosDebugLogger.print("failed to load jXrdCl");
-			throw new IOException();
+            try {
+                NarSystem.loadLibrary();
+            } catch (UnsatisfiedLinkError f) {
+                f.printStackTrace();
+                eosDebugLogger.print("Failed to load native library");
+                throw new IOException();
+            }
 		}
 	}
 
