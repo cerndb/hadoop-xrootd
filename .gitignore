@@ -1,0 +1,9 @@
+*.un~
+EOSfs.jar
+ch_cern_eos_XrootDBasedClFile.o
+ch_cern_eos_XrootDBasedKerberizedFileSystem.o
+libjXrdCl.so
+src/main/cpp/ch_cern_eos_XrootDBasedClFile.h
+src/main/cpp/ch_cern_eos_XrootDBasedKerberizedFileSystem.h
+src/main/java/ch/cern/eos/*.class
+target/
