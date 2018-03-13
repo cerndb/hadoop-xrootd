@@ -26,7 +26,10 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import ch.cern.eos.EOSConnector.NarSystem;
+
 public class XRootDFileSystem extends FileSystem {
+
     private long nHandle = 0;
     private static boolean libLoaded = false;
     private native long initFileSystem(String url);
@@ -180,9 +183,13 @@ public class XRootDFileSystem extends FileSystem {
 		try {
 			System.loadLibrary("jXrdCl");
 		} catch (UnsatisfiedLinkError e) {
-			e.printStackTrace();
-			eosDebugLogger.print("failed to load jXrdCl");
-			throw new IOException();
+            try {
+                NarSystem.loadLibrary();
+            } catch (UnsatisfiedLinkError f) {
+                f.printStackTrace();
+                eosDebugLogger.print("Failed to load native library");
+                throw new IOException();
+            }
 		}
 	}
 
