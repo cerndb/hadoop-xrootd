@@ -26,6 +26,20 @@
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
         </dependency>
+        <dependency>
+          <groupId>org.scijava</groupId>
+          <artifactId>native-lib-loader</artifactId>
+          <version>2.2.0</version>
+      </dependency>
+      <!--
+      <dependency>
+          <groupId>ch.cern.eos</groupId>
+          <artifactId>EOSConnector</artifactId>
+          <scope>runtime</scope>
+          <version>${project.version}</version>
+          <type>nar</type>
+        </dependency>
+      -->
       </dependencies>
 	<build>
         <plugins>
@@ -33,13 +47,26 @@
                 <!-- Add JNI library -->
                 <groupId>com.github.maven-nar</groupId>
                 <artifactId>nar-maven-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.5.1</version>
                 <extensions>true</extensions>
                 <configuration>
+                  <linker>
+                    <sysLibs>
+                      <sysLib>
+                        <name>dl</name>
+                      </sysLib>
+                      <sysLib>
+                        <name>XrdCl</name>
+                      </sysLib>
+                      <sysLib>
+                        <name>XrdUtils</name>
+                      </sysLib>
+                    </sysLibs>
+                  </linker>
                   <libraries>
                     <library>
                       <type>jni</type>
-                      <narSystemPackage>ch.cern.eos.jni</narSystemPackage>
+                      <narSystemPackage>ch.cern.eos.EOSConnector</narSystemPackage>
                     </library>
                   </libraries>
                   <cpp>
