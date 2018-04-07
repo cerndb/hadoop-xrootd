@@ -37,7 +37,7 @@ public class DebugLogger {
 
     public void printStackTrace(Exception e) {
         if (this.logger.isDebugEnabled()) {
-        	this.logger.error(e.getMessage());
+            this.logger.error(e.getMessage());
             e.printStackTrace();
         }
     }
