@@ -153,13 +153,38 @@ public class XrootDBasedKrb5
             // Already set, perhaps because this is the M/R task
             return;
         }
-        PrincipalName client=null;
-        Credentials cccreds=null;
+        PrincipalName client = null;
+        Credentials cccreds = null;
+        boolean writeCache = false;
 
-	    int cc_version = FileCCacheConstants.KRB5_FCC_FVNO_3;
+	int cc_version = FileCCacheConstants.KRB5_FCC_FVNO_3;
 
-        if (ugi.hasKerberosCredentials()) {	/* set up by checkToken */
+        String krb5ccname = null;
+
+        try {
+            eosDebugLogger.printDebug("Reading credentials from Credentials Cache");
+            CredentialsCache ncc = CredentialsCache.getInstance();
+            if (ncc == null) {
+                throw new IOException("Found no valid credentials cache"); 
+            }
+
+            krb5ccname = ncc.cacheName();
+            cccreds = ncc.getDefaultCreds();
+            if (cccreds == null) {
+                throw new IOException("No valid Kerberos ticket in credentials cache");
+            }
+            client = ncc.getPrimaryPrincipal();
+        }
+        catch (IOException e)
+        {
+	    cccreds = null;
+            eosDebugLogger.printStackTrace(e);
+            
+        }
+
+        if (cccreds == null && ugi.hasKerberosCredentials()) {    /* set up by checkToken */
             try {
+                eosDebugLogger.printDebug("Reading credentials from UGI");
                 Method getTGT = ugi.getClass().getDeclaredMethod("getTGT");
                 getTGT.setAccessible(true);
                 KerberosTicket TGT = (KerberosTicket) getTGT.invoke(ugi);
@@ -173,28 +198,18 @@ public class XrootDBasedKrb5
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 eosDebugLogger.printStackTrace(e);
             }
-        } 
-
-        String krb5ccname = null;
-        if (cccreds == null) {
-            CredentialsCache ncc = CredentialsCache.getInstance();
-            if (ncc == null) {
-                throw new IOException("Found no valid credentials cache"); 
-            }
-
-            krb5ccname = ncc.cacheName();
-            cccreds = ncc.getDefaultCreds();
-            if (cccreds == null) {
-                throw new IOException("No valid Kerberos ticket in credentials cache");
-            }
-            client = ncc.getPrimaryPrincipal();
         }
+        
+
+        if (cccreds == null) //no kerberos tgt found
+           throw new IOException("No valid Kerberos ticket in credentials cache");
 
         if (krb5ccname == null) {
+            writeCache = true;
             krb5ccname = System.getenv("KRB5CCNAME");
             if (krb5ccname != null && krb5ccname.length() > 5 && krb5ccname.regionMatches(true, 0,  "FILE:", 0, 5)) {
                 krb5ccname = krb5ccname.substring(5);	
-                eosDebugLogger.printDebug("krb5ccname filename " + krb5ccname);
+                eosDebugLogger.printDebug("Will write krb5ccname filename " + krb5ccname);
                 if (eosDebugLogger.isDebugEnabled()) { 
                     BufferedReader ir = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec(new String[]{"ls", "-l", krb5ccname}).getInputStream()));
                     String ll; 
@@ -204,7 +219,7 @@ public class XrootDBasedKrb5
                 }
             } else {
                 krb5ccname = Files.createTempFile("krb5", null).toString();
-                eosDebugLogger.printDebug("created krb5ccname " + krb5ccname);
+                eosDebugLogger.printDebug("Will write to newly created krb5ccname " + krb5ccname);
             }
         }
         // saving  new cache location
@@ -228,8 +243,9 @@ public class XrootDBasedKrb5
 
         eosDebugLogger.printDebug("setKrbToken saving krb5 ticket l=" + krb5cc.length + " in identifier l=" + bos.toByteArray().length);
         Token<? extends TokenIdentifier> t = new Token<Krb5TokenIdentifier>(bos.toByteArray(), krb5cc, new Text("krb5"), new Text("Cerberus service"));
-        if (eosDebugLogger.isDebugEnabled()) {
-            try { 
+        if (writeCache) {
+            try {
+                eosDebugLogger.printDebug("Renewing token"); 
                 t.renew(new Configuration());
             } catch (Exception e) {
                 eosDebugLogger.printDebug("setKrbToken failed to renew " + t.toString() + ": " + e);
