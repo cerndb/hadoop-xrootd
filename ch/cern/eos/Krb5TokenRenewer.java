@@ -131,7 +131,7 @@ public class Krb5TokenRenewer extends TokenRenewer {
 			CredentialsCache fcc = null;
 			XrootDBasedFileSystem.initLib();
 			krb5ccname = XrootDBasedKrb5.krb5ccname;
-			eosDebugLogger.print("TokenRenewer: krb5ccname " + krb5ccname);
+			eosDebugLogger.printDebug("TokenRenewer: krb5ccname " + krb5ccname);
 
 			try {
 				fcc = CredentialsCache.getInstance(newCreds.getClient(), krb5ccname);
