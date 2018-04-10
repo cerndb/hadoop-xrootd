@@ -15,5 +15,9 @@ FIRSTLETTER=$(echo $KINIT_USER | cut -c 1)
 
 TEST_FILE="root://eosuser.cern.ch//eos/user/$FIRSTLETTER/$KINIT_USER/"
 
-echo "** Try reading $TEST_FILE with krb5**"
+echo "** Try reading $TEST_FILE with krb5 without debug**"
+hdfs dfs -ls $TEST_FILE
+
+export EOS_debug=1
+echo "** Try reading $TEST_FILE with krb5 and EOS_debug=1**"
 hdfs dfs -ls $TEST_FILE
