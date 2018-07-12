@@ -13,7 +13,7 @@ Prerequisites:
 This will build the environment image and run bash shell. While in bash, run pyspark with any required packages or any other command
 
 ```
-./run-demo.sh
+./run-docker.sh
 ```
 
 while in bash shell inside the docker, you can run spark shell with connector preinstalled
@@ -84,18 +84,4 @@ docker build -t hadoop-xrootd-connector .
 You can go to docker inside with bash
 ```
 docker run --rm -it hadoop-xrootd-connector bash
-```
-
-You can then test your connector with e.g.
-
-```
-make clean
-make all
-cp /data/EOSfs.jar /usr/lib/hadoop-2.7.4/share/hadoop/common/lib/EOSfs.jar
-cp /data/libjXrdCl.so /usr/lib/hadoop/lib/native/libjXrdCl.so
-make clean
-export EOS_debug=1
-kinit <your-username>
-hdfs dfs -ls root://eosuser.cern.ch/
-hdfs dfs -get root://eospublic.cern.ch/eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/20000/DCF94DC3-42CE-E211-867A-001E67398011.root /tmp/
 ```
