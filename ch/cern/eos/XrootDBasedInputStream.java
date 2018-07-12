@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.PositionedReadable;
 import org.apache.hadoop.fs.Seekable;
+import org.apache.hadoop.fs.FileSystem.Statistics;
 
 import ch.cern.eos.XrootDBasedClFile;
 
@@ -38,10 +39,12 @@ class XrootDBasedInputStream extends FSInputStream implements Seekable, Position
 
     private long pos = 0;
     private static final int IO_SIZE = 1024*1024;
+    private final Statistics stats;
 
-    public XrootDBasedInputStream(String url) {
+    public XrootDBasedInputStream(String url, Statistics stats) {
         this.eosDebugLogger = new DebugLogger(System.getenv("EOS_debug") != null);
-    
+        this.stats = stats;
+
         this.file = new XrootDBasedClFile();
         long status = file.Open(url, 0, 0);
         
@@ -74,9 +77,7 @@ class XrootDBasedInputStream extends FSInputStream implements Seekable, Position
     }
 
     public int read(long pos, byte[] b, int off, int len) throws IOException {
-        //this.pos = pos;
-
-        if (this.pos < 0) {  // TODO: This is unclear
+        if (this.pos < 0) {  // TODO: implement - https://github.com/grahamar/hadoop-aws/blob/master/src/main/java/org/apache/hadoop/fs/s3a/S3AInputStream.java#L364
             this.eosDebugLogger.printDebug("EOSInputStream.read() pos: " + this.pos);
 
             //if (this.pos == -1) { throw new EOFException(); }
@@ -84,9 +85,10 @@ class XrootDBasedInputStream extends FSInputStream implements Seekable, Position
         }
 
         long rd = file.Read(pos, b, off, len);
-        this.eosDebugLogger.printDebug("EOSInputStream.read() bytes: " + rd);
+        this.eosDebugLogger.printDebug("EOSInputStream.read(pos=" + pos + ", b, off=" + off + ", len=" + len + ") readBytes: " + rd);
         if (rd >= 0) {
             this.pos = pos + rd;
+            updateStatsBytesRead(rd);
             return (int) rd;
         }
         else if (rd == -1 ){
@@ -102,7 +104,7 @@ class XrootDBasedInputStream extends FSInputStream implements Seekable, Position
         int apos=0;
 
         this.pos=pos;
-        this.eosDebugLogger.printDebug("EOSInputStream.(long pos, byte[] b) pos: " + pos);
+        this.eosDebugLogger.printDebug("EOSInputStream.readFully(long pos, byte[] b)..");
         while (this.pos >= 0)
         {
             byte[] a = new byte[IO_SIZE];
@@ -111,7 +113,7 @@ class XrootDBasedInputStream extends FSInputStream implements Seekable, Position
             System.arraycopy(a, 0, b, apos, (int)rd);
             apos += rd;
         }
-        this.eosDebugLogger.printDebug("EOSInputStream.(long pos, byte[] b) bytes read: " + apos);
+        this.eosDebugLogger.printDebug("EOSInputStream.readFully(long pos, byte[] b) bytes read: " + apos);
     }
 
     public void readFully(long pos, byte[] buffer, int off, int len) throws IOException {
@@ -120,7 +122,8 @@ class XrootDBasedInputStream extends FSInputStream implements Seekable, Position
     }
 
     public void seek(long pos) {
-	    this.pos = pos;
+        this.eosDebugLogger.printDebug("EOSInputStream.seek(long pos) pos: " + pos);
+        this.pos = pos;
     }
 
     public boolean seekToNewSource(long targetPos) {
@@ -134,8 +137,18 @@ class XrootDBasedInputStream extends FSInputStream implements Seekable, Position
 
         long st = file.Close();
         if (st != 0) {
-        	eosDebugLogger.print("close(): " + st);
+        	eosDebugLogger.printDebug("close(): " + st);
         }
         pos = -2;
+    }
+
+    /**
+     * Update (increment) the bytes read counter.
+     * @param bytesRead number of bytes read
+     */
+    private void updateStatsBytesRead(long bytesRead) {
+        if (stats != null && bytesRead > 0) {
+            stats.incrementBytesRead(bytesRead);
+        }
     }
 }

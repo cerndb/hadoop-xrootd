@@ -210,6 +210,7 @@ public class XrootDBasedFileSystem extends FileSystem {
     }
 
     public void initialize(URI uri, Configuration conf) throws IOException {
+		super.initialize(uri, conf);
 		setConf(conf);
 
 		this.uri = uri;
@@ -230,7 +231,7 @@ public class XrootDBasedFileSystem extends FileSystem {
 		String filespec = uri.getScheme() + "://" +  uri.getAuthority() + "/" + u.getPath();
 		
 		eosDebugLogger.printDebug("EOSfs open " + filespec + " --> " + filespec);
-		return new FSDataInputStream(new BufferedFSInputStream (new XrootDBasedInputStream(filespec),buffer_size));
+		return new FSDataInputStream(new BufferedFSInputStream (new XrootDBasedInputStream(filespec, statistics),buffer_size));
     }
 
     public FileStatus getFileStatus(Path p) throws IOException {
