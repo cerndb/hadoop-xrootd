@@ -15,22 +15,11 @@
  */
 package ch.cern.eos;
 
-import java.io.DataInputStream;
-import java.io.FilterInputStream;
-import org.apache.hadoop.fs.FSInputStream;
-
+import org.apache.hadoop.fs.*;
 import java.io.IOException;
-import java.io.EOFException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.PositionedReadable;
 import org.apache.hadoop.fs.Seekable;
 import org.apache.hadoop.fs.FileSystem.Statistics;
-
-import ch.cern.eos.XrootDBasedClFile;
 
 class XrootDBasedInputStream extends FSInputStream implements Seekable, PositionedReadable {
 
@@ -140,6 +129,7 @@ class XrootDBasedInputStream extends FSInputStream implements Seekable, Position
         	eosDebugLogger.printDebug("close(): " + st);
         }
         pos = -2;
+        super.close();
     }
 
     /**
