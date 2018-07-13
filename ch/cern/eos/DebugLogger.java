@@ -35,6 +35,10 @@ public class DebugLogger {
     	this.logger.debug(e);
     }
 
+    public void printWarn(String e) {
+        this.logger.warn(e);
+    }
+
     public void printStackTrace(Exception e) {
         if (this.logger.isDebugEnabled()) {
             this.logger.error(e.getMessage());

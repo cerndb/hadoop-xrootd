@@ -17,35 +17,20 @@ package ch.cern.eos;
 
 import java.lang.System;
 import java.lang.reflect.Field;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-
-import java.util.Arrays;
-
 import java.lang.UnsatisfiedLinkError;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FSInputStream;
 import org.apache.hadoop.fs.BufferedFSInputStream;
 
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.Progressable;
 
 public class XrootDBasedFileSystem extends FileSystem {
@@ -66,12 +51,23 @@ public class XrootDBasedFileSystem extends FileSystem {
     private URI uri;
 
 	private static DebugLogger eosDebugLogger;
-    public static int buffer_size = 32 * 1024 * 1024;
+	private int readAhead;
 	private static final String JAVA_LIB_PATH = "java.library.path";
 	private static final String HADOOP_NATIVE_PATH = "/usr/lib/hadoop/lib/native";
 
-    public XrootDBasedFileSystem() {
-    }
+	public void initialize(URI uri, Configuration conf) throws IOException {
+		super.initialize(uri, conf);
+		setConf(conf);
+		initLib();
+
+		this.uri = uri;
+		this.readAhead = XRootDUtils.byteConfOption(conf, XRootDConstants.READAHEAD_RANGE,
+				XRootDConstants.DEFAULT_READAHEAD_RANGE);
+		if (this.readAhead == XRootDConstants.DEFAULT_READAHEAD_RANGE) {
+			eosDebugLogger.printWarn("Hadoop Config " + XRootDConstants.READAHEAD_RANGE +
+					" not set, using default value " + XRootDConstants.DEFAULT_READAHEAD_RANGE);
+		}
+	}
 
     public URI toUri(Path p) throws IOException {
 		try {
@@ -209,14 +205,6 @@ public class XrootDBasedFileSystem extends FileSystem {
 		eosDebugLogger.printDebug("initFileSystem(" + fileSystemURI + ") = " + nHandle);
     }
 
-    public void initialize(URI uri, Configuration conf) throws IOException {
-		super.initialize(uri, conf);
-		setConf(conf);
-
-		this.uri = uri;
-        initLib();
-    }
-
     public String getScheme() {
 		return "root";
     }
@@ -229,9 +217,10 @@ public class XrootDBasedFileSystem extends FileSystem {
 		initHandle();
 		URI u = toUri(path);
 		String filespec = uri.getScheme() + "://" +  uri.getAuthority() + "/" + u.getPath();
-		
-		eosDebugLogger.printDebug("EOSfs open " + filespec + " --> " + filespec);
-		return new FSDataInputStream(new BufferedFSInputStream (new XrootDBasedInputStream(filespec, statistics),buffer_size));
+
+		// ReadAhead is done with BufferedFSInputStream
+		eosDebugLogger.printDebug("EOSfs open " + filespec + " with readAhead=" + readAhead);
+		return new FSDataInputStream(new BufferedFSInputStream(new XrootDBasedInputStream(filespec, statistics),readAhead));
     }
 
     public FileStatus getFileStatus(Path p) throws IOException {
