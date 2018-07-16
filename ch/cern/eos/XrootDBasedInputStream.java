@@ -69,7 +69,6 @@ class XrootDBasedInputStream extends FSInputStream implements Seekable, Position
         if (this.pos < 0) {  // TODO: implement - https://github.com/grahamar/hadoop-aws/blob/master/src/main/java/org/apache/hadoop/fs/s3a/S3AInputStream.java#L364
             this.eosDebugLogger.printDebug("EOSInputStream.read() pos: " + this.pos);
 
-            //if (this.pos == -1) { throw new EOFException(); }
             return (int)this.pos;
         }
 
@@ -92,7 +91,6 @@ class XrootDBasedInputStream extends FSInputStream implements Seekable, Position
     public void readFully(long pos, byte[] b) throws IOException {
         int apos=0;
 
-        this.pos=pos;
         this.eosDebugLogger.printDebug("EOSInputStream.readFully(long pos, byte[] b)..");
         while (this.pos >= 0)
         {
