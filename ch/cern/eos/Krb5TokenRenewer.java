@@ -31,6 +31,7 @@ import java.lang.System;
 
 import java.nio.file.Files;
 
+
 import java.util.Arrays;
 import java.util.Vector;
 
@@ -131,6 +132,9 @@ public class Krb5TokenRenewer extends TokenRenewer {
 			CredentialsCache fcc = null;
 			XrootDBasedFileSystem.initLib();
 			krb5ccname = XrootDBasedKrb5.krb5ccname;
+                        
+                        krb5ccname = ((krb5ccname.equals("")) ? "/tmp/krb_"+newCreds.getClient(): krb5ccname); //krb5ccname will be empty on RM
+
 			eosDebugLogger.printDebug("TokenRenewer: krb5ccname " + krb5ccname);
 
 			try {
@@ -141,9 +145,13 @@ public class Krb5TokenRenewer extends TokenRenewer {
 			}
 
 			if (fcc == null) {
-				fcc = CredentialsCache.create(newCreds.getClient(), krb5ccname);
+                                eosDebugLogger.printDebug("renew: no credential cache for " +newCreds.getClient() + " in " + krb5ccname+ ". Creating a new one..." );
+                                
+				fcc = CredentialsCache.create(newCreds.getClient(),krb5ccname);
+                                //krb5ccname = CredentialsCache.cacheName();
+                                if (fcc == null) eosDebugLogger.warn("renew: something went wrong wirh creating a new credentials");
 			}
-			((FileCredentialsCache) fcc).version = cc_version;
+	 		((FileCredentialsCache) fcc).version = cc_version;
 			fcc.update(newCCcreds);
 			fcc.save();
 
@@ -175,9 +183,10 @@ public class Krb5TokenRenewer extends TokenRenewer {
 
 			long ticketLife = newCCcreds.getEndTime().getTime() - System.currentTimeMillis();
 			eosDebugLogger.printDebug("Krb5TokenRenewer renewed " + fcc.cacheName() + " for "
-					+ fcc.getPrimaryPrincipal().toString() + " ticketLife " + ticketLife);
+				+ fcc.getPrimaryPrincipal().toString() + " ticketLife " + ticketLife 
+				+ " till time "+newCCcreds.getEndTime().getTime());
 
-			return ticketLife;
+			return newCCcreds.getEndTime().getTime();
 
 		} catch (KrbException e) {
 			throw new IOException(e.getMessage());
