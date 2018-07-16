@@ -30,6 +30,10 @@ public class DebugLogger {
     public void print(String e) {
     	this.logger.info(e);
     }
+
+    public void warn(String e) {
+        this.logger.warn(e);
+    }
     
     public void printDebug(String e) {
     	this.logger.debug(e);
