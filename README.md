@@ -4,23 +4,21 @@ Connector between Hadoop and XRootD protocols (EOS compatible)
 
 ### Available hadoop flags
 
-- `fs.xrootd.readahead.range` - set the size of the request to XRootD storage issued for data 
-(allows prefetching more data in case of large reads). Defaults to 128KB. 
+**WARNING** - diana-hep/root4j <=0.1.6 package resets configs spark.hadoop on executors!! 
+Must be specified in HADOOP_CONF_DIR in core-site.xml - ref https://github.com/diana-hep/root4j/issues/3
 
-    **WARNING** - diana-hep/root4j <=0.1.6 package resets configs spark.hadoop on executors!! 
-    Must be specified in HADOOP_CONF_DIR in core-site.xml - ref https://github.com/diana-hep/root4j/issues/3
-
-   ```
+```
     <?xml version="1.0" encoding="UTF-8"?>
     <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
     
     <configuration>
         <property>
+            <description>set the size of the request to XRootD storage issued for data (allows prefetching more data in case of large reads). Defaults to 128KB.</description>
             <name>fs.xrootd.readahead.range</name>
             <value>128000</value>
         </property>
     </configuration>
-    ```
+```
 
 ### Build and run PySpark Shell with XRootD-Connector
 
