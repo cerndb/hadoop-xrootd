@@ -131,6 +131,7 @@ public class XrootDBasedKrb5
             eosDebugLogger.printDebug("checkToken: found token " + t.getKind().toString());
             if (t.getKind().toString().equals(tokenKind)) {
                 found = true;
+                executor = 1;
             }
 
             if (t.getKind().toString().equals("YARN_AM_RM_TOKEN")) {
