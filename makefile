@@ -17,7 +17,7 @@ endif
 
 CXXFLAGS=-I$(INCLxrootd) -I$(INCLjava) -I$(INCLjava)/linux -fPIC
 
-export CLASSPATH=$(shell hadoop classpath) 
+export CLASSPATH=$(shell hadoop classpath)
 
 CLASSES = src/main/java/ch/cern/eos/XRootDClFile.java src/main/java/ch/cern/eos/Krb5TokenIdentifier.java src/main/java/ch/cern/eos/XRootDFileSystem.java src/main/java/ch/cern/eos/XRootDKrb5FileSystem.java src/main/java/ch/cern/eos/XRootDInputStream.java src/main/java/ch/cern/eos/XRootDOutputStream.java src/main/java/ch/cern/eos/XRootDKrb5.java src/main/java/ch/cern/eos/Krb5TokenRenewer.java src/main/java/ch/cern/eos/DebugLogger.java src/main/java/ch/cern/eos/XRootDUtils.java src/main/java/ch/cern/eos/XRootDConstants.java src/main/java/ch/cern/eos/XRootDInstrumentation.java
 
@@ -37,7 +37,7 @@ test:
 classes: $(CLASSES:.java=.class)
 
 EOSfs.jar: classes
-	jar -cfe $@ coucou $(CLASSES:.java=.class) META-INF
+	jar -cfe $@ coucou $(CLASSES:.java=.class) src/main/resources/META-INF
 
 src/main/cpp/ch_cern_eos_XRootDClFile.h: src/main/java/ch/cern/eos/XRootDClFile.class
 	javah -d src/main/cpp/ $(JHFLAGS) ch.cern.eos.XRootDClFile
