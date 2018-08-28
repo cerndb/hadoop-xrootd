@@ -22,7 +22,7 @@
 #include "ch_cern_eos_XRootDClFile.h"
 #include "xrootd/XrdCl/XrdClFile.hh"
 #include "xrootd/XrdCl/XrdClFileSystem.hh"
-#include "ch_cern_eos_XRootDKrb5FileSystem.h"
+#include "ch_cern_eos_XRootDFileSystem.h"
 
 #ifdef __cplusplus
 extern "C" {
