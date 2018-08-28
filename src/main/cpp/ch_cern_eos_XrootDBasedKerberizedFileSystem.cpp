@@ -22,7 +22,7 @@
 #include "ch_cern_eos_XrootDBasedClFile.h"
 #include "xrootd/XrdCl/XrdClFile.hh"
 #include "xrootd/XrdCl/XrdClFileSystem.hh"
-#include "ch_cern_eos_XrootDBasedKerberizedFileSystem.h"
+#include "ch_cern_eos_XrootDBasedFileSystem.h"
 
 #ifdef __cplusplus
 extern "C" {
