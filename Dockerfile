@@ -9,11 +9,16 @@ RUN yum group install -y \
     "Development Tools" && \
     yum install -y \
     which \
+    wget \
     java-1.8.0-openjdk-devel-${JAVA_VERSION} \
     xrootd-client \
     xrootd-client-libs \
     xrootd-client-devel \
     yum clean all && rm -rf /var/cache/yum/*
+
+RUN wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo && \
+    sed -i s/\$releasever/6/g /etc/yum.repos.d/epel-apache-maven.repo && \
+    yum install -y apache-maven
 
 # Install hadoop - required to build xrootd-connector
 ENV HADOOP_VERSION=2.7.4
@@ -27,11 +32,16 @@ RUN curl -s ${HADOOP_URL} | tar -xzvf - -C /usr/lib/ && \
 ARG BUILD_DATE
 COPY . /data
 WORKDIR /data
-RUN make clean 2>/dev/null && \
-    make all && \
-    mv /data/EOSfs.jar /usr/lib/hadoop/share/hadoop/common/lib/EOSfs.jar && \
-    mv /data/libjXrdCl.so /usr/lib/hadoop/lib/native/libjXrdCl.so && \
-    make clean 2>/dev/null
+
+ARG CONNECTOR_RELEASE_NAME
+ARG ARCHITECTURE_PROFILE
+
+RUN mvn clean package && \
+    mv target/${CONNECTOR_RELEASE_NAME}-${ARCHITECTURE_PROFILE}.nar /usr/lib/hadoop/share/hadoop/common/lib/ && \
+    mv target/${CONNECTOR_RELEASE_NAME}.jar /usr/lib/hadoop/share/hadoop/common/lib/ && \
+    curl http://central.maven.org/maven2/org/scijava/native-lib-loader/2.2.0/native-lib-loader-2.2.0.jar -o /usr/lib/hadoop/share/hadoop/common/lib/native-lib-loader-2.2.0.jar
+
+ENV HADOOP_CLASSPATH="/usr/lib/hadoop/share/hadoop/common/lib/${CONNECTOR_RELEASE_NAME}-${ARCHITECTURE_PROFILE}.nar:$(hadoop classpath)"
 
 CMD echo "Running integration tests" && make test
 

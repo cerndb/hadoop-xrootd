@@ -24,12 +24,11 @@ import java.io.IOException;
 
 class XRootDInputStream extends FSInputStream implements Seekable, PositionedReadable {
 
+    private static final int IO_SIZE = 1024 * 1024;
+    private final Statistics stats;
     private XRootDClFile file;
     private DebugLogger eosDebugLogger;
-
     private long pos = 0;
-    private static final int IO_SIZE = 1024*1024;
-    private final Statistics stats;
     private final XRootDInstrumentation instrumentation;
 
     public XRootDInputStream(String url, Statistics stats, XRootDInstrumentation instrumentation) {
@@ -39,14 +38,14 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
 
         this.file = new XRootDClFile();
         long status = file.Open(url, 0, 0);
-        
+
         if (status != 0) {
-        	eosDebugLogger.printDebug("open " + url + " status=" + status);
+            eosDebugLogger.printDebug("open " + url + " status=" + status);
         }
     }
 
     public long getPos() {
-	    return this.pos;
+        return this.pos;
     }
 
     public int read() throws IOException {
@@ -55,12 +54,12 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
 
         long rd = read(this.pos, b, 0, 1);
         if (rd > 0) {
-        	return b[0] & 0xFF;
+            return b[0] & 0xFF;
         }
         if (rd == -1) {
-        	return -1;
+            return -1;
         }
-        
+
         throw new IOException("read returned " + rd);
     }
 
@@ -72,7 +71,7 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
         if (this.pos < 0) {  // TODO: implement - https://github.com/grahamar/hadoop-aws/blob/master/src/main/java/org/apache/hadoop/fs/s3a/S3AInputStream.java#L364
             this.eosDebugLogger.printDebug("EOSInputStream.read() pos: " + this.pos);
 
-            return (int)this.pos;
+            return (int) this.pos;
         }
 
         long startTime = System.nanoTime();
@@ -87,8 +86,7 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
             updateStatsNumOps(1);
             updateReadTime(elapsedTimeMicrosec);
             return (int) rd;
-        }
-        else if (rd == -1 ){
+        } else if (rd == -1) {
             this.pos = -1;
             return -1;
         }
@@ -98,15 +96,14 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
     }
 
     public void readFully(long pos, byte[] b) throws IOException {
-        int apos=0;
+        int apos = 0;
 
         this.eosDebugLogger.printDebug("EOSInputStream.readFully(long pos, byte[] b)..");
-        while (this.pos >= 0)
-        {
+        while (this.pos >= 0) {
             byte[] a = new byte[IO_SIZE];
-            long rd = read(pos,a,0, IO_SIZE);
+            long rd = read(pos, a, 0, IO_SIZE);
             pos = this.pos;
-            System.arraycopy(a, 0, b, apos, (int)rd);
+            System.arraycopy(a, 0, b, apos, (int) rd);
             apos += rd;
         }
         this.eosDebugLogger.printDebug("EOSInputStream.readFully(long pos, byte[] b) bytes read: " + apos);
@@ -114,7 +111,7 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
 
     public void readFully(long pos, byte[] buffer, int off, int len) throws IOException {
         this.eosDebugLogger.printDebug("EOSInputStream.readFully(long pos, byte[] buffer, int off, int len) pos: " + pos);
-        read(pos,buffer,off,len);
+        read(pos, buffer, off, len);
     }
 
     public void seek(long pos) {
@@ -123,17 +120,17 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
     }
 
     public boolean seekToNewSource(long targetPos) {
-	    throw new IllegalArgumentException("seekToNewSource");
+        throw new IllegalArgumentException("seekToNewSource");
     }
 
     public void close() throws IOException {
         if (pos < -1) {
-        	return;
+            return;
         }
 
         long st = file.Close();
         if (st != 0) {
-        	eosDebugLogger.printDebug("close(): " + st);
+            eosDebugLogger.printDebug("close(): " + st);
         }
         pos = -2;
         super.close();
@@ -141,6 +138,7 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
 
     /**
      * Update (increment) the bytes read counter.
+     *
      * @param bytesRead number of bytes read
      */
     private void updateStatsBytesRead(long bytesRead) {

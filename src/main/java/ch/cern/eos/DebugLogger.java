@@ -22,21 +22,20 @@ import org.apache.log4j.Logger;
 public class DebugLogger {
 
     private Logger logger = LogManager.getLogger("HadoopXRootD");
-    
     public DebugLogger(boolean debugEnabled) {
         this.setDebug(debugEnabled);
     }
 
     public void print(String e) {
-    	this.logger.info(e);
+        this.logger.info(e);
     }
 
     public void warn(String e) {
         this.logger.warn(e);
     }
-    
+
     public void printDebug(String e) {
-    	this.logger.debug(e);
+        this.logger.debug(e);
     }
 
     public void printWarn(String e) {
@@ -55,7 +54,7 @@ public class DebugLogger {
             this.logger.setLevel(Level.DEBUG);
         }
     }
-    
+
     public boolean isDebugEnabled() {
         return this.logger.isDebugEnabled();
     }
