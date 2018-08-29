@@ -15,47 +15,30 @@
  */
 package ch.cern.eos;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.conf.Configuration;
-
 import sun.security.krb5.EncryptionKey;
 import sun.security.krb5.KrbException;
+import sun.security.krb5.PrincipalName;
 import sun.security.krb5.internal.KerberosTime;
 import sun.security.krb5.internal.Ticket;
 import sun.security.krb5.internal.TicketFlags;
+import sun.security.krb5.internal.ccache.CCacheOutputStream;
 import sun.security.krb5.internal.ccache.Credentials;
 import sun.security.krb5.internal.ccache.CredentialsCache;
-import sun.security.krb5.internal.ccache.CCacheInputStream;
-import sun.security.krb5.internal.ccache.CCacheOutputStream;
 import sun.security.krb5.internal.ccache.FileCCacheConstants;
-import sun.security.krb5.internal.ccache.FileCredentialsCache;
-import sun.security.krb5.PrincipalName;
-
-import java.io.FileOutputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
-import java.nio.file.Files;
-import java.io.File;
-import java.util.Arrays;
-
-import java.lang.System;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.UnsatisfiedLinkError;
-import java.lang.reflect.Method;
 
 import javax.security.auth.kerberos.KerberosPrincipal;
 import javax.security.auth.kerberos.KerberosTicket;
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.file.Files;
 
-public class XrootDBasedKrb5
+public class XRootDKrb5
 {
     public static String krb5ccname="";
     public static int hasKrbToken = -1;
@@ -228,7 +211,7 @@ public class XrootDBasedKrb5
             }
         }
         // saving  new cache location
-        XrootDBasedKrb5.krb5ccname = krb5ccname;
+        XRootDKrb5.krb5ccname = krb5ccname;
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream(16384);
         CCacheOutputStream ccos = new CCacheOutputStream(bos);
@@ -279,7 +262,7 @@ public class XrootDBasedKrb5
         }
         
         boolean localTGTexists = false;
-        String krb5ccname = (XrootDBasedKrb5.krb5ccname.equals(""))? XrootDBasedFileSystem.getenv("KRB5CCNAME"):XrootDBasedKrb5.krb5ccname; 
+        String krb5ccname = (XRootDKrb5.krb5ccname.equals(""))? XRootDFileSystem.getenv("KRB5CCNAME"): XRootDKrb5.krb5ccname;
  //       String krb5ccname = System.getenv("KRB5CCNAME");
         if (krb5ccname != null && krb5ccname.length() > 5) {
               if( krb5ccname.regionMatches(true, 0,  "FILE:", 0, 5)) {
@@ -291,7 +274,7 @@ public class XrootDBasedKrb5
                 if ((new File(krb5ccname)).exists()) {
                  localTGTexists = true;
                   //hasKrbTGT = 1;
-                 // XrootDBasedKrb5.krb5ccname = krb5ccname;
+                 // XRootDKrb5.krb5ccname = krb5ccname;
                  // return krb5ccname;
                 }
                 else eosDebugLogger.printDebug("krb5ccname points to " + krb5ccname + " but it does not seem to be valid");
@@ -301,7 +284,7 @@ public class XrootDBasedKrb5
             eosDebugLogger.printDebug("created krb5ccname " + krb5ccname);
         }
         // store the future location of TGT
-        XrootDBasedKrb5.krb5ccname = krb5ccname;
+        XRootDKrb5.krb5ccname = krb5ccname;
 
         Token<? extends TokenIdentifier> tok = null;
 

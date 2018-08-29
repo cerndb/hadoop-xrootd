@@ -1,1 +1,1 @@
-ch.cern.eos.XrootDBasedKerberizedFileSystem
+ch.cern.eos.XRootDKrb5FileSystem

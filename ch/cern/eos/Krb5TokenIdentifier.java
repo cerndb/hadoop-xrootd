@@ -15,17 +15,13 @@
  */
 package ch.cern.eos;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
-import java.lang.System;
-
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenIdentifier;
-import org.apache.hadoop.security.token.Token;
-import org.apache.hadoop.security.token.TokenIdentifier;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 public class Krb5TokenIdentifier extends AbstractDelegationTokenIdentifier {
     

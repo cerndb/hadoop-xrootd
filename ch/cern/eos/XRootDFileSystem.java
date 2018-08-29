@@ -15,25 +15,18 @@
  */
 package ch.cern.eos;
 
-import java.lang.System;
-import java.lang.reflect.Field;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.lang.UnsatisfiedLinkError;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.BufferedFSInputStream;
-
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Progressable;
 
-public class XrootDBasedFileSystem extends FileSystem {
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+public class XRootDFileSystem extends FileSystem {
     private long nHandle = 0;
     private static boolean libLoaded = false;
     private native long initFileSystem(String url);
@@ -104,7 +97,7 @@ public class XrootDBasedFileSystem extends FileSystem {
 		initHandle();
 		String filespec = uri.getScheme() + "://" +  uri.getAuthority() + "/" + toFilePath(p);
 		eosDebugLogger.printDebug("EOSfs create " + filespec);
-		return new FSDataOutputStream(new XrootDBasedOutputStream(filespec, permission, overwrite), null);
+		return new FSDataOutputStream(new XRootDOutputStream(filespec, permission, overwrite), null);
     }
 
     public boolean delete(Path p, boolean recursive) throws IOException {
@@ -156,7 +149,7 @@ public class XrootDBasedFileSystem extends FileSystem {
 
     public static void initLib() throws IOException {
 		eosDebugLogger = new DebugLogger(System.getenv("EOS_debug") != null);	
-		XrootDBasedKrb5.setDebug(eosDebugLogger.isDebugEnabled());
+		XRootDKrb5.setDebug(eosDebugLogger.isDebugEnabled());
 		
 		if (libLoaded) {
 			return;
@@ -223,7 +216,8 @@ public class XrootDBasedFileSystem extends FileSystem {
 
 		// ReadAhead is done with BufferedFSInputStream
 		eosDebugLogger.printDebug("EOSfs open " + filespec + " with readAhead=" + readAhead);
-		return new FSDataInputStream(new BufferedFSInputStream(new XrootDBasedInputStream(filespec, statistics, instrumentation),readAhead));
+
+		return new FSDataInputStream(new BufferedFSInputStream(new XRootDInputStream(filespec, statistics, instrumentation),readAhead));
     }
 
     public FileStatus getFileStatus(Path p) throws IOException {

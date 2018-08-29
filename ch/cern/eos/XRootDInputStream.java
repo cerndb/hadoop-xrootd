@@ -15,15 +15,16 @@
  */
 package ch.cern.eos;
 
-import org.apache.hadoop.fs.*;
-import java.io.IOException;
+import org.apache.hadoop.fs.FSInputStream;
+import org.apache.hadoop.fs.FileSystem.Statistics;
 import org.apache.hadoop.fs.PositionedReadable;
 import org.apache.hadoop.fs.Seekable;
-import org.apache.hadoop.fs.FileSystem.Statistics;
 
-class XrootDBasedInputStream extends FSInputStream implements Seekable, PositionedReadable {
+import java.io.IOException;
 
-    private XrootDBasedClFile file;
+class XRootDInputStream extends FSInputStream implements Seekable, PositionedReadable {
+
+    private XRootDClFile file;
     private DebugLogger eosDebugLogger;
 
     private long pos = 0;
@@ -31,12 +32,12 @@ class XrootDBasedInputStream extends FSInputStream implements Seekable, Position
     private final Statistics stats;
     private final XRootDInstrumentation instrumentation;
 
-    public XrootDBasedInputStream(String url, Statistics stats, XRootDInstrumentation instrumentation) {
+    public XRootDInputStream(String url, Statistics stats, XRootDInstrumentation instrumentation) {
         this.eosDebugLogger = new DebugLogger(System.getenv("EOS_debug") != null);
         this.stats = stats;
         this.instrumentation = instrumentation;
 
-        this.file = new XrootDBasedClFile();
+        this.file = new XRootDClFile();
         long status = file.Open(url, 0, 0);
         
         if (status != 0) {
