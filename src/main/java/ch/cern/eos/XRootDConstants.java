@@ -17,10 +17,11 @@ package ch.cern.eos;
 
 public final class XRootDConstants {
 
-    private XRootDConstants() {
-    }
-
-    /** read ahead buffer size to prevent connection re-establishments. */
+    /**
+     * read ahead buffer size to prevent connection re-establishments.
+     */
     public static final String READAHEAD_RANGE = "fs.xrootd.readahead.range";
     public static final int DEFAULT_READAHEAD_RANGE = 128 * 1024;
+    private XRootDConstants() {
+    }
 }

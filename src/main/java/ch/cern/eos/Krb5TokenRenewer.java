@@ -34,145 +34,145 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 public class Krb5TokenRenewer extends TokenRenewer {
-	public String krb5ccname;
-	private DebugLogger eosDebugLogger = new DebugLogger(false);
+    public String krb5ccname;
+    private DebugLogger eosDebugLogger = new DebugLogger(false);
 
-	public boolean handleKind(Text kind) {
-		return Krb5TokenIdentifier.KIND_NAME.equals(kind);
-	}
+    public boolean handleKind(Text kind) {
+        return Krb5TokenIdentifier.KIND_NAME.equals(kind);
+    }
 
-	public boolean isManaged(Token<?> token) throws IOException {
-		return true;
-	}
+    public boolean isManaged(Token<?> token) throws IOException {
+        return true;
+    }
 
-	public long renew(Token<?> token, Configuration conf) throws IOException {
-		String prop_EOS_debug = System.getProperty("EOS_debug");
-		eosDebugLogger.setDebug(((prop_EOS_debug != null) && (prop_EOS_debug.equals("true"))));
-		byte krb5cc[] = token.getPassword();
-		int cc_version;
+    public long renew(Token<?> token, Configuration conf) throws IOException {
+        String prop_EOS_debug = System.getProperty("EOS_debug");
+        eosDebugLogger.setDebug(((prop_EOS_debug != null) && (prop_EOS_debug.equals("true"))));
+        byte krb5cc[] = token.getPassword();
+        int cc_version;
 
-		eosDebugLogger.printDebug("renew: token l=" + krb5cc.length);
+        eosDebugLogger.printDebug("renew: token l=" + krb5cc.length);
 
-		sun.security.krb5.internal.ccache.Credentials cccreds = null;
+        sun.security.krb5.internal.ccache.Credentials cccreds = null;
 
-		try {
-			CCacheInputStream ccis = new CCacheInputStream(new ByteArrayInputStream(krb5cc));
-			cc_version = ccis.readVersion();
+        try {
+            CCacheInputStream ccis = new CCacheInputStream(new ByteArrayInputStream(krb5cc));
+            cc_version = ccis.readVersion();
 
-			PrincipalName principal = ccis.readPrincipal(cc_version);
-			eosDebugLogger.printDebug("renew: version " + cc_version + " principal " + principal.toString());
+            PrincipalName principal = ccis.readPrincipal(cc_version);
+            eosDebugLogger.printDebug("renew: version " + cc_version + " principal " + principal.toString());
 
-			Method readCred = ccis.getClass().getDeclaredMethod("readCred", int.class);
-			readCred.setAccessible(true);
+            Method readCred = ccis.getClass().getDeclaredMethod("readCred", int.class);
+            readCred.setAccessible(true);
 
-			if (eosDebugLogger.isDebugEnabled()) {
-				Field ccisDebug = ccis.getClass().getDeclaredField("DEBUG");
-				ccisDebug.setAccessible(true);
-				ccisDebug.setBoolean(ccis, true);
-			}
+            if (eosDebugLogger.isDebugEnabled()) {
+                Field ccisDebug = ccis.getClass().getDeclaredField("DEBUG");
+                ccisDebug.setAccessible(true);
+                ccisDebug.setBoolean(ccis, true);
+            }
 
-			while (ccis.available() > 0) {
-				sun.security.krb5.internal.ccache.Credentials cr = null;
-				eosDebugLogger.printDebug("renew: reading credentials version " + cc_version);
-				try {
-					cr = (sun.security.krb5.internal.ccache.Credentials) readCred.invoke(ccis, cc_version);
-				} catch (Exception e) {
-					e.printStackTrace();
-					eosDebugLogger.print("Failed to read Credentials version " + cc_version + ": " + e.getMessage());
-				}
-				eosDebugLogger.printDebug("renew: read credentials for " + cr.getServicePrincipal().toString());
+            while (ccis.available() > 0) {
+                sun.security.krb5.internal.ccache.Credentials cr = null;
+                eosDebugLogger.printDebug("renew: reading credentials version " + cc_version);
+                try {
+                    cr = (sun.security.krb5.internal.ccache.Credentials) readCred.invoke(ccis, cc_version);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    eosDebugLogger.print("Failed to read Credentials version " + cc_version + ": " + e.getMessage());
+                }
+                eosDebugLogger.printDebug("renew: read credentials for " + cr.getServicePrincipal().toString());
 
-				if (cr != null && cr.getServicePrincipal().getName().startsWith("krbtgt")) {
-					String[] nameStrings = cr.getServicePrincipal().getNameStrings();
-					eosDebugLogger.printDebug("renew: nameStrings " + Arrays.toString(nameStrings));
+                if (cr != null && cr.getServicePrincipal().getName().startsWith("krbtgt")) {
+                    String[] nameStrings = cr.getServicePrincipal().getNameStrings();
+                    eosDebugLogger.printDebug("renew: nameStrings " + Arrays.toString(nameStrings));
 
-					if (nameStrings[1].equals(cr.getServicePrincipal().getRealm().toString())) {
-						cccreds = cr;
-						break;
-					}
-				}
-			}
-			ccis.close();
+                    if (nameStrings[1].equals(cr.getServicePrincipal().getRealm().toString())) {
+                        cccreds = cr;
+                        break;
+                    }
+                }
+            }
+            ccis.close();
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new IOException("no valid krb5 ticket");
-		}
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new IOException("no valid krb5 ticket");
+        }
 
-		try {
-			sun.security.krb5.Credentials oldCreds = cccreds.setKrbCreds();
-			sun.security.krb5.Credentials newCreds = oldCreds.renew();
+        try {
+            sun.security.krb5.Credentials oldCreds = cccreds.setKrbCreds();
+            sun.security.krb5.Credentials newCreds = oldCreds.renew();
 
-			sun.security.krb5.internal.ccache.Credentials newCCcreds = new sun.security.krb5.internal.ccache.Credentials(
-					newCreds.getClient(), newCreds.getServer(), newCreds.getSessionKey(),
-					new KerberosTime(newCreds.getAuthTime()), new KerberosTime(newCreds.getStartTime()),
-					new KerberosTime(newCreds.getEndTime()), new KerberosTime(newCreds.getRenewTill()), false,
-					newCreds.getTicketFlags(), null, newCreds.getAuthzData(), newCreds.getTicket(), null);
+            sun.security.krb5.internal.ccache.Credentials newCCcreds = new sun.security.krb5.internal.ccache.Credentials(
+                    newCreds.getClient(), newCreds.getServer(), newCreds.getSessionKey(),
+                    new KerberosTime(newCreds.getAuthTime()), new KerberosTime(newCreds.getStartTime()),
+                    new KerberosTime(newCreds.getEndTime()), new KerberosTime(newCreds.getRenewTill()), false,
+                    newCreds.getTicketFlags(), null, newCreds.getAuthzData(), newCreds.getTicket(), null);
 
-			CredentialsCache fcc = null;
-			XRootDFileSystem.initLib();
-			krb5ccname = XRootDKrb5.krb5ccname;
-                        
-                        krb5ccname = ((krb5ccname.equals("")) ? "/tmp/krb_"+newCreds.getClient(): krb5ccname); //krb5ccname will be empty on RM
+            CredentialsCache fcc = null;
+            XRootDFileSystem.initLib();
+            krb5ccname = XRootDKrb5.krb5ccname;
 
-			eosDebugLogger.printDebug("TokenRenewer: krb5ccname " + krb5ccname);
+            krb5ccname = ((krb5ccname.equals("")) ? "/tmp/krb_" + newCreds.getClient() : krb5ccname); //krb5ccname will be empty on RM
 
-			try {
-				fcc = CredentialsCache.getInstance(newCreds.getClient(), krb5ccname);
-			} catch (OutOfMemoryError e) {
-				eosDebugLogger.print("failed to acquire existing CredentialsCache, allocating a new one");
-				e.printStackTrace();
-			}
+            eosDebugLogger.printDebug("TokenRenewer: krb5ccname " + krb5ccname);
 
-			if (fcc == null) {
-                                eosDebugLogger.printDebug("renew: no credential cache for " +newCreds.getClient() + " in " + krb5ccname+ ". Creating a new one..." );
-                                
-				fcc = CredentialsCache.create(newCreds.getClient(),krb5ccname);
-                                //krb5ccname = CredentialsCache.cacheName();
-                                if (fcc == null) eosDebugLogger.warn("renew: something went wrong wirh creating a new credentials");
-			}
-	 		((FileCredentialsCache) fcc).version = cc_version;
-			fcc.update(newCCcreds);
-			fcc.save();
+            try {
+                fcc = CredentialsCache.getInstance(newCreds.getClient(), krb5ccname);
+            } catch (OutOfMemoryError e) {
+                eosDebugLogger.print("failed to acquire existing CredentialsCache, allocating a new one");
+                e.printStackTrace();
+            }
 
-			/* write back to token as well */
-			ByteArrayOutputStream bos = new ByteArrayOutputStream(16384);
-			CCacheOutputStream ccos = new CCacheOutputStream(bos);
-			ccos.writeHeader(newCreds.getClient(), cc_version);
-			ccos.addCreds(newCCcreds);
-			ccos.close();
+            if (fcc == null) {
+                eosDebugLogger.printDebug("renew: no credential cache for " + newCreds.getClient() + " in " + krb5ccname + ". Creating a new one...");
 
-			krb5cc = bos.toByteArray(); /* this is a copy (bos can be reused) */
+                fcc = CredentialsCache.create(newCreds.getClient(), krb5ccname);
+                //krb5ccname = CredentialsCache.cacheName();
+                if (fcc == null) eosDebugLogger.warn("renew: something went wrong wirh creating a new credentials");
+            }
+            ((FileCredentialsCache) fcc).version = cc_version;
+            fcc.update(newCCcreds);
+            fcc.save();
 
-			/*
-			 * update the token in-place using write and readFields: might as well have
-			 * updated the "password" field using reflection
-			 */
-			bos.reset();
-			DataOutputStream dos = new DataOutputStream(bos);
-			WritableUtils.writeVInt(dos, token.getIdentifier().length);
-			dos.write(token.getIdentifier());
-			WritableUtils.writeVInt(dos, krb5cc.length);
-			dos.write(krb5cc); /* the "password" */
-			token.getKind().write(dos);
-			token.getService().write(dos);
-			dos.close();
-			DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bos.toByteArray()));
-			token.readFields(dis);
-			eosDebugLogger.printDebug("Krb5TokenRenewer updated token " + token);
+            /* write back to token as well */
+            ByteArrayOutputStream bos = new ByteArrayOutputStream(16384);
+            CCacheOutputStream ccos = new CCacheOutputStream(bos);
+            ccos.writeHeader(newCreds.getClient(), cc_version);
+            ccos.addCreds(newCCcreds);
+            ccos.close();
 
-			long ticketLife = newCCcreds.getEndTime().getTime() - System.currentTimeMillis();
-			eosDebugLogger.printDebug("Krb5TokenRenewer renewed " + fcc.cacheName() + " for "
-				+ fcc.getPrimaryPrincipal().toString() + " ticketLife " + ticketLife 
-				+ " till time "+newCCcreds.getEndTime().getTime());
+            krb5cc = bos.toByteArray(); /* this is a copy (bos can be reused) */
 
-			return newCCcreds.getEndTime().getTime();
+            /*
+             * update the token in-place using write and readFields: might as well have
+             * updated the "password" field using reflection
+             */
+            bos.reset();
+            DataOutputStream dos = new DataOutputStream(bos);
+            WritableUtils.writeVInt(dos, token.getIdentifier().length);
+            dos.write(token.getIdentifier());
+            WritableUtils.writeVInt(dos, krb5cc.length);
+            dos.write(krb5cc); /* the "password" */
+            token.getKind().write(dos);
+            token.getService().write(dos);
+            dos.close();
+            DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bos.toByteArray()));
+            token.readFields(dis);
+            eosDebugLogger.printDebug("Krb5TokenRenewer updated token " + token);
 
-		} catch (KrbException e) {
-			throw new IOException(e.getMessage());
-		}
-	}
+            long ticketLife = newCCcreds.getEndTime().getTime() - System.currentTimeMillis();
+            eosDebugLogger.printDebug("Krb5TokenRenewer renewed " + fcc.cacheName() + " for "
+                    + fcc.getPrimaryPrincipal().toString() + " ticketLife " + ticketLife
+                    + " till time " + newCCcreds.getEndTime().getTime());
 
-	public void cancel(Token<?> token, Configuration conf) throws IOException {
-	}
+            return newCCcreds.getEndTime().getTime();
+
+        } catch (KrbException e) {
+            throw new IOException(e.getMessage());
+        }
+    }
+
+    public void cancel(Token<?> token, Configuration conf) throws IOException {
+    }
 };

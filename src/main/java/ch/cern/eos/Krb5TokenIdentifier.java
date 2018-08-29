@@ -24,9 +24,9 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 public class Krb5TokenIdentifier extends AbstractDelegationTokenIdentifier {
-    
-    private UserGroupInformation ugi = null;
+
     public static final Text KIND_NAME = new Text("krb5");
+    private UserGroupInformation ugi = null;
 
     public Krb5TokenIdentifier() {
     }
@@ -43,7 +43,7 @@ public class Krb5TokenIdentifier extends AbstractDelegationTokenIdentifier {
     }
 
     public Text getKind() {
-	    return KIND_NAME;
+        return KIND_NAME;
     }
 
     public void xxreadFields(DataInput in) throws IOException {

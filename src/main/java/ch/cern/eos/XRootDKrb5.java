@@ -38,9 +38,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 
-public class XRootDKrb5
-{
-    public static String krb5ccname="";
+public class XRootDKrb5 {
+    public static String krb5ccname = "";
     public static int hasKrbToken = -1;
     public static int hasKrbTGT = -1;
 
@@ -51,15 +50,15 @@ public class XRootDKrb5
     private static int executor = 0;
     private static DebugLogger eosDebugLogger = new DebugLogger(false);
 
-    public synchronized static String setKrb() {        
+    public synchronized static String setKrb() {
         // If no Krb ticket, set from Token. 
-    	// If no Krb Token, set from ticket.
+        // If no Krb Token, set from ticket.
         int hadKrbTGT = hasKrbTGT, hadKrbToken = hasKrbToken;
         if (hasKrbToken < 0 && hasKrbTGT < 0) {
-            checkToken();	    // check for token if still initial state
+            checkToken();        // check for token if still initial state
         }
 
-        if (hasKrbToken > 0 && executor==1) {			// we're most likely a M/R task or Spark executor
+        if (hasKrbToken > 0 && executor == 1) {            // we're most likely a M/R task or Spark executor
             if (hasKrbTGT > -10) {
                 try {
                     krb5ccname = setKrbTGT();
@@ -67,30 +66,27 @@ public class XRootDKrb5
                     eosDebugLogger.printDebug(" setKrbTGT: " + e.getMessage());
                     eosDebugLogger.printStackTrace(e);
                 }
-                hasKrbTGT -= 1;                
+                hasKrbTGT -= 1;
             }
-        } else if (hasKrbTGT != 0 && executor==0) {		// we either have a Krb TGT or don't know yet
+        } else if (hasKrbTGT != 0 && executor == 0) {        // we either have a Krb TGT or don't know yet
             try {
                 setKrbToken();
-            }
-            catch (IOException | KrbException e) {
+            } catch (IOException | KrbException e) {
                 eosDebugLogger.printDebug(" setKrbToken: " + e.getMessage());
                 eosDebugLogger.printStackTrace(e);
             }
-        }
-        else if (executor==1) {
+        } else if (executor == 1) {
             try {
                 krb5ccname = setKrbTGT();
-            }
-            catch (IOException | KrbException e) {
+            } catch (IOException | KrbException e) {
                 eosDebugLogger.printDebug(" setKrbTGT: " + e.getMessage());
                 eosDebugLogger.printStackTrace(e);
             }
-            hasKrbTGT -= 1;            
+            hasKrbTGT -= 1;
         }
 
         eosDebugLogger.printDebug("setKrb: hasKrbToken " + hasKrbToken + "(" + hadKrbToken + ") hasKrbTGT " + hasKrbTGT + "(" + hadKrbTGT + ")"
-           + " krb5ccname: "+krb5ccname);
+                + " krb5ccname: " + krb5ccname);
 
         return krb5ccname;
     }
@@ -107,7 +103,7 @@ public class XRootDKrb5
             eosDebugLogger.printDebug("IOException in checkToken");
         }
 
-	    boolean found = false;
+        boolean found = false;
         int i = 0;
 
         for (Token<? extends TokenIdentifier> t : ugi.getTokens()) {
@@ -128,7 +124,7 @@ public class XRootDKrb5
             hasKrbToken = 1;
         }
         eosDebugLogger.printDebug("Executor: " + executor);
-        
+
         /* either no Krb token, or called too early? Leave it at current (limbo) state */
         return;
     }
@@ -143,7 +139,7 @@ public class XRootDKrb5
         Credentials cccreds = null;
         boolean writeCache = false;
 
-	int cc_version = FileCCacheConstants.KRB5_FCC_FVNO_3;
+        int cc_version = FileCCacheConstants.KRB5_FCC_FVNO_3;
 
         String krb5ccname = null;
 
@@ -152,7 +148,7 @@ public class XRootDKrb5
             CredentialsCache ncc = CredentialsCache.getInstance();
             if (ncc == null) {
                 eosDebugLogger.printDebug("setKrbToken: Found no valid credentials cache");
-                throw new IOException("Found no valid credentials cache"); 
+                throw new IOException("Found no valid credentials cache");
             }
 
             krb5ccname = ncc.cacheName();
@@ -162,12 +158,10 @@ public class XRootDKrb5
                 throw new IOException("No valid Kerberos ticket in credentials cache");
             }
             client = ncc.getPrimaryPrincipal();
-        }
-        catch (IOException e)
-        {
-	    cccreds = null;
+        } catch (IOException e) {
+            cccreds = null;
             eosDebugLogger.printStackTrace(e);
-            
+
         }
 
         if (cccreds == null && ugi.hasKerberosCredentials()) {    /* set up by checkToken */
@@ -180,29 +174,29 @@ public class XRootDKrb5
 
                 KerberosPrincipal p = TGT.getClient();
                 client = new PrincipalName(p.getName(), p.getNameType());
-                cccreds = new Credentials(client, new PrincipalName(TGT.getServer().toString()), new EncryptionKey(TGT.getSessionKeyType(),TGT.getSessionKey().getEncoded()),
+                cccreds = new Credentials(client, new PrincipalName(TGT.getServer().toString()), new EncryptionKey(TGT.getSessionKeyType(), TGT.getSessionKey().getEncoded()),
                         new KerberosTime(TGT.getAuthTime()), new KerberosTime(TGT.getStartTime()), new KerberosTime(TGT.getEndTime()), new KerberosTime(TGT.getRenewTill()),
                         false, new TicketFlags(TGT.getFlags()), null, null, new Ticket(TGT.getEncoded()), null);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 eosDebugLogger.printStackTrace(e);
             }
         }
-        
+
 
         if (cccreds == null) //no kerberos tgt found
-           throw new IOException("No valid Kerberos ticket in credentials cache");
+            throw new IOException("No valid Kerberos ticket in credentials cache");
 
         if (krb5ccname == null) {
             writeCache = true;
             krb5ccname = System.getenv("KRB5CCNAME");
-            if (krb5ccname != null && krb5ccname.length() > 5 && krb5ccname.regionMatches(true, 0,  "FILE:", 0, 5)) {
-                krb5ccname = krb5ccname.substring(5);	
+            if (krb5ccname != null && krb5ccname.length() > 5 && krb5ccname.regionMatches(true, 0, "FILE:", 0, 5)) {
+                krb5ccname = krb5ccname.substring(5);
                 eosDebugLogger.printDebug("Will write krb5ccname filename " + krb5ccname);
-                if (eosDebugLogger.isDebugEnabled()) { 
+                if (eosDebugLogger.isDebugEnabled()) {
                     BufferedReader ir = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec(new String[]{"ls", "-l", krb5ccname}).getInputStream()));
-                    String ll; 
-                    while ((ll = ir.readLine()) != null) { 
-                        eosDebugLogger.print(ll); 
+                    String ll;
+                    while ((ll = ir.readLine()) != null) {
+                        eosDebugLogger.print(ll);
                     }
                 }
             } else {
@@ -221,7 +215,7 @@ public class XRootDKrb5
         ccos.addCreds(cccreds);
         ccos.close();
 
-        byte [] krb5cc = bos.toByteArray();
+        byte[] krb5cc = bos.toByteArray();
         bos.reset();
 
         Krb5TokenIdentifier k5id = new Krb5TokenIdentifier();
@@ -231,17 +225,16 @@ public class XRootDKrb5
 
         eosDebugLogger.printDebug("setKrbToken saving krb5 ticket l=" + krb5cc.length + " in identifier l=" + bos.toByteArray().length);
         Token<? extends TokenIdentifier> t = new Token<Krb5TokenIdentifier>(bos.toByteArray(), krb5cc, new Text("krb5"), new Text("Cerberus service"));
-        if (writeCache || 
-            (executor==1 && hasKrbToken<=0 && hasKrbTGT >= 0)) { //we want to set up krb renewal job in case there was only TGT (no token)
+        if (writeCache ||
+                (executor == 1 && hasKrbToken <= 0 && hasKrbTGT >= 0)) { //we want to set up krb renewal job in case there was only TGT (no token)
             try {
-                eosDebugLogger.printDebug("Renewing token"); 
+                eosDebugLogger.printDebug("Renewing token");
                 t.renew(new Configuration());
             } catch (Exception e) {
                 eosDebugLogger.printDebug("setKrbToken failed to renew " + t.toString() + ": " + e);
             }
-        } 
-        else
-           eosDebugLogger.printDebug("setKrbToken will not write/renew krb5 executor:"+executor+", hasKrbToken:"+hasKrbToken+",hasKrbTGT:"+hasKrbTGT );
+        } else
+            eosDebugLogger.printDebug("setKrbToken will not write/renew krb5 executor:" + executor + ", hasKrbToken:" + hasKrbToken + ",hasKrbTGT:" + hasKrbTGT);
 
 
         hasKrbTGT = 1;
@@ -255,29 +248,29 @@ public class XRootDKrb5
     }
 
     /* Recover TGT from Token cache and set up krb5 crdentials cache */
-	public static String setKrbTGT() throws IOException, KrbException {
+    public static String setKrbTGT() throws IOException, KrbException {
         if (hasKrbTGT >= 0) {
             hasKrbTGT++;
             return krb5ccname;
         }
-        
+
         boolean localTGTexists = false;
-        String krb5ccname = (XRootDKrb5.krb5ccname.equals(""))? XRootDFileSystem.getenv("KRB5CCNAME"): XRootDKrb5.krb5ccname;
- //       String krb5ccname = System.getenv("KRB5CCNAME");
+        String krb5ccname = (XRootDKrb5.krb5ccname.equals("")) ? XRootDFileSystem.getenv("KRB5CCNAME") : XRootDKrb5.krb5ccname;
+        //       String krb5ccname = System.getenv("KRB5CCNAME");
         if (krb5ccname != null && krb5ccname.length() > 5) {
-              if( krb5ccname.regionMatches(true, 0,  "FILE:", 0, 5)) {
-	           krb5ccname = krb5ccname.substring(5);
-              }
-	        eosDebugLogger.printDebug("krb5ccname filename " + krb5ccname);
-                
+            if (krb5ccname.regionMatches(true, 0, "FILE:", 0, 5)) {
+                krb5ccname = krb5ccname.substring(5);
+            }
+            eosDebugLogger.printDebug("krb5ccname filename " + krb5ccname);
+
             // if file exists we do not need to extract TGT from token
-                if ((new File(krb5ccname)).exists()) {
-                 localTGTexists = true;
-                  //hasKrbTGT = 1;
-                 // XRootDKrb5.krb5ccname = krb5ccname;
-                 // return krb5ccname;
-                }
-                else eosDebugLogger.printDebug("krb5ccname points to " + krb5ccname + " but it does not seem to be valid");
+            if ((new File(krb5ccname)).exists()) {
+                localTGTexists = true;
+                //hasKrbTGT = 1;
+                // XRootDKrb5.krb5ccname = krb5ccname;
+                // return krb5ccname;
+            } else
+                eosDebugLogger.printDebug("krb5ccname points to " + krb5ccname + " but it does not seem to be valid");
 
         } else {
             krb5ccname = Files.createTempFile("krb5", null).toString();
@@ -295,17 +288,17 @@ public class XRootDKrb5
                 break;
             }
         }
-        hasKrbToken = (tok == null)? 0 : 1;
+        hasKrbToken = (tok == null) ? 0 : 1;
         if (!localTGTexists) {
-            if (hasKrbToken == 0 ) {
-                 eosDebugLogger.printDebug("setKrbTGT: no valid Krb Token found");
-                 hasKrbTGT=0;
-                 // cannot find a source for providing TGT
-                 throw new KrbException("setKrbTGT: no valid Krb Token");
+            if (hasKrbToken == 0) {
+                eosDebugLogger.printDebug("setKrbTGT: no valid Krb Token found");
+                hasKrbTGT = 0;
+                // cannot find a source for providing TGT
+                throw new KrbException("setKrbTGT: no valid Krb Token");
             }
         }
 
-        if (hasKrbToken == 1 ) {
+        if (hasKrbToken == 1) {
 
             eosDebugLogger.printDebug("setKrbTGT: Krb Token found in a token cache, will use it");
 
@@ -314,16 +307,15 @@ public class XRootDKrb5
             /* explicit renewal instead of "if (tok.isManaged()) tok.renew()": need the krb5ccname */
             Krb5TokenRenewer renewer = new Krb5TokenRenewer();
             long lifeTime = renewer.renew(tok, conf);
-    
+
             eosDebugLogger.printDebug("setKrbTGT lifeTime " + lifeTime + " cache " + krb5ccname);
-        }
-        else  {
-           eosDebugLogger.printDebug("setKrbTGT: Not token found, but local TGT exists, will use it");
-           hasKrbTGT = 1;
-        //TBD: cannot write to filecahce
-        //setKrbToken(); //set up token and renewal process
+        } else {
+            eosDebugLogger.printDebug("setKrbTGT: Not token found, but local TGT exists, will use it");
+            hasKrbTGT = 1;
+            //TBD: cannot write to filecahce
+            //setKrbToken(); //set up token and renewal process
         }
         hasKrbTGT = 1;
         return krb5ccname;
-    }    
+    }
 }
