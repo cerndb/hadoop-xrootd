@@ -22,36 +22,36 @@ import java.net.URI;
 
 public class XRootDKrb5FileSystem extends XRootDFileSystem {
 
-	public XRootDKrb5FileSystem() {
-		super();
-	}
-	
-	protected void initHandle() throws IOException {
-		super.initHandle();
-		setkrbcc(XRootDKrb5.setKrb());
-    }
-	
-	public void initialize(URI uri, Configuration conf) throws IOException {
-		super.initialize(uri, conf);
-		setkrbcc(XRootDKrb5.setKrb());
+    public XRootDKrb5FileSystem() {
+        super();
     }
 
     /*
-     * Setting token cache from TGT (on Spark or MR drivers) or init local krb cache from token 
-     * (if mapper or executor) 
+     * Setting token cache from TGT (on Spark or MR drivers) or init local krb cache from token
+     * (if mapper or executor)
      */
     public static void setKrb() {
-		XRootDKrb5.setKrb();
+        XRootDKrb5.setKrb();
     }
 
-    /* 
-     * This sets (setenv()) KRB5CCNAME in the current (!) environment, 
+    /*
+     * This sets (setenv()) KRB5CCNAME in the current (!) environment,
      * which is NOT the one java currently sees, nor the one a java sub-process is going to see spawned
      * using execve() - for the latter one would have to modify java's copy of the environment which is doable.
      * jython or scala may yet play different games
      */
     public static void setkrbcc(String ccname) throws IOException {
-		XRootDFileSystem.initLib();
-		setenv("KRB5CCNAME", "FILE:" + ccname);
+        XRootDFileSystem.initLib();
+        setenv("KRB5CCNAME", "FILE:" + ccname);
+    }
+
+    protected void initHandle() throws IOException {
+        super.initHandle();
+        setkrbcc(XRootDKrb5.setKrb());
+    }
+
+    public void initialize(URI uri, Configuration conf) throws IOException {
+        super.initialize(uri, conf);
+        setkrbcc(XRootDKrb5.setKrb());
     }
 }

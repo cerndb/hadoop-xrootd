@@ -20,32 +20,7 @@ Must be specified in HADOOP_CONF_DIR in core-site.xml - ref https://github.com/d
     </configuration>
 ```
 
-### Build and run PySpark Shell with XRootD-Connector
-
-Prerequisites:  
-
-- Docker Installation https://docs.docker.com/install/
-
-- Docker as non-root user https://docs.docker.com/install/linux/linux-postinstall/
-
-This will build the environment image and run bash shell. While in bash, run pyspark with any required packages or any other command
-
-```
-./run-docker.sh
-```
-
-while in bash shell inside the docker, you can run spark shell with connector preinstalled
-```
-/usr/lib/spark/bin/pyspark --packages org.diana-hep:spark-root_2.11:0.1.15
-
->>> input = "root://eospublic.cern.ch//eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/20000/DCF94DC3-42CE-E211-867A-001E67398011.root"
->>> df = sqlContext.read.format("org.dianahep.sparkroot").option("tree", "Events").load(input)
->>> df.count()
-```
-
-NOTE: First run is the longest, but next attempts will be instant
-
-### Build and test XRootD-Connector in hadalytic
+### Build XRootD-Connector with MVN
 
 Prerequisites:
 
@@ -53,53 +28,46 @@ Prerequisites:
 xrootd-client, xrootd-client-libs, xrootd-client-devel
 ```
 
-Use "make all" command to compile
+Use "mvn" command to package
 ```
-make all
-```
-
-Use "make test" command to run integration tests
-
-```
-cp EOSfs.jar /usr/lib/hadoop/share/hadoop/common/lib/EOSfs.jar
-cp libjXrdCl.so /usr/lib/hadoop/lib/native/libjXrdCl.so
-make test
+mvn package
 ```
 
-### Build and test XRootD-Connector in docker on localhost
+NOTES:
 
-This will build the environment image and run integration tests. 
-
-```
-./run-docker-tests.sh
-```
-
-NOTE: First run is the longest, but next attempts will be instant
-
-### Documentation: Recommended
-
-NOTE: User inside docker is different then on parent host, thus one might need to
-change ownership with `chown
-
-NOTE: If you don't have connectivity inside the docker e.g. `ping www.google.com` 
-please ensure that you edit `/etc/docker/daemon.json` with 
-```
-{ 
-    "dns": ["<your-cern-dns>", "8.8.8.8"] 
-}
-```
-
-### Documentation: XRootD-Connector prebuild environment
-
-**Use XRootD-Connector Docker with your gcc, java version, and hadoop versions**
-
-Build the image
+Since hadoop-xrootd-connector relies on NAR packaging (`.so` dependency for C++ `xrootd-client`), currently 
+it requires to build connector with correct platform `linux` and `gcc` version to avoid  error below:
 
 ```
-docker build -t hadoop-xrootd-connector .
+java: symbol lookup error: /tmp/libhadoop-xrootd-1.0.0-SNAPSHOT9131106165051975528.so: undefined symbol: _ZN5XrdCl3URLC1ERKSs
 ```
 
-You can go to docker inside with bash
+Build with correct versions e.g. on `lxplus-cloud`:
+
 ```
-docker run --rm -it hadoop-xrootd-connector bash
+source /cvmfs/sft.cern.ch/lcg/views/LCG_93/x86_64-slc6-gcc62-opt/setup.sh
+mvn package
 ```
+
+### Testing
+#### Test with HDFS
+
+```bash
+# Get native-lib-loader as mvn resolver will do
+$ curl http://central.maven.org/maven2/org/scijava/native-lib-loader/2.2.0/native-lib-loader-2.2.0.jar -o target/native-lib-loader-2.2.0.jar
+ 
+# Add to Hadoop Classpath (Spark Driver or Executor extra classpath - spark.driver.extraClassPath)
+$ export HADOOP_CLASSPATH="target/${CONNECTOR_RELEASE_NAME}-${ARCHITECTURE_PROFILE}.nar:target/${CONNECTOR_RELEASE_NAME}.jar:target/native-lib-loader-2.2.0.jar:$(hadoop classpath)"
+ 
+# Try to read a file
+$ hdfs dfs -ls root://eospublic.cern.ch//eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/20000/DCF94DC3-42CE-E211-867A-001E67398011.root
+```
+
+#### Test with integration tests
+
+This will build the Docker image and run integration tests. 
+
+```
+./run-tests.sh
+```
+

@@ -21,15 +21,16 @@ public final class XRootDUtils {
 
     /**
      * Get a long option >= the minimum allowed value, supporting memory such as prefixes K,M,G,T,P.
-     * @param conf configuration
-     * @param confKey key to look up
+     *
+     * @param conf         configuration
+     * @param confKey      key to look up
      * @param defaultValue default value
      * @return the value
      * @throws IllegalArgumentException if the value is below the minimum
      */
     static int byteConfOption(Configuration conf,
-                                String confKey,
-                                int defaultValue) {
+                              String confKey,
+                              int defaultValue) {
         int confValue = conf.getInt(confKey, defaultValue);
 
         if (confValue < 0) {
