@@ -19,26 +19,26 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "ch_cern_eos_XrootDBasedClFile.h"
+#include "ch_cern_eos_XRootDClFile.h"
 #include "xrootd/XrdCl/XrdClFile.hh"
 #include "xrootd/XrdCl/XrdClFileSystem.hh"
-#include "ch_cern_eos_XrootDBasedKerberizedFileSystem.h"
+#include "ch_cern_eos_XRootDKrb5FileSystem.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-#undef ch_cern_eos_XrootDBasedKerberizedFileSystem_SHUTDOWN_HOOK_PRIORITY
-#define ch_cern_eos_XrootDBasedKerberizedFileSystem_SHUTDOWN_HOOK_PRIORITY 10L
+#undef ch_cern_eos_XRootDKrb5FileSystem_SHUTDOWN_HOOK_PRIORITY
+#define ch_cern_eos_XRootDKrb5FileSystem_SHUTDOWN_HOOK_PRIORITY 10L
 
 
 int EOS_debug = 0;
 
 /*
- * Class:     ch_cern_eos_XrootDBasedFileSystem
+ * Class:     ch_cern_eos_XRootDFileSystem
  * Method:    initFileSystem
  * Signature: (Ljava/lang/String;)J
  */
-JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_initFileSystem (JNIEnv *env, jobject This, jstring url_p) {
+JNIEXPORT jlong JNICALL Java_ch_cern_eos_XRootDFileSystem_initFileSystem (JNIEnv *env, jobject This, jstring url_p) {
 
 	const char *urlstr = env->GetStringUTFChars(url_p, 0);
 
@@ -62,11 +62,11 @@ JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_initFileSystem (J
 
 
 /*
- * Class:     ch_cern_eos_XrootDBasedFileSystem
+ * Class:     ch_cern_eos_XRootDFileSystem
  * Method:    getFileStatusS
  * Signature: (Ljava/lang/String;)Lorg/apache/hadoop/fs/FileStatus;
  */
-JNIEXPORT jobject JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_getFileStatusS (JNIEnv *env, jobject This, jlong handle, jstring url_p, jobject path) {
+JNIEXPORT jobject JNICALL Java_ch_cern_eos_XRootDFileSystem_getFileStatusS (JNIEnv *env, jobject This, jlong handle, jstring url_p, jobject path) {
 	XrdCl::FileSystem *fs = (XrdCl::FileSystem *) handle;
 	const char *fn = env->GetStringUTFChars(url_p, 0);
 	if (EOS_debug) {
@@ -104,11 +104,11 @@ JNIEXPORT jobject JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_getFileStatusS 
 };
 
 /*
- * Class:     ch_cern_eos_XrootDBasedFileSystem
+ * Class:     ch_cern_eos_XRootDFileSystem
  * Method:    Rm
  * Signature: (JLjava/lang/String;)I
  */
-JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_Rm (JNIEnv *env, jobject This, jlong handle, jstring fn_p) {
+JNIEXPORT jlong JNICALL Java_ch_cern_eos_XRootDFileSystem_Rm (JNIEnv *env, jobject This, jlong handle, jstring fn_p) {
 	XrdCl::FileSystem *fs = (XrdCl::FileSystem *) handle;
 	const char *fn = env->GetStringUTFChars(fn_p, 0);
 	if (EOS_debug) {
@@ -137,11 +137,11 @@ JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_Rm (JNIEnv *env, 
 };
 
 /*
- * Class:     ch_cern_eos_XrootDBasedFileSystem
+ * Class:     ch_cern_eos_XRootDFileSystem
  * Method:    RmDir
  * Signature: (JLjava/lang/String;)I
  */
-JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_RmDir (JNIEnv *env, jobject This, jlong handle, jstring fn_p) {
+JNIEXPORT jlong JNICALL Java_ch_cern_eos_XRootDFileSystem_RmDir (JNIEnv *env, jobject This, jlong handle, jstring fn_p) {
 
 	XrdCl::FileSystem *fs = (XrdCl::FileSystem *) handle;
 	const char *fn = env->GetStringUTFChars(fn_p, 0);
@@ -162,11 +162,11 @@ JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_RmDir (JNIEnv *en
 };
 
 /*
- * Class:     ch_cern_eos_XrootDBasedFileSystem
+ * Class:     ch_cern_eos_XRootDFileSystem
  * Method:    Mv
  * Signature: (JLjava/lang/String;Ljava/lang/String;)I
  */
-JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_Mv (JNIEnv *env, jobject This, jlong handle, jstring src_p, jstring dst_p) {
+JNIEXPORT jlong JNICALL Java_ch_cern_eos_XRootDFileSystem_Mv (JNIEnv *env, jobject This, jlong handle, jstring src_p, jstring dst_p) {
 	XrdCl::FileSystem *fs = (XrdCl::FileSystem *) handle;
 	const char *src = env->GetStringUTFChars(src_p, 0);
 	const char *dst = env->GetStringUTFChars(dst_p, 0);
@@ -185,11 +185,11 @@ JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_Mv (JNIEnv *env, 
 };
 
 /*
- * Class:     ch_cern_eos_XrootDBasedFileSystem
+ * Class:     ch_cern_eos_XRootDFileSystem
  * Method:    MkDir
  * Signature: (JLjava/lang/String;S)I
  */
-JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_MkDir (JNIEnv *env, jobject This, jlong handle, jstring dirname_p, jshort mode_p) {
+JNIEXPORT jlong JNICALL Java_ch_cern_eos_XRootDFileSystem_MkDir (JNIEnv *env, jobject This, jlong handle, jstring dirname_p, jshort mode_p) {
 	XrdCl::FileSystem *fs = (XrdCl::FileSystem *) handle;
 	const char *dirname = env->GetStringUTFChars(dirname_p, 0);
 	uint16_t timeout = 0;
@@ -210,11 +210,11 @@ JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_MkDir (JNIEnv *en
 };
 
 /*
- * Class:     ch_cern_eos_XrootDBasedFileSystem
+ * Class:     ch_cern_eos_XRootDFileSystem
  * Method:    listFileStatusS
  * Signature: (JLjava/lang/String;Lorg/apache/hadoop/fs/Path;)[Lorg/apache/hadoop/fs/FileStatus;
  */
-JNIEXPORT jobjectArray JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_listFileStatusS
+JNIEXPORT jobjectArray JNICALL Java_ch_cern_eos_XRootDFileSystem_listFileStatusS
   (JNIEnv *env, jobject This, jlong handle, jstring url_p, jobject pp) {
 
 	XrdCl::FileSystem *fs = (XrdCl::FileSystem *) handle;
@@ -270,11 +270,11 @@ JNIEXPORT jobjectArray JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_listFileSt
 
 
 /*
- * Class:     ch_cern_eos_XrootDBasedFileSystem
+ * Class:     ch_cern_eos_XRootDFileSystem
  * Method:    setcc
  * Signature: (Ljava/lang/String;)V
  */
-JNIEXPORT void JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_setenv (JNIEnv *env, jclass This, jstring ccn_p, jstring ccv_p) {
+JNIEXPORT void JNICALL Java_ch_cern_eos_XRootDFileSystem_setenv (JNIEnv *env, jclass This, jstring ccn_p, jstring ccv_p) {
 	const char *ccn = env->GetStringUTFChars(ccn_p, 0);
 	const char *ccv = env->GetStringUTFChars(ccv_p, 0);
 
@@ -285,11 +285,11 @@ JNIEXPORT void JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_setenv (JNIEnv *en
 };
 
 /*
- * Class:     ch_cern_eos_XrootDBasedFileSystem
+ * Class:     ch_cern_eos_XRootDFileSystem
  * Method:    getcc
  * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_getenv (JNIEnv *env, jclass This, jstring ccn_p) {
+JNIEXPORT jstring JNICALL Java_ch_cern_eos_XRootDFileSystem_getenv (JNIEnv *env, jclass This, jstring ccn_p) {
 	const char *ccn = env->GetStringUTFChars(ccn_p, 0);
 
 	jstring str = env->NewStringUTF(getenv(ccn));
@@ -299,11 +299,11 @@ JNIEXPORT jstring JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_getenv (JNIEnv 
 };
 
 /*
- * Class:     ch_cern_eos_XrootDBasedFileSystem
+ * Class:     ch_cern_eos_XRootDFileSystem
  * Method:    getErrText
  * Signature: (J)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_getErrText (JNIEnv *env, jobject This, jlong errcode) {
+JNIEXPORT jstring JNICALL Java_ch_cern_eos_XRootDFileSystem_getErrText (JNIEnv *env, jobject This, jlong errcode) {
   XrdCl::XRootDStatus status;
 
   *(long *) &status = errcode;
@@ -313,11 +313,11 @@ JNIEXPORT jstring JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_getErrText (JNI
 };
 
 /*
- * Class: ch_cern_eos_XrootDBasedFileSystem
+ * Class: ch_cern_eos_XRootDFileSystem
  * Method: Prepare
  * Signature: (J[Ljava/lang/String;I)J
  */ 
-JNIEXPORT jlong JNICALL Java_ch_cern_eos_XrootDBasedFileSystem_Prepare (JNIEnv *env, jobject This, jlong handle, jobjectArray uris, jint jFlags) {
+JNIEXPORT jlong JNICALL Java_ch_cern_eos_XRootDFileSystem_Prepare (JNIEnv *env, jobject This, jlong handle, jobjectArray uris, jint jFlags) {
     XrdCl::FileSystem *fs = (XrdCl::FileSystem *) handle;
     XrdCl::PrepareFlags::Flags pFlags = static_cast<XrdCl::PrepareFlags::Flags>(jFlags);
     int numUris = env->GetArrayLength(uris);

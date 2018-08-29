@@ -15,43 +15,23 @@
  */
 package ch.cern.eos;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
-import java.lang.Class;
-import java.lang.Integer;
-import java.lang.OutOfMemoryError;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.System;
-
-import java.nio.file.Files;
-
-
-import java.util.Arrays;
-import java.util.Vector;
-
-import sun.security.krb5.*;
-import sun.security.krb5.internal.*;
-
-import sun.security.krb5.internal.ccache.CCacheInputStream;
-import sun.security.krb5.internal.ccache.CCacheOutputStream;
-import sun.security.krb5.internal.ccache.FileCredentialsCache;
-import sun.security.krb5.internal.ccache.Credentials;
-import sun.security.krb5.internal.ccache.CredentialsCache;
-import sun.security.krb5.internal.ccache.FileCCacheConstants;
-import sun.security.krb5.internal.ccache.Tag;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableUtils;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenRenewer;
+import sun.security.krb5.KrbException;
+import sun.security.krb5.PrincipalName;
+import sun.security.krb5.internal.KerberosTime;
+import sun.security.krb5.internal.ccache.CCacheInputStream;
+import sun.security.krb5.internal.ccache.CCacheOutputStream;
+import sun.security.krb5.internal.ccache.CredentialsCache;
+import sun.security.krb5.internal.ccache.FileCredentialsCache;
+
+import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 
 public class Krb5TokenRenewer extends TokenRenewer {
 	public String krb5ccname;
@@ -130,8 +110,8 @@ public class Krb5TokenRenewer extends TokenRenewer {
 					newCreds.getTicketFlags(), null, newCreds.getAuthzData(), newCreds.getTicket(), null);
 
 			CredentialsCache fcc = null;
-			XrootDBasedFileSystem.initLib();
-			krb5ccname = XrootDBasedKrb5.krb5ccname;
+			XRootDFileSystem.initLib();
+			krb5ccname = XRootDKrb5.krb5ccname;
                         
                         krb5ccname = ((krb5ccname.equals("")) ? "/tmp/krb_"+newCreds.getClient(): krb5ccname); //krb5ccname will be empty on RM
 

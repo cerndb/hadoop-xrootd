@@ -15,10 +15,7 @@
  */
 package ch.cern.eos;
 
-import java.lang.Throwable;
-import java.lang.System;
-
-public class XrootDBasedClFile {
+public class XRootDClFile {
     private long nHandle;
     private native long initFile();
     private native long disposeFile(long handle);
@@ -28,7 +25,7 @@ public class XrootDBasedClFile {
     private native long syncFile(long handle);
     private native long closeFile(long handle);
 
-    public XrootDBasedClFile() {
+    public XRootDClFile() {
         nHandle = initFile();
     }
 
