@@ -19,7 +19,7 @@ CXXFLAGS=-I$(INCLxrootd) -I$(INCLjava) -I$(INCLjava)/linux -fPIC
 
 export CLASSPATH=$(shell hadoop classpath) 
 
-CLASSES = ch/cern/eos/XrootDBasedClFile.java ch/cern/eos/Krb5TokenIdentifier.java ch/cern/eos/XrootDBasedFileSystem.java ch/cern/eos/XrootDBasedKerberizedFileSystem.java ch/cern/eos/XrootDBasedInputStream.java ch/cern/eos/XrootDBasedOutputStream.java ch/cern/eos/XrootDBasedKrb5.java ch/cern/eos/Krb5TokenRenewer.java ch/cern/eos/DebugLogger.java ch/cern/eos/XRootDUtils.java ch/cern/eos/XRootDConstants.java ch/cern/eos/XRootDInstrumentation.java
+CLASSES = ch/cern/eos/XRootDClFile.java ch/cern/eos/Krb5TokenIdentifier.java ch/cern/eos/XRootDFileSystem.java ch/cern/eos/XRootDKrb5FileSystem.java ch/cern/eos/XRootDInputStream.java ch/cern/eos/XRootDOutputStream.java ch/cern/eos/XRootDKrb5.java ch/cern/eos/Krb5TokenRenewer.java ch/cern/eos/DebugLogger.java ch/cern/eos/XRootDUtils.java ch/cern/eos/XRootDConstants.java ch/cern/eos/XRootDInstrumentation.java
 
 all: libjXrdCl.so EOSfs.jar
 
@@ -38,15 +38,15 @@ classes: $(CLASSES:.java=.class)
 EOSfs.jar: classes
 	jar -cfe $@ coucou $(CLASSES:.java=.class) META-INF
 
-ch_cern_eos_XrootDBasedClFile.h: ch/cern/eos/XrootDBasedClFile.class
-	javah $(JHFLAGS) ch.cern.eos.XrootDBasedClFile
+ch_cern_eos_XRootDClFile.h: ch/cern/eos/XRootDClFile.class
+	javah $(JHFLAGS) ch.cern.eos.XRootDClFile
 
-ch_cern_eos_XrootDBasedKerberizedFileSystem.h: ch/cern/eos/XrootDBasedKerberizedFileSystem.class
-	javah $(JHFLAGS) ch.cern.eos.XrootDBasedKerberizedFileSystem
+ch_cern_eos_XRootDKrb5FileSystem.h: ch/cern/eos/XRootDKrb5FileSystem.class
+	javah $(JHFLAGS) ch.cern.eos.XRootDKrb5FileSystem
 
-ch_cern_eos_XrootDBasedClFile.o: ch_cern_eos_XrootDBasedClFile.cpp ch_cern_eos_XrootDBasedClFile.h
+ch_cern_eos_XRootDClFile.o: ch_cern_eos_XRootDClFile.cpp ch_cern_eos_XRootDClFile.h
 
-ch_cern_eos_XrootDBasedKerberizedFileSystem.o: ch_cern_eos_XrootDBasedKerberizedFileSystem.cpp ch_cern_eos_XrootDBasedKerberizedFileSystem.h
+ch_cern_eos_XRootDKrb5FileSystem.o: ch_cern_eos_XRootDKrb5FileSystem.cpp ch_cern_eos_XRootDKrb5FileSystem.h
 
-libjXrdCl.so: ch_cern_eos_XrootDBasedClFile.o ch_cern_eos_XrootDBasedKerberizedFileSystem.o
+libjXrdCl.so: ch_cern_eos_XRootDClFile.o ch_cern_eos_XRootDKrb5FileSystem.o
 	g++ -shared -o $@ $^  -lXrdCl -lXrdUtils -ldl

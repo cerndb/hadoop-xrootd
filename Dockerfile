@@ -1,29 +1,43 @@
-FROM gitlab-registry.cern.ch/db/spark-service/docker-registry/spark:v2.3.0-hadoop2.7
-
+FROM gitlab-registry.cern.ch/linuxsupport/cc7-base
 MAINTAINER Piotr Mrowczynski <piotr.mrowczynski@cern.ch>
 
 # Get the dependencies for building xrootd-connector
-RUN yum group install -y "Development Tools" && \
-    # cleanup
+ENV JAVA_VERSION=1.8.0.181-3.b13.el7_5.x86_64
+ENV JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-${JAVA_VERSION}
+ENV PATH $PATH:${JAVA_HOME}/bin
+RUN yum group install -y \
+    "Development Tools" && \
+    yum install -y \
+    which \
+    java-1.8.0-openjdk-devel-${JAVA_VERSION} \
+    xrootd-client \
+    xrootd-client-libs \
+    xrootd-client-devel \
     yum clean all && rm -rf /var/cache/yum/*
 
+# Install hadoop - required to build xrootd-connector
+ENV HADOOP_VERSION=2.7.4
+ENV HADOOP_URL=https://syscontrol.cern.ch/rpms/hdp/hadoop/soft7/hadoop-${HADOOP_VERSION}.tar.gz
+ENV PATH $PATH:/usr/lib/hadoop/bin
+ENV PATH $PATH:/usr/lib/hadoop/sbin
+RUN curl -s ${HADOOP_URL} | tar -xzvf - -C /usr/lib/ && \
+    cd /usr/lib && ln -s ./hadoop-${HADOOP_VERSION} hadoop
+
+# Build connector
+ARG BUILD_DATE
 COPY . /data
-
 WORKDIR /data
-
-# build the connector on docker run
 RUN make clean 2>/dev/null && \
     make all && \
-    cp /data/EOSfs.jar ${HADOOP_HOME}/share/hadoop/common/lib/EOSfs.jar && \
-    cp /data/EOSfs.jar ${SPARK_HOME}/jars/EOSfs.jar && \
-    cp /data/libjXrdCl.so ${HADOOP_HOME}/lib/native/libjXrdCl.so && \
+    mv /data/EOSfs.jar /usr/lib/hadoop-2.7.4/share/hadoop/common/lib/EOSfs.jar && \
+    mv /data/libjXrdCl.so /usr/lib/hadoop/lib/native/libjXrdCl.so && \
     make clean 2>/dev/null
 
-# bash on docker run
-ENTRYPOINT echo '' && echo '** Run Spark-Shell with any required packages **' && echo 'spark-shell --packages org.diana-hep:spark-root_2.11:0.1.15' && bash
+CMD echo "Running integration tests" && make test
 
 LABEL \
   org.label-schema.version="0.1" \
+  org.label-schema.build-date=${BUILD_DATE} \
   org.label-schema.name="Hadoop-XRootD-Connector Dockerfile" \
   org.label-schema.vendor="CERN" \
   org.label-schema.schema-version="1.2"

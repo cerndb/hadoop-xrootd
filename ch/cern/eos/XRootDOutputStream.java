@@ -15,27 +15,18 @@
  */
 package ch.cern.eos;
 
-import java.lang.System;
-
-import java.io.OutputStream;
-import java.io.IOException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.fs.PositionedReadable;
-import org.apache.hadoop.fs.Seekable;
 
-import ch.cern.eos.XrootDBasedClFile;
+import java.io.IOException;
+import java.io.OutputStream;
 
-class XrootDBasedOutputStream extends OutputStream {
+class XRootDOutputStream extends OutputStream {
 
 	private DebugLogger eosDebugLogger;
-	private XrootDBasedClFile file;
+	private XRootDClFile file;
 	private long pos;
 
-	public XrootDBasedOutputStream(String url, FsPermission permission, boolean overwrite) {
+	public XRootDOutputStream(String url, FsPermission permission, boolean overwrite) {
 		/* OpenFlags:
 		 *  None     = 0 
 		 *  kXR_delete   = 2
@@ -51,7 +42,7 @@ class XrootDBasedOutputStream extends OutputStream {
 
 		this.eosDebugLogger = new DebugLogger(System.getenv("EOS_debug") != null);
 
-		this.file = new XrootDBasedClFile();
+		this.file = new XRootDClFile();
 		long status = file.Open(url, oflags, 0x0180);
 		this.eosDebugLogger.printDebug("EOSOutputStream create " + url + " status=" + status);
 
