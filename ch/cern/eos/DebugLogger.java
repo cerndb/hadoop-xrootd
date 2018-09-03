@@ -51,7 +51,9 @@ public class DebugLogger {
     }
 
     public void setDebug(boolean debugEnabled) {
-	this.logger.setLevel(debugEnabled ? Level.DEBUG : Level.INFO);
+        if (debugEnabled) {
+            this.logger.setLevel(Level.DEBUG);
+        }
     }
     
     public boolean isDebugEnabled() {
