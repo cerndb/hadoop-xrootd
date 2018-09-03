@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 
 public class DebugLogger {
 
-    private Logger logger = LogManager.getRootLogger();
+    private Logger logger = LogManager.getLogger("HadoopXRootD");
     
     public DebugLogger(boolean debugEnabled) {
         this.setDebug(debugEnabled);
