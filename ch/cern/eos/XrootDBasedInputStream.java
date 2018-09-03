@@ -72,8 +72,11 @@ class XrootDBasedInputStream extends FSInputStream implements Seekable, Position
             return (int)this.pos;
         }
 
+        long startTime = System.nanoTime();
         long rd = file.Read(pos, b, off, len);
+        long endTime = System.nanoTime();
         this.eosDebugLogger.printDebug("EOSInputStream.read(pos=" + pos + ", b, off=" + off + ", len=" + len + ") readBytes: " + rd);
+        this.eosDebugLogger.printDebug("EOSInputStream read operation elapsed time=" + (endTime - startTime)/1000 + " microsec");
         if (rd >= 0) {
             this.pos = pos + rd;
             updateStatsBytesRead(rd);
