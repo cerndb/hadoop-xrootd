@@ -77,6 +77,7 @@ class XrootDBasedInputStream extends FSInputStream implements Seekable, Position
         if (rd >= 0) {
             this.pos = pos + rd;
             updateStatsBytesRead(rd);
+            updateStatsNumOps(1);
             return (int) rd;
         }
         else if (rd == -1 ){
@@ -137,6 +138,16 @@ class XrootDBasedInputStream extends FSInputStream implements Seekable, Position
     private void updateStatsBytesRead(long bytesRead) {
         if (stats != null && bytesRead > 0) {
             stats.incrementBytesRead(bytesRead);
+        }
+    }
+
+    /**
+     * Update (increment) the read operations counter.
+     * @param numOps number of read operations
+     */
+    private void updateStatsNumOps(int numOps) {
+        if (stats != null && numOps > 0) {
+            stats.incrementReadOps(numOps);
         }
     }
 }
