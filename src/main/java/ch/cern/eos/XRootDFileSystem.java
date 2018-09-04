@@ -37,11 +37,6 @@ public class XRootDFileSystem extends FileSystem {
 
     public static native String getenv(String envname);
 
-    public static void initLib() throws IOException {
-        eosDebugLogger = new DebugLogger(System.getenv("EOS_debug") != null);
-        XRootDKrb5.setDebug(eosDebugLogger.isDebugEnabled());
-    }
-
     static
     {
         NarSystem.loadLibrary();
@@ -72,8 +67,9 @@ public class XRootDFileSystem extends FileSystem {
     public void initialize(URI uri, Configuration conf) throws IOException {
         super.initialize(uri, conf);
         setConf(conf);
-        initLib();
 
+        eosDebugLogger = new DebugLogger(System.getenv("EOS_debug") != null);
+        XRootDKrb5.setDebug(eosDebugLogger.isDebugEnabled());
         this.uri = uri;
         this.readAhead = XRootDUtils.byteConfOption(conf, XRootDConstants.READAHEAD_RANGE,
                 XRootDConstants.DEFAULT_READAHEAD_RANGE);
@@ -172,8 +168,6 @@ public class XRootDFileSystem extends FileSystem {
         if (nHandle != 0) {
             return;
         }
-
-        initLib();
 
         String fileSystemURI = this.uri.getScheme() + "://" + this.uri.getAuthority();
         this.nHandle = initFileSystem(fileSystemURI);

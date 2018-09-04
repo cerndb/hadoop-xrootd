@@ -41,7 +41,6 @@ public class XRootDKrb5FileSystem extends XRootDFileSystem {
      * jython or scala may yet play different games
      */
     public static void setkrbcc(String ccname) throws IOException {
-        XRootDFileSystem.initLib();
         setenv("KRB5CCNAME", "FILE:" + ccname);
     }
 

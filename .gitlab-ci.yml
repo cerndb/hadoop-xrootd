@@ -1,0 +1,12 @@
+stages:
+  - build
+
+variables:
+  MAVEN_OPTS: "-Xmx2g -XX:ReservedCodeCacheSize=512m"
+  JAVA_VERSION_MAJOR: "7"
+
+build-app:
+  stage: build
+  script:
+    - make all
+  image: gitlab-registry.cern.ch/awg/spark:base-j${JAVA_VERSION_MAJOR}
