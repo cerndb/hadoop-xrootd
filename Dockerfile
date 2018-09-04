@@ -33,17 +33,14 @@ ARG BUILD_DATE
 COPY . /data
 WORKDIR /data
 
-ARG CONNECTOR_RELEASE_NAME
-ARG ARCHITECTURE_PROFILE
-
-RUN mvn clean package && \
-    mv target/${CONNECTOR_RELEASE_NAME}-${ARCHITECTURE_PROFILE}.nar /usr/lib/hadoop/share/hadoop/common/lib/ && \
-    mv target/${CONNECTOR_RELEASE_NAME}.jar /usr/lib/hadoop/share/hadoop/common/lib/ && \
-    curl http://central.maven.org/maven2/org/scijava/native-lib-loader/2.2.0/native-lib-loader-2.2.0.jar -o /usr/lib/hadoop/share/hadoop/common/lib/native-lib-loader-2.2.0.jar
-
-ENV HADOOP_CLASSPATH="/usr/lib/hadoop/share/hadoop/common/lib/${CONNECTOR_RELEASE_NAME}-${ARCHITECTURE_PROFILE}.nar:$(hadoop classpath)"
-
-CMD echo "Running integration tests" && make test
+CMD make all && \
+    ARCHITECTURE_PROFILE="amd64-Linux-gpp-jni" && \
+    VERSION=$(mvn help:evaluate -Dexpression=project.version $@ 2>/dev/null\
+    | grep -v "INFO"\
+    | grep -v "WARNING"\
+    | tail -n 1) && \
+    export HADOOP_CLASSPATH="hadoop-xrootd-nar-${VERSION}-${ARCHITECTURE_PROFILE}.nar:hadoop-xrootd-${VERSION}-jar-with-dependencies.jar:$(hadoop classpath)" && \
+    make test
 
 LABEL \
   org.label-schema.version="0.1" \
