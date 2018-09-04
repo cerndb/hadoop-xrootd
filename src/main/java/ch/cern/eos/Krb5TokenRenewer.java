@@ -110,7 +110,6 @@ public class Krb5TokenRenewer extends TokenRenewer {
                     newCreds.getTicketFlags(), null, newCreds.getAuthzData(), newCreds.getTicket(), null);
 
             CredentialsCache fcc = null;
-            XRootDFileSystem.initLib();
             krb5ccname = XRootDKrb5.krb5ccname;
 
             krb5ccname = ((krb5ccname.equals("")) ? "/tmp/krb_" + newCreds.getClient() : krb5ccname); //krb5ccname will be empty on RM
