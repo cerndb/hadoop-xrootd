@@ -218,9 +218,12 @@ public class XrootDBasedFileSystem extends FileSystem {
 		URI u = toUri(path);
 		String filespec = uri.getScheme() + "://" +  uri.getAuthority() + "/" + u.getPath();
 
+		// create object for extra instrumentation of metrics
+		XRootDInstrumentation instrumentation = new XRootDInstrumentation();
+
 		// ReadAhead is done with BufferedFSInputStream
 		eosDebugLogger.printDebug("EOSfs open " + filespec + " with readAhead=" + readAhead);
-		return new FSDataInputStream(new BufferedFSInputStream(new XrootDBasedInputStream(filespec, statistics),readAhead));
+		return new FSDataInputStream(new BufferedFSInputStream(new XrootDBasedInputStream(filespec, statistics, instrumentation),readAhead));
     }
 
     public FileStatus getFileStatus(Path p) throws IOException {
