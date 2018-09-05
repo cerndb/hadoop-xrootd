@@ -29,10 +29,12 @@ class XrootDBasedInputStream extends FSInputStream implements Seekable, Position
     private long pos = 0;
     private static final int IO_SIZE = 1024*1024;
     private final Statistics stats;
+    private final XRootDInstrumentation instrumentation;
 
-    public XrootDBasedInputStream(String url, Statistics stats) {
+    public XrootDBasedInputStream(String url, Statistics stats, XRootDInstrumentation instrumentation) {
         this.eosDebugLogger = new DebugLogger(System.getenv("EOS_debug") != null);
         this.stats = stats;
+        this.instrumentation = instrumentation;
 
         this.file = new XrootDBasedClFile();
         long status = file.Open(url, 0, 0);
@@ -75,12 +77,14 @@ class XrootDBasedInputStream extends FSInputStream implements Seekable, Position
         long startTime = System.nanoTime();
         long rd = file.Read(pos, b, off, len);
         long endTime = System.nanoTime();
+        long elapsedTimeMicrosec = (endTime - startTime) / 1000L;
         this.eosDebugLogger.printDebug("EOSInputStream.read(pos=" + pos + ", b, off=" + off + ", len=" + len + ") readBytes: " + rd);
-        this.eosDebugLogger.printDebug("EOSInputStream read operation elapsed time=" + (endTime - startTime)/1000 + " microsec");
+        this.eosDebugLogger.printDebug("EOSInputStream read operation elapsed time=" + elapsedTimeMicrosec + " microsec");
         if (rd >= 0) {
             this.pos = pos + rd;
             updateStatsBytesRead(rd);
             updateStatsNumOps(1);
+            updateReadTime(elapsedTimeMicrosec);
             return (int) rd;
         }
         else if (rd == -1 ){
@@ -151,6 +155,16 @@ class XrootDBasedInputStream extends FSInputStream implements Seekable, Position
     private void updateStatsNumOps(int numOps) {
         if (stats != null && numOps > 0) {
             stats.incrementReadOps(numOps);
+        }
+    }
+
+    /**
+     * Update the instrumentation counter for read operation elapsed time.
+     * @param readTimeElapsed elapsed read time in microseconds
+     */
+    private void updateReadTime(long readTimeElapsed) {
+        if (instrumentation != null && readTimeElapsed > 0) {
+            instrumentation.incrementTimeElapsedReadOps(readTimeElapsed);
         }
     }
 }

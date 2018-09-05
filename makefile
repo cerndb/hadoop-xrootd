@@ -19,7 +19,7 @@ CXXFLAGS=-I$(INCLxrootd) -I$(INCLjava) -I$(INCLjava)/linux -fPIC
 
 export CLASSPATH=$(shell hadoop classpath) 
 
-CLASSES = ch/cern/eos/XrootDBasedClFile.java ch/cern/eos/Krb5TokenIdentifier.java ch/cern/eos/XrootDBasedFileSystem.java ch/cern/eos/XrootDBasedKerberizedFileSystem.java ch/cern/eos/XrootDBasedInputStream.java ch/cern/eos/XrootDBasedOutputStream.java ch/cern/eos/XrootDBasedKrb5.java ch/cern/eos/Krb5TokenRenewer.java ch/cern/eos/DebugLogger.java ch/cern/eos/XRootDUtils.java ch/cern/eos/XRootDConstants.java
+CLASSES = ch/cern/eos/XrootDBasedClFile.java ch/cern/eos/Krb5TokenIdentifier.java ch/cern/eos/XrootDBasedFileSystem.java ch/cern/eos/XrootDBasedKerberizedFileSystem.java ch/cern/eos/XrootDBasedInputStream.java ch/cern/eos/XrootDBasedOutputStream.java ch/cern/eos/XrootDBasedKrb5.java ch/cern/eos/Krb5TokenRenewer.java ch/cern/eos/DebugLogger.java ch/cern/eos/XRootDUtils.java ch/cern/eos/XRootDConstants.java ch/cern/eos/XRootDInstrumentation.java
 
 all: libjXrdCl.so EOSfs.jar
 
