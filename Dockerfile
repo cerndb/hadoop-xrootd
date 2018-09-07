@@ -1,5 +1,6 @@
 FROM gitlab-registry.cern.ch/linuxsupport/cc7-base
 MAINTAINER Piotr Mrowczynski <piotr.mrowczynski@cern.ch>
+MAINTAINER Zbigniew Baranowski <zbigniew.baranowski@cern.ch>
 
 # Get the dependencies for building xrootd-connector
 ENV JAVA_VERSION=1.8.0.181-3.b13.el7_5.x86_64
@@ -28,22 +29,10 @@ ENV PATH $PATH:/usr/lib/hadoop/sbin
 RUN curl -s ${HADOOP_URL} | tar -xzvf - -C /usr/lib/ && \
     cd /usr/lib && ln -s ./hadoop-${HADOOP_VERSION} hadoop
 
-# Build connector
-ARG BUILD_DATE
-COPY . /data
-WORKDIR /data
-
-CMD make all && \
-    VERSION=$(mvn help:evaluate -Dexpression=project.version $@ 2>/dev/null\
-    | grep -v "INFO"\
-    | grep -v "WARNING"\
-    | tail -n 1) && \
-    export HADOOP_CLASSPATH="hadoop-xrootd-${VERSION}-jar-with-dependencies.jar:$(hadoop classpath)" && \
-    make test
+WORKDIR /build
 
 LABEL \
   org.label-schema.version="0.1" \
-  org.label-schema.build-date=${BUILD_DATE} \
-  org.label-schema.name="Hadoop-XRootD-Connector Dockerfile" \
+  org.label-schema.name="Hadoop-XRootD Dockerfile for builds" \
   org.label-schema.vendor="CERN" \
   org.label-schema.schema-version="1.2"

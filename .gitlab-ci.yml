@@ -1,12 +1,45 @@
 stages:
+  - image
   - build
+  - test
 
 variables:
   MAVEN_OPTS: "-Xmx2g -XX:ReservedCodeCacheSize=512m"
   JAVA_VERSION_MAJOR: "7"
 
+.krb_tgt_template: &krbtgt
+  before_script:
+    - echo "$KERB_ACCOUNT_PASSWORD" | kinit "$KERB_ACCOUNT_USERNAME@CERN.CH"
+    - klist
+
+
+build-docker-image:
+  stage: image
+  only:
+   - /^docker-.*$/
+  tags:
+   - docker-image-build
+  script:
+    - echo "Building docker image..."
+  variables:
+    DOCKER_FILE: Dockerfile
+    TO: ${CI_REGISTRY_IMAGE}:latest
+
 build-app:
   stage: build
   script:
     - make all
-  image: gitlab-registry.cern.ch/awg/spark:base-j${JAVA_VERSION_MAJOR}
+  artifacts:
+    paths:
+    - "*-jar-with-dependencies.jar"
+  image: ${CI_REGISTRY_IMAGE}:latest
+
+run-test:
+  <<: *krbtgt
+  stage: test
+  script:
+    - export HADOOP_CLASSPATH=${PWD}/*
+    - hadoop classpath
+    - make test
+  image: ${CI_REGISTRY_IMAGE}:latest
+
