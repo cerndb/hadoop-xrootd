@@ -26,10 +26,10 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
 
     private static final int IO_SIZE = 1024 * 1024;
     private final Statistics stats;
+    private final XRootDInstrumentation instrumentation;
     private XRootDClFile file;
     private DebugLogger eosDebugLogger;
     private long pos = 0;
-    private final XRootDInstrumentation instrumentation;
 
     public XRootDInputStream(String url, Statistics stats, XRootDInstrumentation instrumentation) {
         this.eosDebugLogger = new DebugLogger(System.getenv("EOS_debug") != null);
@@ -149,6 +149,7 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
 
     /**
      * Update (increment) the read operations counter.
+     *
      * @param numOps number of read operations
      */
     private void updateStatsNumOps(int numOps) {
@@ -159,6 +160,7 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
 
     /**
      * Update the instrumentation counter for read operation elapsed time.
+     *
      * @param readTimeElapsed elapsed read time in microseconds
      */
     private void updateReadTime(long readTimeElapsed) {
