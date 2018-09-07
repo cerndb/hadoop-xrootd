@@ -6,7 +6,6 @@ echo ''
 echo '** Test that connector can use krb5 **'
 echo '** Krb cache should be initialized separatly before the test **'
 
-
 KINIT_USER=$(klist|grep "principal:"|cut -d ' ' -f 3|cut -d '@' -f 1)
 FIRSTLETTER=$(echo $KINIT_USER | cut -c 1)
 

@@ -12,7 +12,6 @@ variables:
     - echo "$KERB_ACCOUNT_PASSWORD" | kinit "$KERB_ACCOUNT_USERNAME@CERN.CH"
     - klist
 
-
 build-docker-image:
   stage: image
   only:
