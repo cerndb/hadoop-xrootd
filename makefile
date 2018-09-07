@@ -10,4 +10,4 @@ clean:
 
 test:
 	set -e ;\
-	for file in integration-tests/* ; do $${file} && echo '** Success **' || exit ; done ;
+	for file in src/tests/* ; do $${file} && echo '** Success **' || exit ; done ;
