@@ -34,7 +34,6 @@ COPY . /data
 WORKDIR /data
 
 CMD make all && \
-    ARCHITECTURE_PROFILE="amd64-Linux-gpp-jni" && \
     VERSION=$(mvn help:evaluate -Dexpression=project.version $@ 2>/dev/null\
     | grep -v "INFO"\
     | grep -v "WARNING"\

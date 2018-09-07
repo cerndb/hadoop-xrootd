@@ -20,25 +20,27 @@ public class XRootDInstrumentation {
     private static Long timeElapsedReadOps = 0L;
 
     /**
-     * Increment the value of the cumulative elapsed time spent  by
-     * Hadoop Filesystem clients waiting for EOS to return data of read
-     * operations. The time is in microseconds.
-     * @param incrementTime the time to add to the cumulative value, in microseconds
-     */
-    public void incrementTimeElapsedReadOps(Long incrementTime) {
-        timeElapsedReadOps += incrementTime;
-    }
-
-    /**
      * Get the cumulative value of the elapsed time spent  by
      * Hadoop Filesystem clients waiting for EOS to return data of read
      * operations. The time is in microseconds.
      * Use from Hadoop clients, such as Spark environments, by calling
      * ch.cern.eos.XRootDInstrumentation.getTimeElapsedReadOps()
+     *
      * @return cumulative elapsed read time in microseconds.
      */
     public static long getTimeElapsedReadOps() {
         return timeElapsedReadOps;
+    }
+
+    /**
+     * Increment the value of the cumulative elapsed time spent  by
+     * Hadoop Filesystem clients waiting for EOS to return data of read
+     * operations. The time is in microseconds.
+     *
+     * @param incrementTime the time to add to the cumulative value, in microseconds
+     */
+    public void incrementTimeElapsedReadOps(Long incrementTime) {
+        timeElapsedReadOps += incrementTime;
     }
 
 }

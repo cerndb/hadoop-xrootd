@@ -6,3 +6,5 @@ target/
 *.h
 *.o
 *.class
+.idea/*
+*.iml

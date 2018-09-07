@@ -29,6 +29,11 @@ import java.net.URISyntaxException;
 public class XRootDFileSystem extends FileSystem {
 
     private static DebugLogger eosDebugLogger;
+
+    static {
+        NarSystem.loadLibrary();
+    }
+
     private long nHandle = 0;
     private URI uri;
     private int readAhead;
@@ -36,11 +41,6 @@ public class XRootDFileSystem extends FileSystem {
     public static native void setenv(String envname, String envvalue);
 
     public static native String getenv(String envname);
-
-    static
-    {
-        NarSystem.loadLibrary();
-    }
 
     public static URI getDefaultURI(Configuration conf) {
         return URI.create("root://");
@@ -183,13 +183,13 @@ public class XRootDFileSystem extends FileSystem {
         URI u = toUri(path);
         String filespec = uri.getScheme() + "://" + uri.getAuthority() + "/" + u.getPath();
 
-		// create object for extra instrumentation of metrics
-		XRootDInstrumentation instrumentation = new XRootDInstrumentation();
+        // create object for extra instrumentation of metrics
+        XRootDInstrumentation instrumentation = new XRootDInstrumentation();
 
-		// ReadAhead is done with BufferedFSInputStream
-		eosDebugLogger.printDebug("EOSfs open " + filespec + " with readAhead=" + readAhead);
+        // ReadAhead is done with BufferedFSInputStream
+        eosDebugLogger.printDebug("EOSfs open " + filespec + " with readAhead=" + readAhead);
 
-		return new FSDataInputStream(new BufferedFSInputStream(new XRootDInputStream(filespec, statistics, instrumentation),readAhead));
+        return new FSDataInputStream(new BufferedFSInputStream(new XRootDInputStream(filespec, statistics, instrumentation), readAhead));
     }
 
     public FileStatus getFileStatus(Path p) throws IOException {
