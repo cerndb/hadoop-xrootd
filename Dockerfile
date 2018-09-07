@@ -21,8 +21,8 @@ RUN wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-mave
     yum install -y apache-maven
 
 # Install hadoop - required to build xrootd-connector
-ENV HADOOP_VERSION=2.7.4
-ENV HADOOP_URL=https://syscontrol.cern.ch/rpms/hdp/hadoop/soft7/hadoop-${HADOOP_VERSION}.tar.gz
+ENV HADOOP_VERSION=2.7.7
+ENV HADOOP_URL=http://www-eu.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz
 ENV PATH $PATH:/usr/lib/hadoop/bin
 ENV PATH $PATH:/usr/lib/hadoop/sbin
 RUN curl -s ${HADOOP_URL} | tar -xzvf - -C /usr/lib/ && \
@@ -39,7 +39,7 @@ CMD make all && \
     | grep -v "INFO"\
     | grep -v "WARNING"\
     | tail -n 1) && \
-    export HADOOP_CLASSPATH="hadoop-xrootd-nar-${VERSION}-${ARCHITECTURE_PROFILE}.nar:hadoop-xrootd-${VERSION}-jar-with-dependencies.jar:$(hadoop classpath)" && \
+    export HADOOP_CLASSPATH="hadoop-xrootd-${VERSION}-jar-with-dependencies.jar:$(hadoop classpath)" && \
     make test
 
 LABEL \
