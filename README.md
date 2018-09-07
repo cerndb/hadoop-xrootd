@@ -1,16 +1,15 @@
-# CERN IT  Hadoop-XRootD-Connector
+# Hadoop-XRootD-Connector
 
 Connector between Hadoop and XRootD protocols (EOS compatible) 
 
-### Available hadoop flags
+[![Build Status](https://gitlab.cern.ch/db/hadoop-xrootd/badges/master/build.png)](https://gitlab.cern.ch/db/hadoop-xrootd)
 
-**WARNING** - diana-hep/root4j <=0.1.6 package resets configs spark.hadoop on executors!! 
-Must be specified in HADOOP_CONF_DIR in core-site.xml - ref https://github.com/diana-hep/root4j/issues/3
+### Available hadoop flags
 
 ```
     <?xml version="1.0" encoding="UTF-8"?>
     <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
-    
+   
     <configuration>
         <property>
             <description>set the size of the request to XRootD storage issued for data (allows prefetching more data in case of large reads). Defaults to 128KB.</description>
@@ -20,15 +19,19 @@ Must be specified in HADOOP_CONF_DIR in core-site.xml - ref https://github.com/d
     </configuration>
 ```
 
+**WARNING** - diana-hep/root4j <=0.1.6 package resets configs spark.hadoop on executors!! 
+Must be specified in HADOOP_CONF_DIR in core-site.xml - ref https://github.com/diana-hep/root4j/issues/3
+
 ### Build XRootD-Connector with MVN
 
 Prerequisites:
 
 ```
-xrootd-client, xrootd-client-libs, xrootd-client-devel
+- xrootd-client, xrootd-client-libs, xrootd-client-devel
+- maven
 ```
 
-Use "mvn" command to package
+Use "make all" to package
 ```
 make all
 ```
@@ -50,31 +53,36 @@ make all
 ```
 
 ### Testing
-#### Test with Hadoop
+
+[Docker image](Dockerfile) is used as base for [Gitlab CI](.gitlab-ci.yml) pipeline.
+To test manualy, build the docker image and run in interactive mode
 
 ```
+# Build docker
+$ docker build \
+-t hadoop-xrootd-connector $(pwd)
+ 
+# Run tests by mounting root directory
+$ docker run --rm -it -v $(pwd):/build hadoop-xrootd-connector bash
+```
+
+Test by packaging the project, setting classpath and executing tests 
+
+```
+# Package
+$ make all
+ 
 # Add to Hadoop Classpath (Spark Driver or Executor extra classpath - spark.driver.extraClassPath)
 $ VERSION=$(mvn help:evaluate -Dexpression=project.version $@ 2>/dev/null\
 | grep -v "INFO"\
 | grep -v "WARNING"\
 | tail -n 1)
 $ export HADOOP_CLASSPATH="$(pwd)/hadoop-xrootd-${VERSION}-jar-with-dependencies.jar:$(hadoop classpath)"
- 
-# Try to read a file
+  
+# Try to check if some publicly available file exists
 $ hdfs dfs -ls root://eospublic.cern.ch//eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/20000/DCF94DC3-42CE-E211-867A-001E67398011.root
+
+# Execute tests
+kinit <username>@CERN.CH
+$ make tests
 ```
-
-#### Test with integration tests
-
-This will build the Docker image and run integration tests. 
-
-```
-# Build docker
-$ docker build \
---build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
--t hadoop-xrootd-connector $(pwd)
- 
-# Run tests
-$ docker run --rm -it hadoop-xrootd-connector
-```
-
