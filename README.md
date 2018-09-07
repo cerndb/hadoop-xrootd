@@ -30,7 +30,7 @@ xrootd-client, xrootd-client-libs, xrootd-client-devel
 
 Use "mvn" command to package
 ```
-mvn package
+make all
 ```
 
 NOTES:
@@ -46,18 +46,19 @@ Build with correct versions e.g. on `lxplus-cloud`:
 
 ```
 source /cvmfs/sft.cern.ch/lcg/views/LCG_93/x86_64-slc6-gcc62-opt/setup.sh
-mvn package
+make all
 ```
 
 ### Testing
-#### Test with HDFS
+#### Test with Hadoop
 
-```bash
-# Get native-lib-loader as mvn resolver will do
-$ curl http://central.maven.org/maven2/org/scijava/native-lib-loader/2.2.0/native-lib-loader-2.2.0.jar -o target/native-lib-loader-2.2.0.jar
- 
+```
 # Add to Hadoop Classpath (Spark Driver or Executor extra classpath - spark.driver.extraClassPath)
-$ export HADOOP_CLASSPATH="target/${CONNECTOR_RELEASE_NAME}-${ARCHITECTURE_PROFILE}.nar:target/${CONNECTOR_RELEASE_NAME}.jar:target/native-lib-loader-2.2.0.jar:$(hadoop classpath)"
+$ VERSION=$(mvn help:evaluate -Dexpression=project.version $@ 2>/dev/null\
+| grep -v "INFO"\
+| grep -v "WARNING"\
+| tail -n 1)
+$ export HADOOP_CLASSPATH="$(pwd)/hadoop-xrootd-${VERSION}-jar-with-dependencies.jar:$(hadoop classpath)"
  
 # Try to read a file
 $ hdfs dfs -ls root://eospublic.cern.ch//eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/20000/DCF94DC3-42CE-E211-867A-001E67398011.root
@@ -68,6 +69,12 @@ $ hdfs dfs -ls root://eospublic.cern.ch//eos/opendata/cms/MonteCarlo2012/Summer1
 This will build the Docker image and run integration tests. 
 
 ```
-./run-tests.sh
+# Build docker
+$ docker build \
+--build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+-t hadoop-xrootd-connector $(pwd)
+ 
+# Run tests
+$ docker run --rm -it hadoop-xrootd-connector
 ```
 

@@ -22,6 +22,7 @@ public final class XRootDConstants {
      */
     public static final String READAHEAD_RANGE = "fs.xrootd.readahead.range";
     public static final int DEFAULT_READAHEAD_RANGE = 128 * 1024;
+
     private XRootDConstants() {
     }
 }
