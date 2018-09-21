@@ -2,7 +2,7 @@
 
 Connector between Hadoop and XRootD protocols (EOS compatible) 
 
-[![Build Status](https://gitlab.cern.ch/db/hadoop-xrootd/badges/master/build.png)](https://gitlab.cern.ch/db/hadoop-xrootd)
+[![Build Status](https://gitlab.cern.ch/db/hadoop-xrootd/badges/master/build.svg)](https://gitlab.cern.ch/db/hadoop-xrootd)
 
 ### Available hadoop flags
 
