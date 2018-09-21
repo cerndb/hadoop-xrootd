@@ -14,8 +14,6 @@ variables:
 
 build-docker-image:
   stage: image
-  only:
-   - /^docker-.*$/
   tags:
    - docker-image-build
   script:
