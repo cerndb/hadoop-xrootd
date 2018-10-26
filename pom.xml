@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>ch.cern.eos</groupId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0${version_id}</version>
     <artifactId>hadoop-xrootd</artifactId>
     <packaging>nar</packaging>
 
@@ -24,6 +24,27 @@
             <version>2.2.0</version>
         </dependency>
     </dependencies>
+    <profiles>
+        <profile>
+            <id>cvmfs</id>
+            <properties>
+                <syslibpath>-L${env.CVMFS_DIR}/lib64</syslibpath>
+                <includepath>${env.CVMFS_DIR}</includepath>
+                <version_id>-${env.LCG_VERSION}</version_id>
+            </properties>
+        </profile>
+        <profile>
+            <id>standalone</id>
+            <properties>
+                <syslibpath></syslibpath>
+                <includepath>/usr</includepath>
+                <version_id></version_id>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+    </profiles>
     <build>
         <plugins>
             <plugin>
@@ -36,6 +57,9 @@
                 <extensions>true</extensions>
                 <configuration>
                     <linker>
+                        <options>
+                            <option>${syslibpath}</option>
+                        </options>
                         <sysLibs>
                             <sysLib>
                                 <name>dl</name>
@@ -56,7 +80,7 @@
                     </libraries>
                     <cpp>
                         <systemIncludePaths>
-                            <systemIncludePath>/usr/include/xrootd</systemIncludePath>
+                            <systemIncludePath>${includepath}/include/xrootd</systemIncludePath>
                         </systemIncludePaths>
                     </cpp>
                 </configuration>
@@ -89,15 +113,15 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${basedir}</outputDirectory>
-                            <resources>          
+                            <resources>
                                 <resource>
                                     <directory>target</directory>
                                     <includes>
                                         <include>*-with-dependencies.jar</include>
                                     </includes>
                                 </resource>
-                            </resources>              
-                        </configuration>            
+                            </resources>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

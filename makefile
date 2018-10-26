@@ -1,8 +1,9 @@
-
+MAVEN_PROFILE=standalone
 
 all: compile
+
 compile:
-	mvn package -DskipTests
+	mvn package -DskipTests -P$(MAVEN_PROFILE)
 
 clean:
 	mvn clean

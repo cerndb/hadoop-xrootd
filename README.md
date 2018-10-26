@@ -52,6 +52,8 @@ source /cvmfs/sft.cern.ch/lcg/views/LCG_93/x86_64-slc6-gcc62-opt/setup.sh
 make all
 ```
 
+CI generates jars for using the connector with CVMFS sourced software. The jars including the dependencies are published at `s3://binaries/hadoop-xrootd`.
+
 ### Testing
 
 [Docker image](Dockerfile) is used as base for [Gitlab CI](.gitlab-ci.yml) pipeline.
