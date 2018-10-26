@@ -2,10 +2,14 @@ stages:
   - image
   - build
   - test
+  - cvmfs_test #run after normal test
+  - publish
 
 variables:
   MAVEN_OPTS: "-Xmx2g -XX:ReservedCodeCacheSize=512m"
   JAVA_VERSION_MAJOR: "7"
+  LCG_VIEW: "LCG_94"
+  LCG_VERSION: "x86_64-centos7-gcc7-opt"
 
 .krb_tgt_template: &krbtgt
   before_script:
@@ -14,6 +18,8 @@ variables:
 
 build-docker-image:
   stage: image
+  only:
+    - master
   tags:
    - docker-image-build
   script:
@@ -25,18 +31,63 @@ build-docker-image:
 build-app:
   stage: build
   script:
+    - mkdir public
     - make all
+    - mv *.jar public/
   artifacts:
     paths:
-    - "*-jar-with-dependencies.jar"
+    - "public/*-jar-with-dependencies.jar"
+  image: ${CI_REGISTRY_IMAGE}:latest
+
+build-app-cvmfs:
+  tags:
+    - cvmfs
+  stage: build
+  script:
+    - mkdir public
+    - export DIRNAME=/cvmfs/sft.cern.ch/lcg/views/$LCG_VIEW/$LCG_VERSION
+    - source $DIRNAME/setup.sh
+    - make all MAVEN_PROFILE=cvmfs LCG_VERSION=$(basename $DIRNAME) CVMFS_DIR=$DIRNAME
+    - mv *.jar public
+  image: ${CI_REGISTRY_IMAGE}:latest
+  artifacts:
+    paths:
+    - "public/*-jar-with-dependencies.jar"
+
+run-test-cmvfs:
+  <<: *krbtgt
+  stage: cvmfs_test
+  tags:
+    - cvmfs
+  only:
+    - /^LCG_.*$/
+  script:
+    - hadoop classpath
+    - export DIRNAME=/cvmfs/sft.cern.ch/lcg/views/$LCG_VIEW/$LCG_VERSION
+    - source $DIRNAME/setup.sh
+    - export HADOOP_CLASSPATH=${PWD}/*
+    - cp public/*$LCG_VERSION*.jar .
+    - make test
   image: ${CI_REGISTRY_IMAGE}:latest
 
 run-test:
   <<: *krbtgt
   stage: test
   script:
-    - export HADOOP_CLASSPATH=${PWD}/*
+    - export HADOOP_CLASSPATH=${PWD}/public/*
     - hadoop classpath
     - make test
   image: ${CI_REGISTRY_IMAGE}:latest
+
+put-s3:
+  stage: publish
+  script:
+    - yum -y install s3cmd
+    - echo "[default]" > $HOME/.s3cfg
+    - echo "access_key=" $S3_ACCESS_KEY >> $HOME/.s3cfg
+    - echo "secret_key=" $S3_SECRET_KEY >> $HOME/.s3cfg
+    - echo "host_base=s3.cern.ch" >> $HOME/.s3cfg
+    - echo "host_bucket=%(bucket)s.s3.cern.ch" >> $HOME/.s3cfg
+    - cd public
+    - s3cmd put *.jar s3://${S3_PATH} --acl-public
 
