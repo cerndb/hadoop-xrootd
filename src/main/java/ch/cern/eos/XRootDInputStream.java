@@ -84,7 +84,7 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
             this.pos = pos + rd;
             updateStatsBytesRead(rd);
             updateStatsNumOps(1);
-            updateReadTime(elapsedTimeMicrosec);
+            updateStatsReadTime(elapsedTimeMicrosec);
             return (int) rd;
         } else if (rd == -1) {
             this.pos = -1;
@@ -142,8 +142,13 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
      * @param bytesRead number of bytes read
      */
     private void updateStatsBytesRead(long bytesRead) {
+        /* Increment values in Hadoop stats API */
         if (stats != null && bytesRead > 0) {
             stats.incrementBytesRead(bytesRead);
+        }
+        /* Increment values in custom XRootDInstrumentation */
+        if (instrumentation != null && bytesRead > 0) {
+            instrumentation.incrementBytesRead(bytesRead);
         }
     }
 
@@ -153,8 +158,13 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
      * @param numOps number of read operations
      */
     private void updateStatsNumOps(int numOps) {
+        /* Increment values in Hadoop stats API */
         if (stats != null && numOps > 0) {
             stats.incrementReadOps(numOps);
+        }
+        /* Increment values in custom XRootDInstrumentation */
+        if (instrumentation != null && numOps > 0) {
+            instrumentation.incrementReadOps(numOps);
         }
     }
 
@@ -163,7 +173,7 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
      *
      * @param readTimeElapsed elapsed read time in microseconds
      */
-    private void updateReadTime(long readTimeElapsed) {
+    private void updateStatsReadTime(long readTimeElapsed) {
         if (instrumentation != null && readTimeElapsed > 0) {
             instrumentation.incrementTimeElapsedReadOps(readTimeElapsed);
         }

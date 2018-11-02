@@ -17,31 +17,71 @@ package ch.cern.eos;
 
 public class XRootDInstrumentation {
 
-    private static Long timeElapsedReadOps = 0L;
+    private static Long timeElapsedReadMusec = 0L;
+    private static int readOps = 0;
+    private static Long bytesRead = 0L;
 
     /**
      * Get the cumulative value of the elapsed time spent  by
-     * Hadoop Filesystem clients waiting for EOS to return data of read
+     * the Hadoop Filesystem client waiting for EOS/XRootD to return data of read
      * operations. The time is in microseconds.
      * Use from Hadoop clients, such as Spark environments, by calling
-     * ch.cern.eos.XRootDInstrumentation.getTimeElapsedReadOps()
+     * ch.cern.eos.XRootDInstrumentation.getTimeElapsedReadMusec()
      *
-     * @return cumulative elapsed read time in microseconds.
+     * @return cumulative elapsed time spend in read operations, in microseconds.
      */
-    public static long getTimeElapsedReadOps() {
-        return timeElapsedReadOps;
+    public static long getTimeElapsedReadMusec() {
+        return timeElapsedReadMusec;
     }
 
     /**
      * Increment the value of the cumulative elapsed time spent  by
-     * Hadoop Filesystem clients waiting for EOS to return data of read
+     * Hadoop Filesystem clients waiting for EOS/XRootD to return data of read
      * operations. The time is in microseconds.
      *
      * @param incrementTime the time to add to the cumulative value, in microseconds
      */
-    public void incrementTimeElapsedReadOps(Long incrementTime) {
-        timeElapsedReadOps += incrementTime;
+    public static void incrementTimeElapsedReadOps(Long incrementTime) {
+        timeElapsedReadMusec += incrementTime;
     }
 
-}
+    /**
+     * Get the cumulative value of the number of bytes read  by
+     * the Hadoop Filesystem client through the XRootD connector
+     *
+     * @return cumulative bytes read with read operations.
+     */
+    public static long getBytesRead() {
+        return bytesRead;
+    }
 
+    /**
+     * Increment the value of the cumulative number of bytes read by
+     * the Hadoop Filesystem clients reading from EOS/XRootD
+     *
+     * @param incrementBytesRead number of bytes to add to the counter of bytes read.
+     */
+    public static void incrementBytesRead(Long incrementBytesRead) {
+        bytesRead += incrementBytesRead;
+    }
+
+    /**
+     * Get the cumulative value of the number of read operations performed by
+     * the Hadoop Filesystem client through the XRootD connector.
+     *
+     * @return cumulative number of read operations.
+     */
+    public static int getReadOps() {
+        return readOps;
+    }
+
+    /**
+     * Increment the counter of the cumulative number of read operations performed by
+     * the Hadoop Filesystem clients reading from EOS/XRootD.
+     *
+     * @param numOps increment the counter of read operations.
+     */
+    public static void incrementReadOps(int numOps) {
+        readOps +=  numOps;
+    }
+}
