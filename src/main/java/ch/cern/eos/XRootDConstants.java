@@ -23,6 +23,9 @@ public final class XRootDConstants {
     public static final String READAHEAD_RANGE = "fs.xrootd.readahead.range";
     public static final int DEFAULT_READAHEAD_RANGE = 128 * 1024;
 
+    // name of the environment variable that can be used to specify the read ahead sizez
+    public static final String OS_ENV_VARIABLE_READAHEAD = "XROOTDHADOOP_READAHEAD_SIZE";
+
     private XRootDConstants() {
     }
 }

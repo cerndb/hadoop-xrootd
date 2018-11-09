@@ -71,11 +71,30 @@ public class XRootDFileSystem extends FileSystem {
         eosDebugLogger = new DebugLogger(System.getenv("EOS_debug") != null);
         XRootDKrb5.setDebug(eosDebugLogger.isDebugEnabled());
         this.uri = uri;
-        this.readAhead = XRootDUtils.byteConfOption(conf, XRootDConstants.READAHEAD_RANGE,
-                XRootDConstants.DEFAULT_READAHEAD_RANGE);
-        if (this.readAhead == XRootDConstants.DEFAULT_READAHEAD_RANGE) {
-            eosDebugLogger.printWarn("Hadoop Config " + XRootDConstants.READAHEAD_RANGE +
-                    " not set, using default value " + XRootDConstants.DEFAULT_READAHEAD_RANGE);
+
+        // if the designated environment variable is set use this as read ahead size
+        java.lang.String envReadaheadValue = System.getenv(XRootDConstants.OS_ENV_VARIABLE_READAHEAD);
+        if (envReadaheadValue != null ) {
+            this.readAhead = Integer.parseInt(envReadaheadValue);
+            eosDebugLogger.printWarn("The OS environment variable " + XRootDConstants.OS_ENV_VARIABLE_READAHEAD +
+                    " is set, using read ahead size = " + this.readAhead);
+            if (this.readAhead < 0) {
+                throw new IllegalArgumentException(String.format("Config %s=%d is below the minimum value %d",
+                        XRootDConstants.OS_ENV_VARIABLE_READAHEAD, this.readAhead, 0));
+            }
+            // otherwise get read ahead value from Hadoop configuration or use default if not set
+        } else {
+            this.readAhead = XRootDUtils.byteConfOption(conf, XRootDConstants.READAHEAD_RANGE,
+                    XRootDConstants.DEFAULT_READAHEAD_RANGE);
+            if (conf.get(XRootDConstants.READAHEAD_RANGE) == null) {
+                eosDebugLogger.printWarn("Hadoop Config " + XRootDConstants.READAHEAD_RANGE +
+                        " nor OS environment variable " + XRootDConstants.OS_ENV_VARIABLE_READAHEAD +
+                        " are set, using read ahead size with default value = " + XRootDConstants.DEFAULT_READAHEAD_RANGE);
+            }
+            else {
+                eosDebugLogger.printWarn("Hadoop Config " + XRootDConstants.READAHEAD_RANGE +
+                        " is set, using reada head size = " + this.readAhead);
+            }
         }
     }
 
