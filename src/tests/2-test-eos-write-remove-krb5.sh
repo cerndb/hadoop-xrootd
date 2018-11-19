@@ -10,7 +10,7 @@ KINIT_USER=$(klist|grep "principal:"|cut -d ' ' -f 3|cut -d '@' -f 1)
 FIRSTLETTER=$(echo $KINIT_USER | cut -c 1)
 
 TEST_DIR="root://eosuser.cern.ch//eos/user/$FIRSTLETTER/$KINIT_USER/"
-TEST_FILE="$TEST_DIR/xrootd-connector-test"
+TEST_FILE="$TEST_DIR/xrootd-connector-test-${RANDOM}"
 echo ''
 echo "** Try listing $TEST_DIR which requires krb5**"
 hdfs dfs -ls $TEST_DIR

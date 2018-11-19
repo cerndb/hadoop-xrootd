@@ -1,8 +1,6 @@
 stages:
   - image
   - build
-  - test
-  - cvmfs_test #run after normal test
   - publish
 
 variables:
@@ -28,60 +26,48 @@ build-docker-image:
     DOCKER_FILE: Dockerfile
     TO: ${CI_REGISTRY_IMAGE}:latest
 
-build-app:
-  stage: build
-  script:
-    - mkdir public
-    - make all
-    - mv *.jar public/
-  artifacts:
-    paths:
-    - "public/*-jar-with-dependencies.jar"
-  image: ${CI_REGISTRY_IMAGE}:latest
-
-build-app-cvmfs:
-  tags:
-    - cvmfs
-  stage: build
-  script:
-    - mkdir public
-    - export DIRNAME=/cvmfs/sft.cern.ch/lcg/views/$LCG_VIEW/$LCG_VERSION
-    - source $DIRNAME/setup.sh
-    - make all MAVEN_PROFILE=cvmfs LCG_VERSION=$(basename $DIRNAME) CVMFS_DIR=$DIRNAME
-    - mv *.jar public
-  image: ${CI_REGISTRY_IMAGE}:latest
-  artifacts:
-    paths:
-    - "public/*-jar-with-dependencies.jar"
-
-run-test-cmvfs:
+make-compile-test-step:
   <<: *krbtgt
-  stage: cvmfs_test
-  tags:
-    - cvmfs
-  only:
-    - /^LCG_.*$/
+  stage: build
   script:
-    - hadoop classpath
-    - export DIRNAME=/cvmfs/sft.cern.ch/lcg/views/$LCG_VIEW/$LCG_VERSION
-    - source $DIRNAME/setup.sh
+    # Export HADOOP_CLASSPATH for test
     - export HADOOP_CLASSPATH=${PWD}/*
-    - cp public/*$LCG_VERSION*.jar .
-    - make test
+    # Make compile and test
+    - make all
+    # Final rename
+    - for f in *.jar; do mv "${f}" "${f%-jar-with-dependencies.jar}.jar"; done
+  artifacts:
+    paths:
+    - "*.jar"
   image: ${CI_REGISTRY_IMAGE}:latest
 
-run-test:
+make-compile-test-step-cvmfs:
   <<: *krbtgt
-  stage: test
+  tags:
+    - cvmfs
+  stage: build
   script:
-    - export HADOOP_CLASSPATH=${PWD}/public/*
-    - hadoop classpath
-    - make test
+    # Prepare build environment
+    - export DIRNAME=/cvmfs/sft.cern.ch/lcg/views/$LCG_VIEW/$LCG_VERSION
+    - source $DIRNAME/setup.sh
+    - SYS_LIB_PATH="-L${DIRNAME}/lib64"
+    - INCLUDE_PATH="${DIRNAME}"
+    # Export HADOOP_CLASSPATH for test
+    - export HADOOP_CLASSPATH=${PWD}/*
+    # Make compile and test
+    - MAVEN_FLAGS="-Dsyslibpath=${SYS_LIB_PATH} -Dincludepath=${INCLUDE_PATH}" make all
+    # Final rename
+    - for f in *.jar; do mv "${f}" "${f%-jar-with-dependencies.jar}-${LCG_VERSION}.jar"; done
   image: ${CI_REGISTRY_IMAGE}:latest
+  artifacts:
+    paths:
+    - "*.jar"
 
 put-s3:
   stage: publish
   script:
+    - mkdir public
+    - mv *.jar public/
     - yum -y install s3cmd
     - echo "[default]" > $HOME/.s3cfg
     - echo "access_key=" $S3_ACCESS_KEY >> $HOME/.s3cfg
