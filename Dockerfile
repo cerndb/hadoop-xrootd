@@ -3,7 +3,7 @@ MAINTAINER Piotr Mrowczynski <piotr.mrowczynski@cern.ch>
 MAINTAINER Zbigniew Baranowski <zbigniew.baranowski@cern.ch>
 
 # Get the dependencies for building xrootd-connector
-ENV JAVA_VERSION=1.8.0.181-3.b13.el7_5.x86_64
+ENV JAVA_VERSION=1.8.0.191.b12-0.el7_5.x86_64
 ENV JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-${JAVA_VERSION}
 ENV PATH $PATH:${JAVA_HOME}/bin
 RUN yum group install -y \
