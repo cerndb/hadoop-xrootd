@@ -15,11 +15,14 @@
  */
 package ch.cern.eos;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+
 public class XRootDInstrumentation {
 
-    private static Long timeElapsedReadMusec = 0L;
-    private static int readOps = 0;
-    private static Long bytesRead = 0L;
+    private static AtomicLong timeElapsedReadMusec = new AtomicLong();
+    private static AtomicInteger readOps = new AtomicInteger();
+    private static AtomicLong bytesRead = new AtomicLong();
 
     /**
      * Get the cumulative value of the elapsed time spent  by
@@ -31,7 +34,7 @@ public class XRootDInstrumentation {
      * @return cumulative elapsed time spend in read operations, in microseconds.
      */
     public static long getTimeElapsedReadMusec() {
-        return timeElapsedReadMusec;
+        return timeElapsedReadMusec.get();
     }
 
     /**
@@ -41,8 +44,8 @@ public class XRootDInstrumentation {
      *
      * @param incrementTime the time to add to the cumulative value, in microseconds
      */
-    public static void incrementTimeElapsedReadOps(Long incrementTime) {
-        timeElapsedReadMusec += incrementTime;
+    public void incrementTimeElapsedReadOps(Long incrementTime) {
+        timeElapsedReadMusec.getAndAdd(incrementTime);
     }
 
     /**
@@ -52,7 +55,7 @@ public class XRootDInstrumentation {
      * @return cumulative bytes read with read operations.
      */
     public static long getBytesRead() {
-        return bytesRead;
+        return bytesRead.get();
     }
 
     /**
@@ -61,8 +64,8 @@ public class XRootDInstrumentation {
      *
      * @param incrementBytesRead number of bytes to add to the counter of bytes read.
      */
-    public static void incrementBytesRead(Long incrementBytesRead) {
-        bytesRead += incrementBytesRead;
+    public void incrementBytesRead(Long incrementBytesRead) {
+        bytesRead.getAndAdd(incrementBytesRead);
     }
 
     /**
@@ -72,7 +75,7 @@ public class XRootDInstrumentation {
      * @return cumulative number of read operations.
      */
     public static int getReadOps() {
-        return readOps;
+        return readOps.get();
     }
 
     /**
@@ -81,7 +84,7 @@ public class XRootDInstrumentation {
      *
      * @param numOps increment the counter of read operations.
      */
-    public static void incrementReadOps(int numOps) {
-        readOps +=  numOps;
+    public void incrementReadOps(int numOps) {
+        readOps.getAndAdd(numOps);
     }
 }
