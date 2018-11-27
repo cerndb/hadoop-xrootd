@@ -84,7 +84,10 @@ $ export HADOOP_CLASSPATH="$(pwd)/hadoop-xrootd-${VERSION}-jar-with-dependencies
 # Try to check if some publicly available file exists
 $ hdfs dfs -ls root://eospublic.cern.ch//eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/20000/DCF94DC3-42CE-E211-867A-001E67398011.root
 
+# Optionaly, enable debug mode
+$ export HADOOP_XROOTD_DEBUG=1
+
 # Execute tests
-kinit <username>@CERN.CH
+$ kinit <username>@CERN.CH
 $ make tests
 ```

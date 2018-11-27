@@ -40,7 +40,10 @@ class XRootDOutputStream extends OutputStream {
 
         int oflags = overwrite ? 2 : 8;
 
-        this.eosDebugLogger = new DebugLogger(System.getenv("EOS_debug") != null);
+        // FIXME: This should be enabled with logger property, not by env
+        // FIXME: EOS_debug is to verbose as it debugs also xrootd-client, change to HADOOP_XROOTD_DEBUG
+        String prop_EOS_debug = System.getenv("HADOOP_XROOTD_DEBUG");
+        this.eosDebugLogger = new DebugLogger(prop_EOS_debug != null);
 
         this.file = new XRootDClFile();
         long status = file.Open(url, oflags, 0x0180);

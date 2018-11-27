@@ -46,7 +46,8 @@ public class Krb5TokenRenewer extends TokenRenewer {
     }
 
     public long renew(Token<?> token, Configuration conf) throws IOException {
-        String prop_EOS_debug = System.getProperty("EOS_debug");
+        // FIXME: This should be enabled with logger property, not by env
+        String prop_EOS_debug = System.getProperty("HADOOP_XROOTD_DEBUG");
         eosDebugLogger.setDebug(((prop_EOS_debug != null) && (prop_EOS_debug.equals("true"))));
         byte krb5cc[] = token.getPassword();
         int cc_version;
