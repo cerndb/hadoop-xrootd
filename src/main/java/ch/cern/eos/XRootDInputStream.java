@@ -32,7 +32,9 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
     private long pos = 0;
 
     public XRootDInputStream(String url, Statistics stats, XRootDInstrumentation instrumentation) {
-        this.eosDebugLogger = new DebugLogger(System.getenv("EOS_debug") != null);
+        // FIXME: This should be enabled with logger property, not by env
+        String prop_EOS_debug = System.getenv("HADOOP_XROOTD_DEBUG");
+        this.eosDebugLogger = new DebugLogger(prop_EOS_debug != null);
         this.stats = stats;
         this.instrumentation = instrumentation;
 
