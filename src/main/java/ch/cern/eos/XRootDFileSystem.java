@@ -95,7 +95,7 @@ public class XRootDFileSystem extends FileSystem {
             }
             else {
                 eosDebugLogger.printWarn("Hadoop Config " + XRootDConstants.READAHEAD_RANGE +
-                        " is set, using reada head size = " + this.readAhead);
+                        " is set, using read ahead size = " + this.readAhead);
             }
         }
     }
