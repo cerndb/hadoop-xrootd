@@ -1,8 +1,8 @@
 MAVEN_PROFILE=standalone
 
-all: compile test
+all: package test
 
-compile:
+package:
 	mvn package -DskipTests $(MAVEN_FLAGS)
 
 clean:
@@ -11,5 +11,6 @@ clean:
 
 test:
 	set -e ;\
-    hadoop classpath ;\
+    export HADOOP_CLASSPATH="${PWD}/*:$(hadoop classpath)";\
+    echo ${HADOOP_CLASSPATH};\
 	for file in src/tests/* ; do $${file} && echo '** Success **' || exit ; done ;

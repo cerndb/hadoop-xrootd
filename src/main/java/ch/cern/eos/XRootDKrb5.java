@@ -59,17 +59,20 @@ public class XRootDKrb5 {
         // If no Krb ticket, set from Token. 
         // If no Krb Token, set from ticket.
         // FIXME: The block below requires refactoring and redesign
-        int hadKrbTGT = hasKrbTGT, hadUgiKrbToken = hasUgiKrbToken;
+        int hadKrbTGT = hasKrbTGT, hadUgiKrbToken = hasUgiKrbToken, hadKrbST = hasKrbST;
         if (hasUgiKrbToken < 0 && hasKrbTGT < 0 && hasKrbST < 0) {
-            checkToken();        // check for token if still initial state
+            // check for token if still initial state
+            eosDebugLogger.printDebug("Check for UGI and ST tokens:");
+            checkToken();
         }
 
+
+        eosDebugLogger.printDebug("Set UGI tokens:");
         if (hasUgiKrbToken > 0 && yarnExecutor == 1) {            // we're most likely a M/R task or Spark executor
             if (hasKrbTGT > -10) {
                 try {
                     krb5ccname = getUgiKrbTokenCache();
                 } catch (IOException | KrbException e) {
-                    eosDebugLogger.printDebug(" setKrbTGT: " + e.getMessage());
                     eosDebugLogger.printStackTrace(e);
                 }
                 hasKrbTGT -= 1;
@@ -78,20 +81,21 @@ public class XRootDKrb5 {
             try {
                 setUgiKrbTokenCache();
             } catch (IOException | KrbException e) {
-                eosDebugLogger.printDebug(" setKrbToken: " + e.getMessage());
                 eosDebugLogger.printStackTrace(e);
             }
         } else if (yarnExecutor == 1) {
             try {
                 krb5ccname = getUgiKrbTokenCache();
             } catch (IOException | KrbException e) {
-                eosDebugLogger.printDebug(" setKrbTGT: " + e.getMessage());
                 eosDebugLogger.printStackTrace(e);
             }
             hasKrbTGT -= 1;
         }
 
-        eosDebugLogger.printDebug("setKrb: hasKrbToken " + hasUgiKrbToken + "(" + hadUgiKrbToken + ") hasKrbTGT " + hasKrbTGT + "(" + hadKrbTGT + ")"
+        eosDebugLogger.printDebug("setKrb() "
+                + "hasUgiKrbToken " + hasUgiKrbToken + "(" + hadUgiKrbToken + ") "
+                + "hasKrbTGT " + hasKrbTGT + "(" + hadKrbTGT + ") "
+                + "hasKrbST " + hasKrbST + "(" + hadKrbST + ") "
                 + " krb5ccname: " + krb5ccname);
 
         return krb5ccname;
@@ -107,12 +111,10 @@ public class XRootDKrb5 {
     private static void checkToken() {
         // Check if we have UGI tokens
         try {
-            int i = 0;
             boolean found = false;
             ugi = UserGroupInformation.getLoginUser();
 
             for (Token<? extends TokenIdentifier> t : ugi.getTokens()) {
-                eosDebugLogger.printDebug("checkToken: found token " + t.getKind().toString());
                 if (t.getKind().toString().equals(TOKEN_KRB_KIND)) {
                     found = true;
                     yarnExecutor = 1;
@@ -121,15 +123,17 @@ public class XRootDKrb5 {
                 if (t.getKind().toString().equals(TOKEN_YARN_KIND)) {
                     yarnExecutor = 1;
                 }
-                i++;
+
+                if (yarnExecutor == 1) {
+                    eosDebugLogger.printDebug("found UGI token " + t.getKind().toString() + "on the executor");
+                } else {
+                    eosDebugLogger.printDebug("found UGI token " + t.getKind().toString());
+                }
             }
 
             if (found) {
                 hasUgiKrbToken = 1;
             }
-
-            eosDebugLogger.printDebug("Total UGI tokens found: " + i);
-            eosDebugLogger.printDebug("YARN Executor: " + yarnExecutor);
         } catch (IOException e) {
             eosDebugLogger.printWarn("Could not initialize UGI");
         }
@@ -139,25 +143,21 @@ public class XRootDKrb5 {
         try {
             CredentialsCache ncc = CredentialsCache.getInstance();
             if (ncc != null) {
-                boolean foundCache = false;
+                hasKrbST = 0;
                 for (Credentials cred: ncc.getCredsList()) {
                     if (cred.getServicePrincipal().getName().startsWith(TOKEN_PRINCIPAL_XROOTD_PREFIX)) {
-                        eosDebugLogger.printDebug(cred.getServicePrincipal().getName() + " " + cred.getRenewTill().toString());
-                        foundCache = true;
-                        break;
+                        String credCacheName = ncc.cacheName();
+                        if (credCacheName != null) {
+                            // Save cache location
+                            XRootDKrb5.krb5ccname = credCacheName;
+                            hasKrbST = 1;
+                            eosDebugLogger.printDebug("found service ticket token " + cred.getServicePrincipal().getName() + " " + cred.getRenewTill().toString() + " at " + credCacheName);
+                            break;
+                        }
                     }
                 }
-
-                String credCacheName = ncc.cacheName();
-                if (foundCache && credCacheName != null) {
-                    // Save cache location
-                    XRootDKrb5.krb5ccname = credCacheName;
-                    hasKrbST = 1;
-                } else {
-                    hasKrbST = 0;
-                }
             } else {
-                eosDebugLogger.printWarn("Found no valid credentials cache");
+                eosDebugLogger.printDebug("found no service ticket token");
             }
         } catch (RealmException e) {
             eosDebugLogger.printStackTrace(e);

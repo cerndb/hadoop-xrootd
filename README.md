@@ -31,9 +31,9 @@ Prerequisites:
 - maven
 ```
 
-Use "make all" to package
+Use "make package" to package
 ```
-make all
+make package
 ```
 
 NOTES:
@@ -49,7 +49,7 @@ Build with correct versions e.g. on `lxplus-cloud`:
 
 ```
 source /cvmfs/sft.cern.ch/lcg/views/LCG_93/x86_64-slc6-gcc62-opt/setup.sh
-make all
+make package
 ```
 
 CI generates jars for using the connector with CVMFS sourced software. The jars including the dependencies are published at `s3://binaries/hadoop-xrootd`.
@@ -68,25 +68,34 @@ $ docker build \
 $ docker run --rm -it -v $(pwd):/build hadoop-xrootd-connector bash
 ```
 
-Test by packaging the project, setting classpath and executing tests 
+Compile and package
 
 ```
-# Package
-$ make all
+$ make package
+```
+
+Manual quick test with debug mode
+
+```
+# Optionaly enable debug mode
+$ export HADOOP_XROOTD_DEBUG=1
  
 # Add to Hadoop Classpath (Spark Driver or Executor extra classpath - spark.driver.extraClassPath)
 $ VERSION=$(mvn help:evaluate -Dexpression=project.version $@ 2>/dev/null\
 | grep -v "INFO"\
 | grep -v "WARNING"\
 | tail -n 1)
+ 
+# Set hadoop classpath
 $ export HADOOP_CLASSPATH="$(pwd)/hadoop-xrootd-${VERSION}-jar-with-dependencies.jar:$(hadoop classpath)"
   
 # Try to check if some publicly available file exists
 $ hdfs dfs -ls root://eospublic.cern.ch//eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/20000/DCF94DC3-42CE-E211-867A-001E67398011.root
+```
 
-# Optionaly, enable debug mode
-$ export HADOOP_XROOTD_DEBUG=1
+Test by packaging the project, setting classpath and executing tests
 
+```
 # Execute tests
 $ kinit <username>@CERN.CH
 $ make tests
