@@ -30,8 +30,6 @@ make-compile-test-step:
   <<: *krbtgt
   stage: build
   script:
-    # Export HADOOP_CLASSPATH for test
-    - export HADOOP_CLASSPATH=${PWD}/*
     # Make compile and test
     - make all
     # Final rename
@@ -52,8 +50,6 @@ make-compile-test-step-cvmfs:
     - source $DIRNAME/setup.sh
     - SYS_LIB_PATH="-L${DIRNAME}/lib64"
     - INCLUDE_PATH="${DIRNAME}"
-    # Export HADOOP_CLASSPATH for test
-    - export HADOOP_CLASSPATH=${PWD}/*
     # Make compile and test
     - MAVEN_FLAGS="-Dsyslibpath=${SYS_LIB_PATH} -Dincludepath=${INCLUDE_PATH}" make all
     # Final rename
@@ -65,6 +61,8 @@ make-compile-test-step-cvmfs:
 
 put-s3:
   stage: publish
+  only:
+    - master
   script:
     - mkdir public
     - mv *.jar public/

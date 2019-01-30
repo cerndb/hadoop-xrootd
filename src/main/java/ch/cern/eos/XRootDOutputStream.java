@@ -68,42 +68,45 @@ class XRootDOutputStream extends OutputStream {
         buf[0] = (byte) b;
 
         write(0L, buf, 0, 1);
-        pos++;
+        this.pos++;
     }
 
     public void write(byte[] b, int off, int len) throws IOException {
-        if (pos < 0) {
+        if (this.pos < 0) {
             throw new IOException("Stream closed");
         }
 
-        long st = file.Write(pos, b, off, len);
+        long st = this.file.Write(pos, b, off, len);
         if (st != 0) {
             throw new IOException("write " + len + " bytes error " + st);
         }
 
-        pos += len;
+        this.eosDebugLogger.printDebug("EOSInputStream.write(pos=" + pos + ", b, off=" + off + ", len=" + len + ")");
+        this.pos += len;
     }
 
     public void close() throws IOException {
-        if (pos < 0) {
+        if (this.pos < 0) {
             return;
         }
 
-        long st = file.Close();
+        long st = this.file.Close();
         if (st != 0) {
             throw new IOException("close() failed: " + st);
         }
 
         if (st == 0) {
-            pos = -1;
+            this.pos = -1;
         }
     }
 
     public void write(long pos, byte[] b, int off, int len) throws IOException {
-        long st = file.Write(pos, b, off, len);
+        long st = this.file.Write(pos, b, off, len);
         if (st != 0) {
             throw new IOException("write failed error " + st);
         }
+
+        this.eosDebugLogger.printDebug("EOSInputStream.write(pos=" + pos + ", b, off=" + off + ", len=" + len + ")");
     }
 
     public void seek(long pos) {
