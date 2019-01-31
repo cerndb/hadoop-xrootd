@@ -63,6 +63,7 @@ put-s3:
   stage: publish
   only:
     - master
+    - qa
   script:
     - mkdir public
     - mv *.jar public/
