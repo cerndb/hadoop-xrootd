@@ -24,7 +24,7 @@ build-docker-image:
     - echo "Building docker image..."
   variables:
     DOCKER_FILE: Dockerfile
-    TO: ${CI_REGISTRY_IMAGE}:latest
+    TO: ${CI_REGISTRY_IMAGE}/base:latest
 
 make-compile-test-step:
   <<: *krbtgt
@@ -37,7 +37,7 @@ make-compile-test-step:
   artifacts:
     paths:
     - "*.jar"
-  image: ${CI_REGISTRY_IMAGE}:latest
+  image: ${CI_REGISTRY_IMAGE}/base:latest # use docker with all libraries
 
 make-compile-test-step-cvmfs:
   <<: *krbtgt
@@ -46,18 +46,19 @@ make-compile-test-step-cvmfs:
   stage: build
   script:
     # Prepare build environment
-    - export DIRNAME=/cvmfs/sft.cern.ch/lcg/views/$LCG_VIEW/$LCG_VERSION
-    - source $DIRNAME/setup.sh
-    - SYS_LIB_PATH="-L${DIRNAME}/lib64"
-    - INCLUDE_PATH="${DIRNAME}"
+    - yum install -y which HEP_OSlibs
+    - source /cvmfs/sft.cern.ch/lcg/views/$LCG_VIEW/$LCG_VERSION/setup.sh
+    - SYSLIB_OPTION="-L/cvmfs/sft.cern.ch/lcg/views/$LCG_VIEW/$LCG_VERSION/lib64"
+    - INCLUDE_PATH="/cvmfs/sft.cern.ch/lcg/views/$LCG_VIEW/$LCG_VERSION/include"
+    - XROOTD_INCLUDE_PATH="/cvmfs/sft.cern.ch/lcg/views/$LCG_VIEW/$LCG_VERSION/include/xrootd"
     # Make compile and test
-    - MAVEN_FLAGS="-Dsyslibpath=${SYS_LIB_PATH} -Dincludepath=${INCLUDE_PATH}" make all
+    - MAVEN_FLAGS="-Dinclude.path=${INCLUDE_PATH} -Dxrootd.include.path=${XROOTD_INCLUDE_PATH} -Dsyslib.option=${SYSLIB_OPTION}" make all
     # Final rename
     - for f in *.jar; do mv "${f}" "${f%-jar-with-dependencies.jar}-${LCG_VERSION}.jar"; done
-  image: ${CI_REGISTRY_IMAGE}:latest
   artifacts:
     paths:
     - "*.jar"
+  image: gitlab-registry.cern.ch/linuxsupport/cc7-base:latest # use clean docker as CVMFS is used
 
 put-s3:
   stage: publish
