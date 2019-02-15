@@ -35,7 +35,12 @@ import java.util.Arrays;
 
 public class Krb5TokenRenewer extends TokenRenewer {
     public String krb5ccname;
-    private DebugLogger eosDebugLogger = new DebugLogger(false);
+    private static DebugLogger eosDebugLogger;
+
+    public Krb5TokenRenewer() {
+        // FIXME: This should be enabled with logger property, not by env
+        eosDebugLogger = new DebugLogger(System.getenv("HADOOP_XROOTD_DEBUG") != null);
+    }
 
     public boolean handleKind(Text kind) {
         return Krb5TokenIdentifier.KIND_NAME.equals(kind);
@@ -46,9 +51,6 @@ public class Krb5TokenRenewer extends TokenRenewer {
     }
 
     public long renew(Token<?> token, Configuration conf) throws IOException {
-        // FIXME: This should be enabled with logger property, not by env
-        String prop_EOS_debug = System.getProperty("HADOOP_XROOTD_DEBUG");
-        eosDebugLogger.setDebug(((prop_EOS_debug != null) && (prop_EOS_debug.equals("true"))));
         byte krb5cc[] = token.getPassword();
         int cc_version;
 
@@ -174,5 +176,7 @@ public class Krb5TokenRenewer extends TokenRenewer {
     }
 
     public void cancel(Token<?> token, Configuration conf) throws IOException {
+        byte krb5cc[] = token.getPassword();
+        eosDebugLogger.printDebug("cancel: token l=" + krb5cc.length);
     }
 };

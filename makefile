@@ -1,13 +1,13 @@
 MAVEN_PROFILE=standalone
 
-all: package test
-
-package:
-	mvn package -DskipTests $(MAVEN_FLAGS)
+all: clean package test
 
 clean:
 	mvn clean
 	rm -f *.jar
+
+package:
+	mvn package -DskipTests $(MAVEN_FLAGS)
 
 test:
 	set -e ;\

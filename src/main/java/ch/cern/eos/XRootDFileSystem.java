@@ -69,8 +69,7 @@ public class XRootDFileSystem extends FileSystem {
         setConf(conf);
 
         // FIXME: This should be enabled with logger property, not by env
-        String prop_EOS_debug = System.getenv("HADOOP_XROOTD_DEBUG");
-        eosDebugLogger = new DebugLogger(prop_EOS_debug != null);
+        eosDebugLogger = new DebugLogger(System.getenv("HADOOP_XROOTD_DEBUG") != null);
         XRootDKrb5.setDebug(eosDebugLogger.isDebugEnabled());
         this.uri = uri;
 
