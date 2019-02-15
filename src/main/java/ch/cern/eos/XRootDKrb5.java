@@ -102,6 +102,7 @@ public class XRootDKrb5 {
     }
 
     public static void setDebug(boolean debug) {
+        // FIXME: This should be enabled with logger property, not by env
         eosDebugLogger.setDebug(debug);
     }
 

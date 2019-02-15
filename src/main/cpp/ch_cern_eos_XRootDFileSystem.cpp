@@ -20,8 +20,8 @@
 #include <stdio.h>
 
 #include "ch_cern_eos_XRootDClFile.h"
-#include "xrootd/XrdCl/XrdClFile.hh"
-#include "xrootd/XrdCl/XrdClFileSystem.hh"
+#include "XrdCl/XrdClFile.hh"
+#include "XrdCl/XrdClFileSystem.hh"
 #include "ch_cern_eos_XRootDFileSystem.h"
 
 #ifdef __cplusplus
@@ -31,7 +31,7 @@ extern "C" {
 #define ch_cern_eos_XRootDKrb5FileSystem_SHUTDOWN_HOOK_PRIORITY 10L
 
 
-int EOS_debug = 0;
+int Hadoop_Xrd_debug = 0;
 
 /*
  * Class:     ch_cern_eos_XRootDFileSystem
@@ -45,10 +45,10 @@ JNIEXPORT jlong JNICALL Java_ch_cern_eos_XRootDFileSystem_initFileSystem (JNIEnv
 	std::string urlS(urlstr);
 	XrdCl::URL url(urlS);
 
-	char *dd = getenv("EOS_debug");
-	if (dd) EOS_debug = 1;
+	char *dd = getenv("Xrd_debug");
+	if (dd) Hadoop_Xrd_debug = 1;
 
-	if (EOS_debug) {
+	if (Hadoop_Xrd_debug) {
 	    std::cout << "initFileSystem urlS " << urlS << "\n";
 	    std::cout << "initFileSystem url " << url.GetURL() << "\n";
 	}
@@ -69,7 +69,7 @@ JNIEXPORT jlong JNICALL Java_ch_cern_eos_XRootDFileSystem_initFileSystem (JNIEnv
 JNIEXPORT jobject JNICALL Java_ch_cern_eos_XRootDFileSystem_getFileStatusS (JNIEnv *env, jobject This, jlong handle, jstring url_p, jobject path) {
 	XrdCl::FileSystem *fs = (XrdCl::FileSystem *) handle;
 	const char *fn = env->GetStringUTFChars(url_p, 0);
-	if (EOS_debug) {
+	if (Hadoop_Xrd_debug) {
 	    std::cout << "getFileStatusS fs handle " << handle << "\n";
 	    printf("getFileStatusS: '%s'\n", fn);
 	}
@@ -81,23 +81,23 @@ JNIEXPORT jobject JNICALL Java_ch_cern_eos_XRootDFileSystem_getFileStatusS (JNIE
 
 	env->ReleaseStringUTFChars(url_p, fn);
 
-	if (EOS_debug) std::cout << "getFileStatusS: status" << status.ToString() << "\n";
+	if (Hadoop_Xrd_debug) std::cout << "getFileStatusS: status" << status.ToString() << "\n";
 
 	if (status.status != 0) return NULL;
 
-	if (EOS_debug) std::cout << resp->TestFlags(resp->IsDir) << " " << resp->GetSize() << " " << resp->GetModTime() << "\n";
+	if (Hadoop_Xrd_debug) std::cout << resp->TestFlags(resp->IsDir) << " " << resp->GetSize() << " " << resp->GetModTime() << "\n";
 
 	jclass cls = env->FindClass("org/apache/hadoop/fs/FileStatus");
 	jmethodID methodID = env->GetMethodID(cls, "<init>", "(JZIJJLorg/apache/hadoop/fs/Path;)V");
 
-	if (EOS_debug) {
+	if (Hadoop_Xrd_debug) {
 	    std::cout << "cls " << cls << "\n";
 	    std::cout << "methodID " << methodID << "\n";
 	}	
 
 	jobject st = env->NewObject(cls, methodID, resp->GetSize(), resp->TestFlags(resp->IsDir), 1, 256*1024L, resp->GetModTime()*1000, path );
 
-	if (EOS_debug) std::cout << "st " << *(long *) &st << "\n";
+	if (Hadoop_Xrd_debug) std::cout << "st " << *(long *) &st << "\n";
 
 	return st;
 
@@ -111,7 +111,7 @@ JNIEXPORT jobject JNICALL Java_ch_cern_eos_XRootDFileSystem_getFileStatusS (JNIE
 JNIEXPORT jlong JNICALL Java_ch_cern_eos_XRootDFileSystem_Rm (JNIEnv *env, jobject This, jlong handle, jstring fn_p) {
 	XrdCl::FileSystem *fs = (XrdCl::FileSystem *) handle;
 	const char *fn = env->GetStringUTFChars(fn_p, 0);
-	if (EOS_debug) {
+	if (Hadoop_Xrd_debug) {
 	    std::cout << "Rm fs handle " << handle << "\n";
 	    printf("delete: '%s'\n", fn);
 	}
@@ -122,13 +122,13 @@ JNIEXPORT jlong JNICALL Java_ch_cern_eos_XRootDFileSystem_Rm (JNIEnv *env, jobje
 	
 #if 0
 	 if (status.status == 1 && status.code == 400 && status.errNo == 3016) {
-	    if (EOS_debug) 
-	    std::cout << "retry RmDir " << status.status <<" "<<status.code<<" "<<status.errNo<< "\n";
+	    if (Hadoop_Xrd_debug)
+	        std::cout << "retry RmDir " << status.status <<" "<<status.code<<" "<<status.errNo<< "\n";
 	    status = fs->RmDir(fn, timeout);
 	}
 #endif
 
-	if (EOS_debug)
+	if (Hadoop_Xrd_debug)
 	    std::cout << "Rm " << fn << " " << handle << ": status " <<status.status<<" "<<status.code<<" "<<status.errNo<<" "<< status.ToString() <<  "\n";
 	env->ReleaseStringUTFChars(fn_p, fn);
 
@@ -145,7 +145,7 @@ JNIEXPORT jlong JNICALL Java_ch_cern_eos_XRootDFileSystem_RmDir (JNIEnv *env, jo
 
 	XrdCl::FileSystem *fs = (XrdCl::FileSystem *) handle;
 	const char *fn = env->GetStringUTFChars(fn_p, 0);
-	if (EOS_debug) {
+	if (Hadoop_Xrd_debug) {
 	    std::cout << "RmDir fs handle " << handle << "\n";
 	    printf("delete: '%s'\n", fn);
 	}
@@ -154,7 +154,7 @@ JNIEXPORT jlong JNICALL Java_ch_cern_eos_XRootDFileSystem_RmDir (JNIEnv *env, jo
 
 	XrdCl::XRootDStatus status = fs->RmDir(fn, timeout);
 
-	if (EOS_debug) std::cout << "RmDir " << fn << " " << handle << ": status " << status.ToString() <<  "\n";
+	if (Hadoop_Xrd_debug) std::cout << "RmDir " << fn << " " << handle << ": status " << status.ToString() <<  "\n";
 	env->ReleaseStringUTFChars(fn_p, fn);
 
 	return *(jlong *) &status;
@@ -175,9 +175,9 @@ JNIEXPORT jlong JNICALL Java_ch_cern_eos_XRootDFileSystem_Mv (JNIEnv *env, jobje
 	XrdCl::XRootDStatus status = fs->Mv(src, dst, timeout);
 	env->ReleaseStringUTFChars(src_p, src);
 	env->ReleaseStringUTFChars(dst_p, dst);
-	if (EOS_debug) {
+	if (Hadoop_Xrd_debug) {
 	    std::cout << "Mv fs handle " << handle << "\n";
-	    printf("rename '%s' '%s' status = 0x%x\n", src, dst, status.ToString().c_str());
+	    printf("rename '%s' '%s' status = 0x%s\n", src, dst, status.ToString().c_str());
 	}
 
 
@@ -195,13 +195,13 @@ JNIEXPORT jlong JNICALL Java_ch_cern_eos_XRootDFileSystem_MkDir (JNIEnv *env, jo
 	uint16_t timeout = 0;
 
 	XrdCl::Access::Mode mode = static_cast<XrdCl::Access::Mode>(mode_p);
-	if (EOS_debug) 
+	if (Hadoop_Xrd_debug)
 	    std::cout << "MkDir mode " << mode << "\n";
 
 
 	XrdCl::XRootDStatus status = fs->MkDir(dirname, XrdCl::MkDirFlags::MakePath, mode, timeout);
-	if (EOS_debug) {
-	    printf("mkdir handle %d '%s' mode 0%o status = 0x%x %s\n", handle, dirname, mode, status.ToString().c_str());
+	if (Hadoop_Xrd_debug) {
+	    printf("mkdir handle %li '%s' mode 0%o status = 0x%s\n", handle, dirname, mode, status.ToString().c_str());
 	}
 	env->ReleaseStringUTFChars(dirname_p, dirname);
 
@@ -219,7 +219,7 @@ JNIEXPORT jobjectArray JNICALL Java_ch_cern_eos_XRootDFileSystem_listFileStatusS
 
 	XrdCl::FileSystem *fs = (XrdCl::FileSystem *) handle;
 	const char *fn = env->GetStringUTFChars(url_p, 0);
-	if (EOS_debug) {
+	if (Hadoop_Xrd_debug) {
 	    std::cout << "listFileStatusS fs handle " << handle << "\n";
 	    printf("listFileStatusS: '%s'\n", fn);
 	}
@@ -237,7 +237,7 @@ JNIEXPORT jobjectArray JNICALL Java_ch_cern_eos_XRootDFileSystem_listFileStatusS
 	else
 	    numEntries = 0;
 
-	if (EOS_debug) printf("listFileStatusS: found %d entries\n", numEntries);
+	if (Hadoop_Xrd_debug) printf("listFileStatusS: found %d entries\n", numEntries);
 
 
 	jclass cls_FileStatus = env->FindClass("org/apache/hadoop/fs/FileStatus");
@@ -250,7 +250,7 @@ JNIEXPORT jobjectArray JNICALL Java_ch_cern_eos_XRootDFileSystem_listFileStatusS
 	for (int i=0; i < numEntries; i++) {
 	    XrdCl::StatInfo *si = list->At(i)->GetStatInfo();
 	    std::string name = list->At(i)->GetName();
-	    if (EOS_debug) printf("listFileStatusS entry %d: %s\n", i, name.c_str());
+	    if (Hadoop_Xrd_debug) printf("listFileStatusS entry %d: %s\n", i, name.c_str());
 
 	    jstring j_name = env->NewStringUTF(name.c_str());
 	    jobject path = env->NewObject(cls_Path, mid_Pathinit, pp, j_name);
@@ -279,6 +279,7 @@ JNIEXPORT void JNICALL Java_ch_cern_eos_XRootDFileSystem_setenv (JNIEnv *env, jc
 	const char *ccv = env->GetStringUTFChars(ccv_p, 0);
 
 	int code = setenv((char *) ccn, ccv, 1);
+	if (Hadoop_Xrd_debug) printf("setenv status: %d\n", code);
     
 	env->ReleaseStringUTFChars(ccn_p, ccn);
 	env->ReleaseStringUTFChars(ccv_p, ccv);
@@ -333,9 +334,9 @@ JNIEXPORT jlong JNICALL Java_ch_cern_eos_XRootDFileSystem_Prepare (JNIEnv *env, 
     uint16_t timeout = 0;
     XrdCl::Buffer *buf = NULL;
     XrdCl::XRootDStatus status = fs->Prepare(fileList, pFlags, 0, buf, timeout);
-    if (EOS_debug || !status.IsOK()) {
-	std::cout << "Prepare fs handle " << handle << " flags " << pFlags << " resp " << buf << "\n";
-	printf("Prepare '%s'... (%d) status = %s\n", fileList.at(0).c_str(), fileList.size(), status.ToStr().c_str());
+    if (Hadoop_Xrd_debug || !status.IsOK()) {
+	    std::cout << "Prepare fs handle " << handle << " flags " << pFlags << " resp " << buf << "\n";
+	    printf("Prepare '%s'... (%li) status = %s\n", fileList.at(0).c_str(), fileList.size(), status.ToStr().c_str());
     }
     // The following should not be needed because "std::vector" takes care of it
     // for (i = 0; i < numUris; i++) delete fileList[i];

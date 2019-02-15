@@ -18,8 +18,8 @@
 #include "stdlib.h"
 
 #include "ch_cern_eos_XRootDClFile.h"
-#include "xrootd/XrdCl/XrdClFile.hh"
-#include "xrootd/XrdCl/XrdClDefaultEnv.hh"
+#include "XrdCl/XrdClFile.hh"
+#include "XrdCl/XrdClDefaultEnv.hh"
 
 int Xrd_debug = 0;
 
@@ -127,7 +127,7 @@ extern "C" {
 
 	long code = *(long *) &status;
 	if (Xrd_debug || status.status != 0)
-		printf("XrdClFile.Read %ld return 0x%x status %s\n", handle, code, status.ToStr().c_str());
+		printf("XrdClFile.Read %ld return 0x%li status %s\n", handle, code, status.ToStr().c_str());
 
 	return -code;
     };
@@ -171,7 +171,8 @@ extern "C" {
 	XrdCl::XRootDStatus status = file->Close(timeout);
 	if (Xrd_debug || status.status != 0) 
 	    std::cout << "closeFile " << handle << ": status " << status.ToString() <<  "\n";
-	/* delete file;		/* No: this will be handled through "dispose" of the java object */
+
+	/* delete file will be handled through "dispose" of the java object */
 
 	return *(jlong *) &status;
     };

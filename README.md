@@ -27,7 +27,7 @@ Must be specified in HADOOP_CONF_DIR in core-site.xml - ref https://github.com/d
 Prerequisites:
 
 ```
-- xrootd-client, xrootd-client-libs, xrootd-client-devel
+- xrootd-client, xrootd-client-libs, xrootd-client-devel (tested with 4.8.4>)
 - maven
 ```
 
@@ -38,8 +38,8 @@ make package
 
 NOTES:
 
-Since hadoop-xrootd-connector relies on NAR packaging (`.so` dependency for C++ `xrootd-client`), currently 
-it requires to build connector with correct platform `linux` and `gcc` version to avoid  error below:
+Since hadoop-xrootd-connector relies on `.so` dependency for C++ `xrootd-client`, currently 
+it requires to build connector with correct platform `linux` and `gcc` version to avoid error below:
 
 ```
 java: symbol lookup error: /tmp/libhadoop-xrootd-1.0.0-SNAPSHOT9131106165051975528.so: undefined symbol: _ZN5XrdCl3URLC1ERKSs
@@ -49,7 +49,7 @@ Build with correct versions e.g. on `lxplus-cloud`:
 
 ```
 source /cvmfs/sft.cern.ch/lcg/views/LCG_93/x86_64-slc6-gcc62-opt/setup.sh
-make package
+mvn clean package -X -Dxrootd.lib64.path=${XROOTD_LIB64_SO_FILES_PATH} -Dxrootd.include.path=${XROOTD_INCLUDE_HH_FILES_PATH}
 ```
 
 CI generates jars for using the connector with CVMFS sourced software. The jars including the dependencies are published at `s3://binaries/hadoop-xrootd`.
@@ -77,8 +77,11 @@ $ make package
 Manual quick test with debug mode
 
 ```
-# Optionaly enable debug mode
+# Optionaly enable debug mode for JAVA
 $ export HADOOP_XROOTD_DEBUG=1
+
+# Optionaly enable debug mode for XROOTD Client C++ library
+$ export Xrd_debug=1
  
 # Add to Hadoop Classpath (Spark Driver or Executor extra classpath - spark.driver.extraClassPath)
 $ VERSION=$(mvn help:evaluate -Dexpression=project.version $@ 2>/dev/null\

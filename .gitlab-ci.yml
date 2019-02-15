@@ -6,6 +6,7 @@ stages:
 variables:
   MAVEN_OPTS: "-Xmx2g -XX:ReservedCodeCacheSize=512m"
   JAVA_VERSION_MAJOR: "7"
+  XROOT_CLIENT_VERSION: "4.8.4-c201f"
   LCG_VIEW: "LCG_94"
   LCG_VERSION: "x86_64-centos7-gcc7-opt"
 
@@ -26,7 +27,7 @@ build-docker-image:
     DOCKER_FILE: Dockerfile
     TO: ${CI_REGISTRY_IMAGE}/base:latest
 
-make-compile-test-step:
+make-compile-test-step-centos:
   <<: *krbtgt
   stage: build
   script:
@@ -48,11 +49,10 @@ make-compile-test-step-cvmfs:
     # Prepare build environment
     - yum install -y which HEP_OSlibs
     - source /cvmfs/sft.cern.ch/lcg/views/$LCG_VIEW/$LCG_VERSION/setup.sh
-    - SYSLIB_OPTION="-L/cvmfs/sft.cern.ch/lcg/views/$LCG_VIEW/$LCG_VERSION/lib64"
-    - INCLUDE_PATH="/cvmfs/sft.cern.ch/lcg/views/$LCG_VIEW/$LCG_VERSION/include"
+    - XROOTD_LIB64_PATH="/cvmfs/sft.cern.ch/lcg/releases/xrootd/$XROOT_CLIENT_VERSION/$LCG_VERSION/lib64"
     - XROOTD_INCLUDE_PATH="/cvmfs/sft.cern.ch/lcg/views/$LCG_VIEW/$LCG_VERSION/include/xrootd"
     # Make compile and test
-    - MAVEN_FLAGS="-Dinclude.path=${INCLUDE_PATH} -Dxrootd.include.path=${XROOTD_INCLUDE_PATH} -Dsyslib.option=${SYSLIB_OPTION}" make all
+    - MAVEN_FLAGS="-Dxrootd.lib64.path=${XROOTD_LIB64_PATH} -Dxrootd.include.path=${XROOTD_INCLUDE_PATH}" make all
     # Final rename
     - for f in *.jar; do mv "${f}" "${f%-jar-with-dependencies.jar}-${LCG_VERSION}.jar"; done
   artifacts:
