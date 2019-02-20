@@ -152,7 +152,7 @@ public class XRootDKrb5 {
                             // Save cache location
                             XRootDKrb5.krb5ccname = credCacheName;
                             hasKrbST = 1;
-                            eosDebugLogger.printDebug("found service ticket token " + cred.getServicePrincipal().getName() + " " + cred.getRenewTill().toString() + " at " + credCacheName);
+                            eosDebugLogger.printDebug("found service ticket token " + cred.getServicePrincipal().getName() + " " + cred.getEndTime().toString() + " at " + credCacheName);
                             break;
                         }
                     }
