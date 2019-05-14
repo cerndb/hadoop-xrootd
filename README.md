@@ -56,13 +56,13 @@ CI generates jars for using the connector with CVMFS sourced software. The jars 
 
 ### Testing
 
-[Docker image](Dockerfile) is used as base for [Gitlab CI](.gitlab-ci.yml) pipeline.
+[Docker image](docker/Dockerfile) is used as base for [Gitlab CI](.gitlab-ci.yml) pipeline.
 To test manualy, build the docker image and run in interactive mode
 
 ```
 # Build docker
 $ docker build \
--t hadoop-xrootd-connector $(pwd)
+-t hadoop-xrootd-connector ./docker
  
 # Run tests by mounting root directory
 $ docker run --rm -it -v $(pwd):/build hadoop-xrootd-connector bash
@@ -74,7 +74,7 @@ Compile and package
 $ make package
 ```
 
-Manual quick test with debug mode
+Setup base environment
 
 ```
 # Optionaly enable debug mode for JAVA
@@ -83,17 +83,21 @@ $ export HADOOP_XROOTD_DEBUG=1
 # Optionaly enable debug mode for XROOTD Client C++ library
 $ export Xrd_debug=1
  
-# Add to Hadoop Classpath (Spark Driver or Executor extra classpath - spark.driver.extraClassPath)
+# Add to Hadoop Classpath
 $ VERSION=$(mvn help:evaluate -Dexpression=project.version $@ 2>/dev/null\
 | grep -v "INFO"\
 | grep -v "WARNING"\
 | tail -n 1)
- 
+```
+
+Manual quick test
+
+```
 # Set hadoop classpath
 $ export HADOOP_CLASSPATH="$(pwd)/hadoop-xrootd-${VERSION}-jar-with-dependencies.jar:$(hadoop classpath)"
   
 # Try to check if some publicly available file exists
-$ hdfs dfs -ls root://eospublic.cern.ch//eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/20000/DCF94DC3-42CE-E211-867A-001E67398011.root
+$ hdfs dfs -ls root://eospublic.cern.ch/eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/file-indexes/CMS_MonteCarlo2012_Summer12_DR53X_DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_AODSIM_PU_RD1_START53_V7N-v1_20002_file_index.txt
 ```
 
 Test by packaging the project, setting classpath and executing tests
@@ -102,4 +106,15 @@ Test by packaging the project, setting classpath and executing tests
 # Execute tests
 $ kinit <username>@CERN.CH
 $ make tests
+```
+
+Test with Spark
+
+```
+# Set spark hadoop classpath
+$ export SPARK_DIST_CLASSPATH="$(pwd)/hadoop-xrootd-${VERSION}-jar-with-dependencies.jar:$(hadoop classpath)"
+ 
+# Try to read file with spark
+$ pyspark --master local[*]
+> sc.binaryFiles('root://eospublic.cern.ch/eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/file-indexes/CMS_MonteCarlo2012_Summer12_DR53X_DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_AODSIM_PU_RD1_START53_V7N-v1_20002_file_index.txt').collect()
 ```

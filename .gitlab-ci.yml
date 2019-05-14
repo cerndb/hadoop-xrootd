@@ -24,7 +24,7 @@ build-docker-image:
   script:
     - echo "Building docker image..."
   variables:
-    DOCKER_FILE: Dockerfile
+    DOCKER_FILE: docker/Dockerfile
     TO: ${CI_REGISTRY_IMAGE}/base:latest
 
 make-compile-test-step-centos:
