@@ -77,7 +77,7 @@ public class XRootDFileSystem extends FileSystem {
         java.lang.String envReadaheadValue = System.getenv(XRootDConstants.OS_ENV_VARIABLE_READAHEAD);
         if (envReadaheadValue != null ) {
             this.readAhead = Integer.parseInt(envReadaheadValue);
-            eosDebugLogger.printWarn("The OS environment variable " + XRootDConstants.OS_ENV_VARIABLE_READAHEAD +
+            eosDebugLogger.print("The OS environment variable " + XRootDConstants.OS_ENV_VARIABLE_READAHEAD +
                     " is set, using read ahead size = " + this.readAhead);
             if (this.readAhead < 0) {
                 throw new IllegalArgumentException(String.format("Config %s=%d is below the minimum value %d",
@@ -88,12 +88,12 @@ public class XRootDFileSystem extends FileSystem {
             this.readAhead = XRootDUtils.byteConfOption(conf, XRootDConstants.READAHEAD_RANGE,
                     XRootDConstants.DEFAULT_READAHEAD_RANGE);
             if (conf.get(XRootDConstants.READAHEAD_RANGE) == null) {
-                eosDebugLogger.printWarn("Hadoop Config " + XRootDConstants.READAHEAD_RANGE +
+                eosDebugLogger.print("Hadoop Config " + XRootDConstants.READAHEAD_RANGE +
                         " nor OS environment variable " + XRootDConstants.OS_ENV_VARIABLE_READAHEAD +
                         " are set, using read ahead size with default value = " + XRootDConstants.DEFAULT_READAHEAD_RANGE);
             }
             else {
-                eosDebugLogger.printWarn("Hadoop Config " + XRootDConstants.READAHEAD_RANGE +
+                eosDebugLogger.print("Hadoop Config " + XRootDConstants.READAHEAD_RANGE +
                         " is set, using read ahead size = " + this.readAhead);
             }
         }
@@ -142,10 +142,10 @@ public class XRootDFileSystem extends FileSystem {
 
         long status = 0;
         String filespec = toUri(p).getPath();
-
         FileStatus std = getFileStatusS(nHandle, filespec, p);
+        eosDebugLogger.printDebug("EOSFileSystem.delete issued for " + filespec + " status = " + status);
 
-        if (std.isDirectory()) {
+        if (std != null && std.isDirectory()) {
             if (recursive) {
                 eosDebugLogger.printDebug("EOSFileSystem.delete recursive " + filespec);
                 status = this.deleteRecursiveDirectory(p, status);
@@ -155,10 +155,13 @@ public class XRootDFileSystem extends FileSystem {
                 status = RmDir(nHandle, filespec);
                 eosDebugLogger.printDebug("EOSFileSystem.delete RmDir " + filespec + " status = " + status);
             }
-        } else {
+        } else if (std != null && std.isFile()){
             status = Rm(nHandle, filespec);
             eosDebugLogger.printDebug("EOSFileSystem.delete " + filespec + " status = " + status);
+        } else {
+            eosDebugLogger.printDebug("EOSFileSystem no delete required " + filespec + " status = " + status);
         }
+
         if (status != 0) {
             throw new IOException("Cannot delete " + p.toString() + ", status = " + status);
         }
