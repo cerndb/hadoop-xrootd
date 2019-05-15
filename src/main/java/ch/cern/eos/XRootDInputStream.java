@@ -28,12 +28,10 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
     private final Statistics stats;
     private final XRootDInstrumentation instrumentation;
     private XRootDClFile file;
-    private DebugLogger eosDebugLogger;
+    private DebugLogger eosDebugLogger = new DebugLogger();
     private long pos = 0;
 
     public XRootDInputStream(String url, Statistics stats, XRootDInstrumentation instrumentation) {
-        // FIXME: This should be enabled with logger property, not by env
-        this.eosDebugLogger = new DebugLogger(System.getenv("HADOOP_XROOTD_DEBUG") != null);
         this.stats = stats;
         this.instrumentation = instrumentation;
 

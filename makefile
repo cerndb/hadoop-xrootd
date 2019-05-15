@@ -12,5 +12,4 @@ package:
 test:
 	set -e ;\
     export HADOOP_CLASSPATH="${PWD}/*:$(hadoop classpath)";\
-    echo ${HADOOP_CLASSPATH};\
 	for file in src/tests/* ; do $${file} && echo '** Success **' || exit ; done ;

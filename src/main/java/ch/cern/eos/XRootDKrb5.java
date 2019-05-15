@@ -53,7 +53,7 @@ public class XRootDKrb5 {
     private static final String TOKEN_PRINCIPAL_XROOTD_PREFIX = "xrootd";
 
     private static int yarnExecutor = 0;
-    private static DebugLogger eosDebugLogger = new DebugLogger(false);
+    private static DebugLogger eosDebugLogger = new DebugLogger();
 
     public synchronized static String setKrb() {
         // If no Krb ticket, set from Token. 
@@ -99,11 +99,6 @@ public class XRootDKrb5 {
                 + " krb5ccname: " + krb5ccname);
 
         return krb5ccname;
-    }
-
-    public static void setDebug(boolean debug) {
-        // FIXME: This should be enabled with logger property, not by env
-        eosDebugLogger.setDebug(debug);
     }
 
     /**
