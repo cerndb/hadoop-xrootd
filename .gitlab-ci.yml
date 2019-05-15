@@ -24,12 +24,15 @@ build-docker-image:
   script:
     - echo "Building docker image..."
   variables:
-    DOCKER_FILE: docker/Dockerfile
+    CONTEXT_DIR: docker
+    DOCKER_FILE: Dockerfile
     TO: ${CI_REGISTRY_IMAGE}/base:latest
 
-make-compile-test-step-centos:
+make-compile-test-step-dockerfile:
   <<: *krbtgt
   stage: build
+  # use docker image base:latest with all libraries packaged
+  image: ${CI_REGISTRY_IMAGE}/base:latest
   script:
     # Make compile and test
     - make all
@@ -38,13 +41,14 @@ make-compile-test-step-centos:
   artifacts:
     paths:
     - "*.jar"
-  image: ${CI_REGISTRY_IMAGE}/base:latest # use docker with all libraries
 
 make-compile-test-step-cvmfs:
   <<: *krbtgt
   tags:
     - cvmfs
   stage: build
+  # use clean cc7-base docker image with CVMFS for packages
+  image: gitlab-registry.cern.ch/linuxsupport/cc7-base:latest
   script:
     # Prepare build environment
     - yum install -y which HEP_OSlibs
@@ -58,7 +62,6 @@ make-compile-test-step-cvmfs:
   artifacts:
     paths:
     - "*.jar"
-  image: gitlab-registry.cern.ch/linuxsupport/cc7-base:latest # use clean docker as CVMFS is used
 
 put-s3:
   stage: publish

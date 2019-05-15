@@ -35,12 +35,7 @@ import java.util.Arrays;
 
 public class Krb5TokenRenewer extends TokenRenewer {
     public String krb5ccname;
-    private static DebugLogger eosDebugLogger;
-
-    public Krb5TokenRenewer() {
-        // FIXME: This should be enabled with logger property, not by env
-        eosDebugLogger = new DebugLogger(System.getenv("HADOOP_XROOTD_DEBUG") != null);
-    }
+    private static DebugLogger eosDebugLogger = new DebugLogger();
 
     public boolean handleKind(Text kind) {
         return Krb5TokenIdentifier.KIND_NAME.equals(kind);

@@ -28,7 +28,7 @@ import java.net.URISyntaxException;
 
 public class XRootDFileSystem extends FileSystem {
 
-    private static DebugLogger eosDebugLogger;
+    private static DebugLogger eosDebugLogger = new DebugLogger();
 
     static {
         NarSystem.loadLibrary();
@@ -68,9 +68,6 @@ public class XRootDFileSystem extends FileSystem {
         super.initialize(uri, conf);
         setConf(conf);
 
-        // FIXME: This should be enabled with logger property, not by env
-        eosDebugLogger = new DebugLogger(System.getenv("HADOOP_XROOTD_DEBUG") != null);
-        XRootDKrb5.setDebug(eosDebugLogger.isDebugEnabled());
         this.uri = uri;
 
         // if the designated environment variable is set use this as read ahead size

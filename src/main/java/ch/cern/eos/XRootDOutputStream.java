@@ -22,7 +22,7 @@ import java.io.OutputStream;
 
 class XRootDOutputStream extends OutputStream {
 
-    private DebugLogger eosDebugLogger;
+    private DebugLogger eosDebugLogger = new DebugLogger();
     private XRootDClFile file;
     private long pos;
 
@@ -39,9 +39,6 @@ class XRootDOutputStream extends OutputStream {
          */
 
         int oflags = overwrite ? 2 : 8;
-
-        // FIXME: This should be enabled with logger property, not by env
-        this.eosDebugLogger = new DebugLogger(System.getenv("HADOOP_XROOTD_DEBUG") != null);
 
         this.file = new XRootDClFile();
         long status = file.Open(url, oflags, 0x0180);

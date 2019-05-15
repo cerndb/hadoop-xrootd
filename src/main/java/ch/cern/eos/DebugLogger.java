@@ -15,17 +15,12 @@
  */
 package ch.cern.eos;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 public class DebugLogger {
 
-    private Logger logger = LogManager.getLogger("HadoopXRootD");
-
-    public DebugLogger(boolean debugEnabled) {
-        this.setDebug(debugEnabled);
-    }
+    private Logger logger = LogManager.getLogger("ch.cern.eos.HadoopXRootD");
 
     public void print(String e) {
         this.logger.info(e);
@@ -44,15 +39,9 @@ public class DebugLogger {
     }
 
     public void printStackTrace(Exception e) {
-        if (this.logger.isDebugEnabled()) {
-            this.logger.error(e.getMessage());
+        this.logger.debug(e.getMessage());
+        if (this.isDebugEnabled()) {
             e.printStackTrace();
-        }
-    }
-
-    public void setDebug(boolean debugEnabled) {
-        if (debugEnabled) {
-            this.logger.setLevel(Level.DEBUG);
         }
     }
 

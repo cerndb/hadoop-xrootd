@@ -74,27 +74,17 @@ Compile and package
 $ make package
 ```
 
-Setup base environment
+Test with HDFS cli
 
-```
-# Optionaly enable debug mode for JAVA
-$ export HADOOP_XROOTD_DEBUG=1
-
+``` 
+# Optionaly enable java debug
+export HADOOP_ROOT_LOGGER=hadoop.root.logger=DEBUG,console
+  
 # Optionaly enable debug mode for XROOTD Client C++ library
 $ export Xrd_debug=1
  
-# Add to Hadoop Classpath
-$ VERSION=$(mvn help:evaluate -Dexpression=project.version $@ 2>/dev/null\
-| grep -v "INFO"\
-| grep -v "WARNING"\
-| tail -n 1)
-```
-
-Manual quick test
-
-```
 # Set hadoop classpath
-$ export HADOOP_CLASSPATH="$(pwd)/hadoop-xrootd-${VERSION}-jar-with-dependencies.jar:$(hadoop classpath)"
+$ export HADOOP_CLASSPATH="$(pwd)/*:$(hadoop classpath)"
   
 # Try to check if some publicly available file exists
 $ hdfs dfs -ls root://eospublic.cern.ch/eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/file-indexes/CMS_MonteCarlo2012_Summer12_DR53X_DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_AODSIM_PU_RD1_START53_V7N-v1_20002_file_index.txt
@@ -108,13 +98,19 @@ $ kinit <username>@CERN.CH
 $ make tests
 ```
 
-Test with Spark
+Test with Spark (add log4j conf for debug)
 
 ```
 # Set spark hadoop classpath
-$ export SPARK_DIST_CLASSPATH="$(pwd)/hadoop-xrootd-${VERSION}-jar-with-dependencies.jar:$(hadoop classpath)"
+$ export SPARK_DIST_CLASSPATH="$(pwd)/*:$(hadoop classpath)"
  
 # Try to read file with spark
-$ pyspark --master local[*]
-> sc.binaryFiles('root://eospublic.cern.ch/eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/file-indexes/CMS_MonteCarlo2012_Summer12_DR53X_DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_AODSIM_PU_RD1_START53_V7N-v1_20002_file_index.txt').collect()
+$ pyspark \
+--master local[*] \
+--conf "spark.driver.extraJavaOptions=-Dlog4j.configuration=file:/root/log4j.properties" \
+--conf "spark.executor.extraJavaOptions=-Dlog4j.configuration=file:/root/log4j.properties"
+ 
+# Run some commands in shell
+input = sc.binaryFiles('root://eospublic.cern.ch/eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/file-indexes/CMS_MonteCarlo2012_Summer12_DR53X_DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_AODSIM_PU_RD1_START53_V7N-v1_20002_file_index.txt')
+input.map(lambda x: x[0]).collect()
 ```
