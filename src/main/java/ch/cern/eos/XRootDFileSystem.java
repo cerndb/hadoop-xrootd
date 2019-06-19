@@ -141,8 +141,13 @@ public class XRootDFileSystem extends FileSystem {
         String filespec = toUri(p).getPath();
         FileStatus std = getFileStatusS(nHandle, filespec, p);
 
-        long status = -1;
-        if (std != null && std.isDirectory()) {
+        if (std == null) {
+            eosDebugLogger.printDebug("EOSFileSystem.delete " + filespec + " file does not exist");
+            return false;
+        }
+
+        long status = 0;
+        if (std.isDirectory()) {
             if (recursive) {
                 eosDebugLogger.printDebug("EOSFileSystem.delete recursive " + filespec);
                 status = this.deleteRecursiveDirectory(p, status);
@@ -152,14 +157,15 @@ public class XRootDFileSystem extends FileSystem {
                 status = RmDir(nHandle, filespec);
                 eosDebugLogger.printDebug("EOSFileSystem.delete RmDir " + filespec + " status = " + status);
             }
-        } else if (std != null && std.isFile()){
+        } else if (std.isFile()){
             status = Rm(nHandle, filespec);
             eosDebugLogger.printDebug("EOSFileSystem.delete " + filespec + " status = " + status);
-        } else {
-            eosDebugLogger.printDebug("EOSFileSystem.delete " + filespec + " file does not exist");
         }
 
-        // Return whether delete succeeded or not
+        if (status != 0) {
+            eosDebugLogger.printWarn("Cannot delete " + filespec + ", status = " + status);
+        }
+
         return status == 0;
     }
 
