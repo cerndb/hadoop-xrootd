@@ -68,6 +68,10 @@
                         </library>
                     </libraries>
                     <cpp>
+                        <options>
+                            <!-- Build with C++11 as xrootd-client 4.8+ requires it -->
+                            <option>-std=c++0x</option>
+                        </options>
                         <!-- This are header files required by xrootd-connector cpp classes -->
                         <systemIncludePaths>
                             <systemIncludePath>${xrootd.include.path}</systemIncludePath>
