@@ -15,6 +15,9 @@ ENV HADOOP_HOME /usr/hdp/hadoop
 ENV PATH $PATH:$HADOOP_HOME/bin
 ENV PATH $PATH:$HADOOP_HOME/sbin
 
+ADD http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo /etc/yum.repos.d/epel-apache-maven.repo
+
+COPY CA.repo /etc/yum.repos.d/CA.repo
 COPY Cern-Hadoop-Components.repo /etc/yum.repos.d/Cern-Hadoop-Components.repo
 
 # Get the dependencies for building xrootd-connector
@@ -23,6 +26,8 @@ RUN yum group install -y \
     yum install -y \
     which \
     wget \
+    apache-maven \
+    ca_CERN-GridCA \
     xrootd-client \
     xrootd-client-libs \
     xrootd-client-devel \
@@ -30,10 +35,6 @@ RUN yum group install -y \
     hadoop-bin-$SPARK_HADOOP_VERSION \
     spark-bin-$SPARK_VERSION \
     yum clean all && rm -rf /var/cache/yum/*
-
-RUN wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo && \
-    sed -i s/\$releasever/6/g /etc/yum.repos.d/epel-apache-maven.repo && \
-    yum install -y apache-maven
 
 COPY log4j.properties /root/log4j.properties
 
