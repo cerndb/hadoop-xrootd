@@ -140,7 +140,7 @@ public class XRootDFileSystem extends FileSystem {
         long status = 0;
         String filespec = toUri(p).getPath();
         FileStatus std = getFileStatusS(nHandle, filespec, p);
-        eosDebugLogger.printDebug("EOSFileSystem.delete issued for " + filespec + " status = " + status);
+        eosDebugLogger.printDebug("EOSFileSystem.delete issued for " + filespec + " std = " + std.toString() + " recursive = " + recursive);
 
         if (std != null && std.isDirectory()) {
             if (recursive) {

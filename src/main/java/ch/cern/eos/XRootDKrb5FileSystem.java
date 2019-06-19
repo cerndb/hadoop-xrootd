@@ -21,11 +21,7 @@ import java.io.IOException;
 import java.net.URI;
 
 public class XRootDKrb5FileSystem extends XRootDFileSystem {
-
-    public XRootDKrb5FileSystem() {
-        super();
-    }
-
+    
     /*
      * Setting token cache from TGT (on Spark or MR drivers) or init local krb cache from token
      * (if mapper or executor)
