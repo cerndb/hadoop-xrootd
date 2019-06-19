@@ -4,7 +4,9 @@ Connector between Hadoop and XRootD protocols (EOS compatible)
 
 [![Build Status](https://gitlab.cern.ch/db/hadoop-xrootd/badges/master/build.svg)](https://gitlab.cern.ch/db/hadoop-xrootd)
 
-### Available hadoop flags
+### Available spark/hadoop flags
+
+For Hadoop config
 
 ```
     <?xml version="1.0" encoding="UTF-8"?>
@@ -17,6 +19,12 @@ Connector between Hadoop and XRootD protocols (EOS compatible)
             <value>128000</value>
         </property>
     </configuration>
+```
+
+For Spark config 
+
+```
+spark.hadoop.fs.xrootd.readahead.range=128000
 ```
 
 **WARNING** - diana-hep/root4j <=0.1.6 package resets configs spark.hadoop on executors!! 

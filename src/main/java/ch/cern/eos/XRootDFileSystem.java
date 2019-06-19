@@ -74,7 +74,7 @@ public class XRootDFileSystem extends FileSystem {
         java.lang.String envReadaheadValue = System.getenv(XRootDConstants.OS_ENV_VARIABLE_READAHEAD);
         if (envReadaheadValue != null ) {
             this.readAhead = Integer.parseInt(envReadaheadValue);
-            eosDebugLogger.print("The OS environment variable " + XRootDConstants.OS_ENV_VARIABLE_READAHEAD +
+            eosDebugLogger.printDebug("The OS environment variable " + XRootDConstants.OS_ENV_VARIABLE_READAHEAD +
                     " is set, using read ahead size = " + this.readAhead);
             if (this.readAhead < 0) {
                 throw new IllegalArgumentException(String.format("Config %s=%d is below the minimum value %d",
@@ -85,12 +85,12 @@ public class XRootDFileSystem extends FileSystem {
             this.readAhead = XRootDUtils.byteConfOption(conf, XRootDConstants.READAHEAD_RANGE,
                     XRootDConstants.DEFAULT_READAHEAD_RANGE);
             if (conf.get(XRootDConstants.READAHEAD_RANGE) == null) {
-                eosDebugLogger.print("Hadoop Config " + XRootDConstants.READAHEAD_RANGE +
+                eosDebugLogger.printDebug("Hadoop Config " + XRootDConstants.READAHEAD_RANGE +
                         " nor OS environment variable " + XRootDConstants.OS_ENV_VARIABLE_READAHEAD +
                         " are set, using read ahead size with default value = " + XRootDConstants.DEFAULT_READAHEAD_RANGE);
             }
             else {
-                eosDebugLogger.print("Hadoop Config " + XRootDConstants.READAHEAD_RANGE +
+                eosDebugLogger.printDebug("Hadoop Config " + XRootDConstants.READAHEAD_RANGE +
                         " is set, using read ahead size = " + this.readAhead);
             }
         }
@@ -130,18 +130,18 @@ public class XRootDFileSystem extends FileSystem {
     public FSDataOutputStream create(Path p, FsPermission permission, boolean overwrite, int bufferSize, short replication, long blockSize, Progressable progress) throws IOException {
         initHandle();
         String filespec = uri.getScheme() + "://" + uri.getAuthority() + "/" + toFilePath(p);
-        eosDebugLogger.printDebug("EOSfs create " + filespec);
+        eosDebugLogger.printDebug("EOSfs create issued for " + filespec);
+
         return new FSDataOutputStream(new XRootDOutputStream(filespec, permission, overwrite), null);
     }
 
     public boolean delete(Path p, boolean recursive) throws IOException {
         initHandle();
 
-        long status = 0;
         String filespec = toUri(p).getPath();
         FileStatus std = getFileStatusS(nHandle, filespec, p);
-        eosDebugLogger.printDebug("EOSFileSystem.delete issued for " + filespec + " std = " + std.toString() + " recursive = " + recursive);
 
+        long status = -1;
         if (std != null && std.isDirectory()) {
             if (recursive) {
                 eosDebugLogger.printDebug("EOSFileSystem.delete recursive " + filespec);
@@ -156,13 +156,10 @@ public class XRootDFileSystem extends FileSystem {
             status = Rm(nHandle, filespec);
             eosDebugLogger.printDebug("EOSFileSystem.delete " + filespec + " status = " + status);
         } else {
-            eosDebugLogger.printDebug("EOSFileSystem no delete required " + filespec + " status = " + status);
+            eosDebugLogger.printDebug("EOSFileSystem.delete " + filespec + " file does not exist");
         }
 
-        if (status != 0) {
-            throw new IOException("Cannot delete " + p.toString() + ", status = " + status);
-        }
-
+        // Return whether delete succeeded or not
         return status == 0;
     }
 
@@ -215,7 +212,10 @@ public class XRootDFileSystem extends FileSystem {
     public FileStatus getFileStatus(Path p) throws IOException {
         initHandle();
 
-        FileStatus st = getFileStatusS(nHandle, toUri(p).getPath(), p);
+        String filespec = toUri(p).getPath();
+        eosDebugLogger.printDebug("EOSFileSystem.stat " + filespec);
+
+        FileStatus st = getFileStatusS(nHandle, filespec, p);
         if (st == null) {
             throw new FileNotFoundException("File not found");
         } else {
@@ -227,8 +227,11 @@ public class XRootDFileSystem extends FileSystem {
     public FileStatus[] listStatus(Path p) throws IOException {
         initHandle();
 
+        String filespec = toUri(p).getPath();
+        eosDebugLogger.printDebug("EOSFileSystem.list issued for " + filespec);
+
         // If isFile return FileStatus directly
-        FileStatus st = getFileStatusS(nHandle, toUri(p).getPath(), p);
+        FileStatus st = getFileStatusS(nHandle, filespec, p);
         if (st.isFile())
             return new FileStatus[]{st};
 
@@ -240,6 +243,8 @@ public class XRootDFileSystem extends FileSystem {
         initHandle();
 
         String filespec = toFilePath(p);
+        eosDebugLogger.printDebug("EOSFileSystem.mkdir issued for " + filespec);
+
         long st = MkDir(nHandle, filespec, permission.toShort());
         return st == 0;
     }
@@ -275,7 +280,12 @@ public class XRootDFileSystem extends FileSystem {
 
     public boolean rename(Path src, Path dst) throws IOException {
         initHandle();
-        long st = Mv(nHandle, toUri(src).getPath(), toUri(dst).getPath());
+
+        String srcFileSpec = toUri(src).getPath();
+        String dstFileSpec = toUri(dst).getPath();
+        eosDebugLogger.printDebug("EOSFileSystem.mv issued for " + srcFileSpec + " to " + dstFileSpec);
+
+        long st = Mv(nHandle, srcFileSpec, dstFileSpec);
         return st == 0;
     }
 
