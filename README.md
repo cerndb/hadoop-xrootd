@@ -14,9 +14,14 @@ For Hadoop config
    
     <configuration>
         <property>
-            <description>set the size of the request to XRootD storage issued for data (allows prefetching more data in case of large reads). Defaults to 128KB.</description>
+            <description>set the size of the request to XRootD storage issued for data read(allows prefetching more data in case of large reads). Defaults to 128KB.</description>
             <name>fs.xrootd.readahead.range</name>
             <value>128000</value>
+        </property>
+        <property>
+            <description>set the size of the request to XRootD storage issued for data write (allows buffering writes into larger request). Defaults to 1MB.</description>
+            <name>fs.xrootd.write.buffer</name>
+            <value>1048576</value>
         </property>
     </configuration>
 ```
@@ -25,6 +30,7 @@ For Spark config
 
 ```
 spark.hadoop.fs.xrootd.readahead.range=128000
+spark.hadoop.fs.xrootd.write.buffer=1048576
 ```
 
 **WARNING** - diana-hep/root4j <=0.1.6 package resets configs spark.hadoop on executors!! 

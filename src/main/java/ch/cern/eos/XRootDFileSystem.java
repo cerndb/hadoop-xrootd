@@ -37,7 +37,7 @@ public class XRootDFileSystem extends FileSystem {
 
     private long nHandle = 0;
     private URI uri;
-    private int readAhead;
+    private XRootDConfiguration conf;
 
     public static native void setenv(String envname, String envvalue);
 
@@ -70,31 +70,7 @@ public class XRootDFileSystem extends FileSystem {
         setConf(conf);
 
         this.uri = uri;
-
-        // if the designated environment variable is set use this as read ahead size
-        java.lang.String envReadaheadValue = System.getenv(XRootDConstants.OS_ENV_VARIABLE_READAHEAD);
-        if (envReadaheadValue != null ) {
-            this.readAhead = Integer.parseInt(envReadaheadValue);
-            eosDebugLogger.printDebug("The OS environment variable " + XRootDConstants.OS_ENV_VARIABLE_READAHEAD +
-                    " is set, using read ahead size = " + this.readAhead);
-            if (this.readAhead < 0) {
-                throw new IllegalArgumentException(String.format("Config %s=%d is below the minimum value %d",
-                        XRootDConstants.OS_ENV_VARIABLE_READAHEAD, this.readAhead, 0));
-            }
-            // otherwise get read ahead value from Hadoop configuration or use default if not set
-        } else {
-            this.readAhead = XRootDUtils.byteConfOption(conf, XRootDConstants.READAHEAD_RANGE,
-                    XRootDConstants.DEFAULT_READAHEAD_RANGE);
-            if (conf.get(XRootDConstants.READAHEAD_RANGE) == null) {
-                eosDebugLogger.printDebug("Hadoop Config " + XRootDConstants.READAHEAD_RANGE +
-                        " nor OS environment variable " + XRootDConstants.OS_ENV_VARIABLE_READAHEAD +
-                        " are set, using read ahead size with default value = " + XRootDConstants.DEFAULT_READAHEAD_RANGE);
-            }
-            else {
-                eosDebugLogger.printDebug("Hadoop Config " + XRootDConstants.READAHEAD_RANGE +
-                        " is set, using read ahead size = " + this.readAhead);
-            }
-        }
+        this.conf = new XRootDConfiguration(conf);
     }
 
     public URI toUri(Path p) throws IOException {
@@ -133,11 +109,11 @@ public class XRootDFileSystem extends FileSystem {
         String filespec = uri.getScheme() + "://" + uri.getAuthority() + "/" + toFilePath(p);
         eosDebugLogger.printDebug("EOSfs create issued for " + filespec);
 
-        int writeAhead = 8192;
+        int writeBufferSize = this.conf.getWriteBufferSize();
         return new FSDataOutputStream(
                 new BufferedOutputStream(
                         new XRootDOutputStream(filespec, permission, overwrite),
-                        writeAhead
+                        writeBufferSize
                 ),
                 statistics
         );
@@ -218,6 +194,7 @@ public class XRootDFileSystem extends FileSystem {
         XRootDInstrumentation instrumentation = new XRootDInstrumentation();
 
         // ReadAhead is done with BufferedFSInputStream
+        int readAhead = this.conf.getReadAhead();
         eosDebugLogger.printDebug("EOSfs open " + filespec + " with readAhead=" + readAhead);
 
         return new FSDataInputStream(
