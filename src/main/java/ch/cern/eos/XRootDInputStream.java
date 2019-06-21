@@ -77,8 +77,8 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
         long rd = file.Read(pos, b, off, len);
         long endTime = System.nanoTime();
         long elapsedTimeMicrosec = (endTime - startTime) / 1000L;
-        this.eosDebugLogger.printDebug("EOSInputStream.read(pos=" + pos + ", b, off=" + off + ", len=" + len + ") readBytes: " + rd);
-        this.eosDebugLogger.printDebug("EOSInputStream read operation elapsed time=" + elapsedTimeMicrosec + " microsec");
+        this.eosDebugLogger.printDebug("EOSInputStream.read(pos=" + pos + ", b, off=" + off + ", len=" + len + ") readBytes: " + rd + " elapsed: " + elapsedTimeMicrosec);
+
         if (rd >= 0) {
             this.pos = pos + rd;
             updateStatsBytesRead(rd);
@@ -97,7 +97,6 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
     public void readFully(long pos, byte[] b) throws IOException {
         int apos = 0;
 
-        this.eosDebugLogger.printDebug("EOSInputStream.readFully(long pos, byte[] b)..");
         while (this.pos >= 0) {
             byte[] a = new byte[IO_SIZE];
             long rd = read(pos, a, 0, IO_SIZE);
@@ -109,7 +108,6 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
     }
 
     public void readFully(long pos, byte[] buffer, int off, int len) throws IOException {
-        this.eosDebugLogger.printDebug("EOSInputStream.readFully(long pos, byte[] buffer, int off, int len) pos: " + pos);
         read(pos, buffer, off, len);
     }
 

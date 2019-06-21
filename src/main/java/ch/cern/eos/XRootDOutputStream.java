@@ -47,25 +47,29 @@ class XRootDOutputStream extends OutputStream {
         this.pos = 0;
     }
 
-    public long getPos() {
-        return this.pos;
-    }
-
+    @Override
     public void flush() throws IOException {
+        this.eosDebugLogger.printDebug("EOSInputStream.flush()");
         long st = this.file.Sync();
         if (st != 0) {
             throw new IOException("flush() failed: " + st);
         }
     }
 
+    @Override
     public void write(int b) throws IOException {
         byte[] buf = new byte[1];
         buf[0] = (byte) b;
 
-        write(0L, buf, 0, 1);
-        this.pos++;
+        write(buf, 0, buf.length);
     }
 
+    @Override
+    public void write(byte[] b) throws IOException {
+        write(b, 0, b.length);
+    }
+
+    @Override
     public void write(byte[] b, int off, int len) throws IOException {
         if (this.pos < 0) {
             throw new IOException("Stream closed");
@@ -76,15 +80,17 @@ class XRootDOutputStream extends OutputStream {
             throw new IOException("write " + len + " bytes error " + st);
         }
 
-        this.eosDebugLogger.printDebug("EOSInputStream.write(pos=" + pos + ", b, off=" + off + ", len=" + len + ")");
+        this.eosDebugLogger.printDebug("EOSInputStream.write(byte[] b, off=" + off + ", len=" + len + ") pos: " + this.pos);
         this.pos += len;
     }
 
+    @Override
     public void close() throws IOException {
         if (this.pos < 0) {
             return;
         }
 
+        this.eosDebugLogger.printDebug("EOSInputStream.close()");
         long st = this.file.Close();
         if (st != 0) {
             throw new IOException("close() failed: " + st);
@@ -93,18 +99,5 @@ class XRootDOutputStream extends OutputStream {
         if (st == 0) {
             this.pos = -1;
         }
-    }
-
-    public void write(long pos, byte[] b, int off, int len) throws IOException {
-        long st = this.file.Write(pos, b, off, len);
-        if (st != 0) {
-            throw new IOException("write failed error " + st);
-        }
-
-        this.eosDebugLogger.printDebug("EOSInputStream.write(pos=" + pos + ", b, off=" + off + ", len=" + len + ")");
-    }
-
-    public void seek(long pos) {
-        this.pos = pos;
     }
 }

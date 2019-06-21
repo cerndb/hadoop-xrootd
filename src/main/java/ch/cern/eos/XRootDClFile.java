@@ -58,12 +58,18 @@ public class XRootDClFile {
         return code;
     }
 
-    /* read from position filepos up to len bytes into buffer starting at offset off */
+    /**
+     * read from position in the file filepos up to len bytes
+     * into buffer starting at offset off (buffer[off] -> buffer[off+len])
+     */
     public long Read(long filepos, byte[] buff, int off, int len) {
         return readFile(nHandle, filepos, buff, off, len);
     }
 
-    /* write from position filepos up to len bytes from buffer starting at offset off */
+    /**
+     * write from position in the file filepos up to len bytes
+     * from buffer starting at offset off (buffer[off] -> buffer[off+len])
+     */
     public long Write(long filepos, byte[] buff, int off, int len) {
         return writeFile(nHandle, filepos, buff, off, len);
     }

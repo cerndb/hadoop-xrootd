@@ -132,7 +132,10 @@ public class XRootDFileSystem extends FileSystem {
         String filespec = uri.getScheme() + "://" + uri.getAuthority() + "/" + toFilePath(p);
         eosDebugLogger.printDebug("EOSfs create issued for " + filespec);
 
-        return new FSDataOutputStream(new XRootDOutputStream(filespec, permission, overwrite), null);
+        return new FSDataOutputStream(
+                new XRootDOutputStream(filespec, permission, overwrite),
+                null
+        );
     }
 
     public boolean delete(Path p, boolean recursive) throws IOException {
@@ -212,7 +215,14 @@ public class XRootDFileSystem extends FileSystem {
         // ReadAhead is done with BufferedFSInputStream
         eosDebugLogger.printDebug("EOSfs open " + filespec + " with readAhead=" + readAhead);
 
-        return new FSDataInputStream(new BufferedFSInputStream(new XRootDInputStream(filespec, statistics, instrumentation), readAhead));
+        return new FSDataInputStream(
+                new BufferedFSInputStream(
+                        new XRootDInputStream(
+                                filespec, statistics, instrumentation
+                        ),
+                        readAhead
+                )
+        );
     }
 
     public FileStatus getFileStatus(Path p) throws IOException {
