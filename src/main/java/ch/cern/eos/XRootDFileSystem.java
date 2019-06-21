@@ -65,6 +65,7 @@ public class XRootDFileSystem extends FileSystem {
 
     public native String getErrText(long errcode);
 
+    @Override
     public void initialize(URI uri, Configuration conf) throws IOException {
         super.initialize(uri, conf);
         setConf(conf);
@@ -90,7 +91,7 @@ public class XRootDFileSystem extends FileSystem {
         }
     }
 
-    public String toFilePath(Path p) throws IOException {
+    public String toFilePath(Path p) {
         URI u = p.toUri();
         String s = u.getPath();
 
@@ -100,10 +101,12 @@ public class XRootDFileSystem extends FileSystem {
         return s;
     }
 
+    @Override
     public FSDataOutputStream append(Path f, int bufferSize, Progressable progress) {
         throw new IllegalArgumentException("append");
     }
 
+    @Override
     public FSDataOutputStream create(Path p, FsPermission permission, boolean overwrite, int bufferSize, short replication, long blockSize, Progressable progress) throws IOException {
         initHandle();
         String filespec = uri.getScheme() + "://" + uri.getAuthority() + "/" + toFilePath(p);
@@ -119,6 +122,7 @@ public class XRootDFileSystem extends FileSystem {
         );
     }
 
+    @Override
     public boolean delete(Path p, boolean recursive) throws IOException {
         initHandle();
 
@@ -181,10 +185,12 @@ public class XRootDFileSystem extends FileSystem {
         eosDebugLogger.printDebug("initFileSystem(" + fileSystemURI + ") = " + nHandle);
     }
 
+    @Override
     public String getScheme() {
         return "root";
     }
 
+    @Override
     public FSDataInputStream open(Path path, int bufSize) throws IOException {
         initHandle();
         URI u = toUri(path);
@@ -207,6 +213,7 @@ public class XRootDFileSystem extends FileSystem {
         );
     }
 
+    @Override
     public FileStatus getFileStatus(Path p) throws IOException {
         initHandle();
 
@@ -222,6 +229,7 @@ public class XRootDFileSystem extends FileSystem {
         return st;
     }
 
+    @Override
     public FileStatus[] listStatus(Path p) throws IOException {
         initHandle();
 
@@ -237,6 +245,7 @@ public class XRootDFileSystem extends FileSystem {
         return listFileStatusS(nHandle, toFilePath(p), p);
     }
 
+    @Override
     public boolean mkdirs(Path p, FsPermission permission) throws IOException {
         initHandle();
 
@@ -247,14 +256,17 @@ public class XRootDFileSystem extends FileSystem {
         return st == 0;
     }
 
+    @Override
     public URI getUri() {
         return uri;
     }
 
+    @Override
     public Path getWorkingDirectory() {
         return new Path(uri);
     }
 
+    @Override
     public void setWorkingDirectory(Path f) {
         throw new IllegalArgumentException("setWorkingDirectory");
     }
@@ -276,6 +288,7 @@ public class XRootDFileSystem extends FileSystem {
         return prepare(uris, pFlags);
     }
 
+    @Override
     public boolean rename(Path src, Path dst) throws IOException {
         initHandle();
 

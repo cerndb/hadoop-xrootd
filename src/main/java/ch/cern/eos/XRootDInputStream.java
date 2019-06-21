@@ -43,10 +43,12 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
         }
     }
 
+    @Override
     public long getPos() {
         return this.pos;
     }
 
+    @Override
     public int read() throws IOException {
         // Reads the next byte of data from the input stream.
         byte[] b = new byte[1];
@@ -62,10 +64,12 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
         throw new IOException("read returned " + rd);
     }
 
+    @Override
     public int read(byte[] b, int off, int len) throws IOException {
         return read(this.pos, b, off, len);
     }
 
+    @Override
     public int read(long pos, byte[] b, int off, int len) throws IOException {
         if (this.pos < 0) {  // TODO: implement - https://github.com/grahamar/hadoop-aws/blob/master/src/main/java/org/apache/hadoop/fs/s3a/S3AInputStream.java#L364
             this.eosDebugLogger.printDebug("EOSInputStream.read() pos: " + this.pos);
@@ -94,6 +98,7 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
         throw new IOException("read returned " + rd);
     }
 
+    @Override
     public void readFully(long pos, byte[] b) throws IOException {
         int apos = 0;
 
@@ -107,19 +112,23 @@ class XRootDInputStream extends FSInputStream implements Seekable, PositionedRea
         this.eosDebugLogger.printDebug("EOSInputStream.readFully(long pos, byte[] b) bytes read: " + apos);
     }
 
+    @Override
     public void readFully(long pos, byte[] buffer, int off, int len) throws IOException {
         read(pos, buffer, off, len);
     }
 
+    @Override
     public void seek(long pos) {
         this.eosDebugLogger.printDebug("EOSInputStream.seek(long pos) pos: " + pos);
         this.pos = pos;
     }
 
+    @Override
     public boolean seekToNewSource(long targetPos) {
         throw new IllegalArgumentException("seekToNewSource");
     }
 
+    @Override
     public void close() throws IOException {
         if (pos < -1) {
             return;
