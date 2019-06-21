@@ -15,7 +15,7 @@ For Hadoop config
     <configuration>
         <property>
             <description>set the size of the request to XRootD storage issued for data read(allows prefetching more data in case of large reads). Defaults to 128KB.</description>
-            <name>fs.xrootd.readahead.range</name>
+            <name>fs.xrootd.read.buffer</name>
             <value>128000</value>
         </property>
         <property>
@@ -29,7 +29,7 @@ For Hadoop config
 For Spark config 
 
 ```
-spark.hadoop.fs.xrootd.readahead.range=128000
+spark.hadoop.fs.xrootd.read.buffer=128000
 spark.hadoop.fs.xrootd.write.buffer=1048576
 ```
 

@@ -200,15 +200,15 @@ public class XRootDFileSystem extends FileSystem {
         XRootDInstrumentation instrumentation = new XRootDInstrumentation();
 
         // ReadAhead is done with BufferedFSInputStream
-        int readAhead = this.conf.getReadAhead();
-        eosDebugLogger.printDebug("EOSfs open " + filespec + " with readAhead=" + readAhead);
+        int readBufferSize = this.conf.getReadBufferSize();
+        eosDebugLogger.printDebug("EOSfs open " + filespec + " with readBufferSize=" + readBufferSize);
 
         return new FSDataInputStream(
                 new BufferedFSInputStream(
                         new XRootDInputStream(
                                 filespec, statistics, instrumentation
                         ),
-                        readAhead
+                        readBufferSize
                 )
         );
     }

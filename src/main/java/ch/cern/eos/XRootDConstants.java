@@ -20,9 +20,9 @@ public final class XRootDConstants {
     /**
      * read ahead buffer size to prevent connection re-establishments.
      */
-    public static final String READAHEAD_RANGE = "fs.xrootd.readahead.range";
-    public static final int DEFAULT_READAHEAD_RANGE = 128 * 1024;
-    public static final String OS_ENV_VARIABLE_READAHEAD = "XROOTDHADOOP_READAHEAD_SIZE";
+    public static final String READ_BUFFER_SIZE = "fs.xrootd.read.buffer";
+    public static final int DEFAULT_READ_BUFFER_SIZE = 128 * 1024;
+    public static final String OS_ENV_VARIABLE_READ_BUFFER = "XROOTDHADOOP_READ_BUFFER_SIZE";
 
     /**
      * write ahead buffer size.

@@ -27,34 +27,34 @@ public class XRootDConfiguration {
         this.conf = conf;
     }
 
-    public int getReadAhead() throws IllegalArgumentException {
-        int readAhead;
+    public int getReadBufferSize() throws IllegalArgumentException {
+        int readBufferSize;
         // if the designated environment variable is set use this as read ahead size
-        java.lang.String envReadaheadValue = System.getenv(XRootDConstants.OS_ENV_VARIABLE_READAHEAD);
-        if (envReadaheadValue != null ) {
-            readAhead = Integer.parseInt(envReadaheadValue);
+        java.lang.String envReadBufferValue = System.getenv(XRootDConstants.OS_ENV_VARIABLE_READ_BUFFER);
+        if (envReadBufferValue != null ) {
+            readBufferSize = Integer.parseInt(envReadBufferValue);
             eosDebugLogger.printDebug("The OS environment variable " +
-                    XRootDConstants.OS_ENV_VARIABLE_READAHEAD  + " = " + readAhead);
-            if (readAhead < 0) {
+                    XRootDConstants.OS_ENV_VARIABLE_READ_BUFFER  + " = " + readBufferSize);
+            if (readBufferSize < 0) {
                 throw new IllegalArgumentException(String.format("Config %s=%d is below the minimum value %d",
-                        XRootDConstants.OS_ENV_VARIABLE_READAHEAD, readAhead, 0));
+                        XRootDConstants.OS_ENV_VARIABLE_READ_BUFFER, readBufferSize, 0));
             }
             // otherwise get read ahead value from Hadoop configuration or use default if not set
         } else {
-            readAhead = XRootDConfiguration.byteConfOption(this.conf, XRootDConstants.READAHEAD_RANGE,
-                    XRootDConstants.DEFAULT_READAHEAD_RANGE);
-            if (this.conf.get(XRootDConstants.READAHEAD_RANGE) == null) {
-                eosDebugLogger.printDebug("Hadoop Config " + XRootDConstants.READAHEAD_RANGE +
-                        " nor OS environment variable " + XRootDConstants.OS_ENV_VARIABLE_READAHEAD +
+            readBufferSize = XRootDConfiguration.byteConfOption(this.conf, XRootDConstants.READ_BUFFER_SIZE,
+                    XRootDConstants.DEFAULT_READ_BUFFER_SIZE);
+            if (this.conf.get(XRootDConstants.READ_BUFFER_SIZE) == null) {
+                eosDebugLogger.printDebug("Hadoop Config " + XRootDConstants.READ_BUFFER_SIZE +
+                        " nor OS environment variable " + XRootDConstants.OS_ENV_VARIABLE_READ_BUFFER +
                         " are set, using default value = " +
-                        XRootDConstants.DEFAULT_READAHEAD_RANGE);
+                        XRootDConstants.DEFAULT_READ_BUFFER_SIZE);
             }
             else {
-                eosDebugLogger.printDebug("Hadoop Config " + XRootDConstants.READAHEAD_RANGE + " = " + readAhead);
+                eosDebugLogger.printDebug("Hadoop Config " + XRootDConstants.READ_BUFFER_SIZE + " = " + readBufferSize);
             }
         }
 
-        return readAhead;
+        return readBufferSize;
     }
 
     public int getWriteBufferSize() throws IllegalArgumentException {
