@@ -81,6 +81,7 @@ class XRootDOutputStream extends OutputStream {
         }
 
         this.eosDebugLogger.printDebug("EOSInputStream.write(byte[] b, off=" + off + ", len=" + len + ") pos: " + this.pos);
+
         this.pos += len;
     }
 

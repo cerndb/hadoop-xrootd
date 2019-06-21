@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.util.Progressable;
 
+import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
@@ -132,9 +133,13 @@ public class XRootDFileSystem extends FileSystem {
         String filespec = uri.getScheme() + "://" + uri.getAuthority() + "/" + toFilePath(p);
         eosDebugLogger.printDebug("EOSfs create issued for " + filespec);
 
+        int writeAhead = 8192;
         return new FSDataOutputStream(
-                new XRootDOutputStream(filespec, permission, overwrite),
-                null
+                new BufferedOutputStream(
+                        new XRootDOutputStream(filespec, permission, overwrite),
+                        writeAhead
+                ),
+                statistics
         );
     }
 
