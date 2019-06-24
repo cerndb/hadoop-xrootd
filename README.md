@@ -128,3 +128,40 @@ $ pyspark \
 input = sc.binaryFiles('root://eospublic.cern.ch/eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/file-indexes/CMS_MonteCarlo2012_Summer12_DR53X_DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_AODSIM_PU_RD1_START53_V7N-v1_20002_file_index.txt')
 input.map(lambda x: x[0]).collect()
 ```
+
+### How to use with Spark:
+Example:
+```
+bin/spark-shell --master local[*] --conf spark.driver.extraClassPath=<PATH>/hadoop-xrootd-1.0.4-jar-with-dependencies.jar
+val df=spark.read.parquet("root://eosuser/eos/user/..PATH../test1.parquet")
+df.coalesce(4).write.parquet("root://eosuser/eos/user/..PATH../test1_COPIED.parquet"))
+```
+note: when using on a cluster set also `--conf spark.executor.extraClassPath=<...`
+
+###How to read Hadoop-XRootD / EOS filesystem statistics. 
+Example:
+
+```
+scala> org.apache.hadoop.fs.FileSystem.printStatistics()
+  FileSystem ch.cern.eos.XRootDKrb5FileSystem: 461951576 bytes read, 449954429 bytes written, 127 read ops, 0 large read ops, 502 write ops
+  FileSystem org.apache.hadoop.hdfs.DistributedFileSystem: 0 bytes read, 127794 bytes written, 1 read ops, 0 large read ops, 3 write ops
+
+scala> ch.cern.eos.XRootDInstrumentation.getReadOps
+res2: Int = 127
+
+scala> ch.cern.eos.XRootDInstrumentation.getWriteOps
+res3: Int = 502
+
+scala> ch.cern.eos.XRootDInstrumentation.getBytesRead
+res4: Long = 461951576
+
+scala> ch.cern.eos.XRootDInstrumentation.getBytesWritten
+res5: Long = 449954429
+
+scala> ch.cern.eos.XRootDInstrumentation.getTimeElapsedReadMusec
+res6: Long = 8757956
+
+scala> ch.cern.eos.XRootDInstrumentation.getTimeElapsedWriteMusec
+res7: Long = 7068182
+
+```
