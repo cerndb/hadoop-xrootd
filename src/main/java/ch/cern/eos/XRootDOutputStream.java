@@ -15,6 +15,7 @@
  */
 package ch.cern.eos;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.permission.FsPermission;
 
 import java.io.IOException;
@@ -26,8 +27,10 @@ class XRootDOutputStream extends OutputStream {
     private XRootDClFile file;
     private long pos;
     private final XRootDInstrumentation instrumentation;
+    private final FileSystem.Statistics stats;
 
-    public XRootDOutputStream(String url, FsPermission permission, boolean overwrite, XRootDInstrumentation instrumentation) {
+    public XRootDOutputStream(String url, FsPermission permission, boolean overwrite,
+                              FileSystem.Statistics stats, XRootDInstrumentation instrumentation) {
         /* OpenFlags:
          *  None     = 0
          *  kXR_delete   = 2
@@ -45,6 +48,7 @@ class XRootDOutputStream extends OutputStream {
         long status = file.Open(url, oflags, 0x0180);
         this.eosDebugLogger.printDebug("EOSOutputStream create " + url + " status=" + status);
         this.instrumentation = instrumentation;
+        this.stats = stats;
         this.pos = 0;
     }
 
@@ -117,6 +121,10 @@ class XRootDOutputStream extends OutputStream {
      * @param bytesWritten number of bytes read
      */
     private void updateStatsBytesWritten(long bytesWritten) {
+        /* Increment values in Hadoop stats API */
+        if (stats != null && bytesWritten > 0) {
+            stats.incrementBytesWritten(bytesWritten);
+        }
         /* Increment values in custom XRootDInstrumentation */
         if (instrumentation != null && bytesWritten > 0) {
             instrumentation.incrementBytesWritten(bytesWritten);
@@ -128,6 +136,10 @@ class XRootDOutputStream extends OutputStream {
      * @param numOps number of read operations
      */
     private void updateStatsNumOps(int numOps) {
+        /* Increment values in Hadoop stats API */
+        if (stats != null && numOps > 0) {
+            stats.incrementWriteOps(numOps);
+        }
         /* Increment values in custom XRootDInstrumentation */
         if (instrumentation != null && numOps > 0) {
             instrumentation.incrementWriteOps(numOps);

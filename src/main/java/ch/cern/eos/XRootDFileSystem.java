@@ -120,10 +120,10 @@ public class XRootDFileSystem extends FileSystem {
         int writeBufferSize = this.conf.getWriteBufferSize();
         return new FSDataOutputStream(
                 new BufferedOutputStream(
-                        new XRootDOutputStream(filespec, permission, overwrite, instrumentation),
+                        new XRootDOutputStream(filespec, permission, overwrite, statistics, instrumentation),
                         writeBufferSize
                 ),
-                statistics
+                null
         );
     }
 
