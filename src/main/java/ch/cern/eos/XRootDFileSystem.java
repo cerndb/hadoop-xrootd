@@ -47,6 +47,8 @@ public class XRootDFileSystem extends FileSystem {
         return URI.create("root://");
     }
 
+    public static XRootDInstrumentation instrumentation;
+
     private native long initFileSystem(String url);
 
     private native FileStatus getFileStatusS(long nHandle, String fn, Path p);
@@ -72,6 +74,9 @@ public class XRootDFileSystem extends FileSystem {
 
         this.uri = uri;
         this.conf = new XRootDConfiguration(conf);
+
+        // create object for extra instrumentation of metrics
+        instrumentation = new XRootDInstrumentation();
     }
 
     public URI toUri(Path p) throws IOException {
@@ -115,7 +120,7 @@ public class XRootDFileSystem extends FileSystem {
         int writeBufferSize = this.conf.getWriteBufferSize();
         return new FSDataOutputStream(
                 new BufferedOutputStream(
-                        new XRootDOutputStream(filespec, permission, overwrite),
+                        new XRootDOutputStream(filespec, permission, overwrite, instrumentation),
                         writeBufferSize
                 ),
                 statistics
@@ -196,8 +201,6 @@ public class XRootDFileSystem extends FileSystem {
         URI u = toUri(path);
         String filespec = uri.getScheme() + "://" + uri.getAuthority() + "/" + u.getPath();
 
-        // create object for extra instrumentation of metrics
-        XRootDInstrumentation instrumentation = new XRootDInstrumentation();
 
         // ReadAhead is done with BufferedFSInputStream
         int readBufferSize = this.conf.getReadBufferSize();

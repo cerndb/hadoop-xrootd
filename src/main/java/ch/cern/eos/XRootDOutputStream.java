@@ -25,8 +25,9 @@ class XRootDOutputStream extends OutputStream {
     private DebugLogger eosDebugLogger = new DebugLogger();
     private XRootDClFile file;
     private long pos;
+    private final XRootDInstrumentation instrumentation;
 
-    public XRootDOutputStream(String url, FsPermission permission, boolean overwrite) {
+    public XRootDOutputStream(String url, FsPermission permission, boolean overwrite, XRootDInstrumentation instrumentation) {
         /* OpenFlags:
          *  None     = 0
          *  kXR_delete   = 2
@@ -43,7 +44,7 @@ class XRootDOutputStream extends OutputStream {
         this.file = new XRootDClFile();
         long status = file.Open(url, oflags, 0x0180);
         this.eosDebugLogger.printDebug("EOSOutputStream create " + url + " status=" + status);
-
+        this.instrumentation = instrumentation;
         this.pos = 0;
     }
 
@@ -75,12 +76,20 @@ class XRootDOutputStream extends OutputStream {
             throw new IOException("Stream closed");
         }
 
+        long startTime = System.nanoTime();
         long st = this.file.Write(pos, b, off, len);
+        long endTime = System.nanoTime();
+        long elapsedTimeMicrosec = (endTime - startTime) / 1000L;
         if (st != 0) {
             throw new IOException("write " + len + " bytes error " + st);
         }
 
-        this.eosDebugLogger.printDebug("EOSInputStream.write(byte[] b, off=" + off + ", len=" + len + ") pos: " + this.pos);
+        this.eosDebugLogger.printDebug("EOSInputStream.write(byte[] b, off=" + off +
+                ", len=" + len + ") pos: " + this.pos + " elapsed: " + elapsedTimeMicrosec);
+
+        updateStatsBytesWritten(len);
+        updateStatsNumOps(1);
+        updateStatsWriteTime(elapsedTimeMicrosec);
 
         this.pos += len;
     }
@@ -101,4 +110,39 @@ class XRootDOutputStream extends OutputStream {
             this.pos = -1;
         }
     }
+
+    /**
+     * Update (increment) the bytes written counter.
+     *
+     * @param bytesWritten number of bytes read
+     */
+    private void updateStatsBytesWritten(long bytesWritten) {
+        /* Increment values in custom XRootDInstrumentation */
+        if (instrumentation != null && bytesWritten > 0) {
+            instrumentation.incrementBytesWritten(bytesWritten);
+        }
+    }
+    /**
+     * Update (increment) the write operations counter.
+     *
+     * @param numOps number of read operations
+     */
+    private void updateStatsNumOps(int numOps) {
+        /* Increment values in custom XRootDInstrumentation */
+        if (instrumentation != null && numOps > 0) {
+            instrumentation.incrementWriteOps(numOps);
+        }
+    }
+
+    /**
+     * Update the instrumentation counter for write operation elapsed time.
+     *
+     * @param writeTimeElapsed elapsed write time in microseconds
+     */
+    private void updateStatsWriteTime(long writeTimeElapsed) {
+        if (instrumentation != null && writeTimeElapsed > 0) {
+            instrumentation.incrementTimeElapsedWriteOps(writeTimeElapsed);
+        }
+    }
+
 }
