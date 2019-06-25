@@ -68,7 +68,18 @@ mvn clean package -X -Dxrootd.lib64.path=${XROOTD_LIB64_SO_FILES_PATH} -Dxrootd.
 
 CI generates jars for using the connector with CVMFS sourced software. The jars including the dependencies are published at `s3://binaries/hadoop-xrootd`.
 
-### Testing
+### Get started with Spark:
+
+Example:
+```
+$ spark-shell --master local[*] --conf spark.driver.extraClassPath=<PATH>/hadoop-xrootd-1.0.4-jar-with-dependencies.jar
+ 
+val df=spark.read.parquet("root://eosuser/eos/user/..PATH../test1.parquet")
+df.coalesce(4).write.parquet("root://eosuser/eos/user/..PATH../test1_COPIED.parquet"))
+```
+note: when using on a cluster set also `--conf spark.executor.extraClassPath=<...`
+
+### Testing in Docker
 
 [Docker image](docker/Dockerfile) is used as base for [Gitlab CI](.gitlab-ci.yml) pipeline.
 To test manualy, build the docker image and run in interactive mode
@@ -127,16 +138,8 @@ $ pyspark \
 # Run some commands in shell
 input = sc.binaryFiles('root://eospublic.cern.ch/eos/opendata/cms/MonteCarlo2012/Summer12_DR53X/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_RD1_START53_V7N-v1/file-indexes/CMS_MonteCarlo2012_Summer12_DR53X_DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_AODSIM_PU_RD1_START53_V7N-v1_20002_file_index.txt')
 input.map(lambda x: x[0]).collect()
-```
 
-### How to use with Spark:
-Example:
 ```
-bin/spark-shell --master local[*] --conf spark.driver.extraClassPath=<PATH>/hadoop-xrootd-1.0.4-jar-with-dependencies.jar
-val df=spark.read.parquet("root://eosuser/eos/user/..PATH../test1.parquet")
-df.coalesce(4).write.parquet("root://eosuser/eos/user/..PATH../test1_COPIED.parquet"))
-```
-note: when using on a cluster set also `--conf spark.executor.extraClassPath=<...`
 
 ###How to read Hadoop-XRootD / EOS filesystem statistics. 
 Example:
