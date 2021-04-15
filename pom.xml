@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>ch.cern.eos</groupId>
-    <version>1.0.6</version>
+    <version>1.0.7</version>
     <artifactId>hadoop-xrootd</artifactId>
     <packaging>nar</packaging>
 
@@ -14,11 +14,47 @@
         <xrootd.include.path>/usr/include/xrootd</xrootd.include.path>
     </properties>
 
+    <profiles>
+      <profile>
+	<id>nojavah</id>
+        <activation>
+	<!-- javah has been replaced by javac -h in jdk 11 -->
+          <jdk>[1.11,)</jdk>
+        </activation>
+
+	<build>
+          <plugins>
+            <plugin>
+                <groupId>com.github.maven-nar</groupId>
+                <artifactId>nar-maven-plugin</artifactId>
+                <version>3.9.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <javah>
+                    <skip>true</skip>
+                    </javah>
+                </configuration>
+            </plugin>
+
+	    <plugin>
+	      <artifactId>maven-compiler-plugin</artifactId>
+	      <configuration>
+		  <compilerArgs>
+	            <arg>-h</arg>
+		    <arg>${project.build.directory}/nar/javah-include</arg>
+	          </compilerArgs>
+	      </configuration>
+	    </plugin>
+          </plugins>
+	</build>
+      </profile>
+    </profiles>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
-            <version>2.7.3</version>
+            <version>3.3.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -41,7 +77,7 @@
                 <!-- TODO: https://github.com/imagej/imagej-launcher/blob/master/pom.xml#L181-->
                 <groupId>com.github.maven-nar</groupId>
                 <artifactId>nar-maven-plugin</artifactId>
-                <version>3.5.1</version>
+                <version>3.9.7</version>
                 <extensions>true</extensions>
                 <configuration>
                     <linker>

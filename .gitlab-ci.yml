@@ -28,6 +28,22 @@ build-docker-image:
     DOCKER_FILE: Dockerfile
     TO: ${CI_REGISTRY_IMAGE}/base:latest
 
+make-compile-test-step-dockerfile-jdk11:
+  <<: *krbtgt
+  stage: build
+  # use docker image base:latest with all libraries packaged
+  image: ${CI_REGISTRY_IMAGE}/base:latest
+  variables:
+    JAVA_HOME: /usr/lib/jvm/java-11
+  script:
+    # Make compile and test
+    - make all
+    # Final rename
+    - for f in *.jar; do mv "${f}" "${f%-jar-with-dependencies.jar}.jar"; done
+  artifacts:
+    paths:
+    - "*.jar"
+
 make-compile-test-step-dockerfile:
   <<: *krbtgt
   stage: build

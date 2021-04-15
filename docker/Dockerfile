@@ -2,12 +2,12 @@ FROM gitlab-registry.cern.ch/linuxsupport/cc7-base
 MAINTAINER Piotr Mrowczynski <piotr.mrowczynski@cern.ch>
 MAINTAINER Zbigniew Baranowski <zbigniew.baranowski@cern.ch>
 
-ARG SPARK_VERSION=2.4
-ARG SPARK_HADOOP_VERSION=2.7.5
+ARG SPARK_VERSION=3.1
+ARG SPARK_HADOOP_VERSION=3.2
 
 ENV JAVA_HOME /usr/lib/jvm/java-1.8.0-oracle.x86_64
 
-ENV SPARK_HOME /usr/hdp/spark
+ENV SPARK_HOME /usr/hdp/spark3
 ENV PATH $PATH:$SPARK_HOME/bin
 ENV PATH $PATH:$SPARK_HOME/sbin
 
@@ -26,15 +26,17 @@ RUN yum group install -y \
     yum install -y \
     which \
     wget \
-    apache-maven \
     ca_CERN-GridCA \
     xrootd-client \
     xrootd-client-libs \
     xrootd-client-devel \
+    java-11-openjdk-devel \
     java-1.8.0-oracle-devel \
     hadoop-bin-$SPARK_HADOOP_VERSION \
     spark-bin-$SPARK_VERSION \
     yum clean all && rm -rf /var/cache/yum/*
+
+RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz  | tar zxvf - -C /tmp && ln -s /tmp/apache-maven-3.6.3/bin/mvn /usr/local/bin/mvn
 
 COPY log4j.properties /root/log4j.properties
 
